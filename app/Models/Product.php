@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Product extends Model
+{
+    use HasFactory, \App\Traits\Loggable;
+
+
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'price',
+        'cost_price',
+        'weight_grams',
+        'stock',
+        'category_id',
+        'image_path',
+        'additional_images',
+        'video_path',
+        'bundles',
+    ];
+
+    protected $casts = [
+        'additional_images' => 'array',
+        'bundles' => 'array',
+    ];
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+}

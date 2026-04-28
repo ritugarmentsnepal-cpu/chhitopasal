@@ -12,7 +12,12 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Outfit', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                mango: '#FFD166',
+                wildOrchid: '#EF476F',
+                softPearl: '#FDFFFC',
             },
         },
     },
