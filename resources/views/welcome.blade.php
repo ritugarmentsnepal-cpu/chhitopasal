@@ -105,8 +105,8 @@
     </div>
 
     <!-- 2. Hero Section -->
-    <section class="pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
-        <div class="bg-gray-900 rounded-[2rem] sm:rounded-[3rem] overflow-hidden relative shadow-2xl flex flex-col md:flex-row items-center">
+    <section class="pt-24 sm:pt-32 pb-10 sm:pb-16 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
+        <div class="bg-gray-900 rounded-2xl sm:rounded-[3rem] overflow-hidden relative shadow-2xl flex flex-col md:flex-row items-center min-h-[280px] sm:min-h-0">
             <div class="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/90 to-transparent z-10 hidden md:block"></div>
             <div class="absolute inset-0 bg-gradient-to-b from-gray-900 via-gray-900/80 to-gray-900 z-10 md:hidden"></div>
             
@@ -117,11 +117,11 @@
                 <img src="https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=2074&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-50 md:opacity-100" alt="Hero">
             @endif
 
-            <div class="relative z-20 p-10 sm:p-16 md:p-24 md:w-2/3 lg:w-1/2">
+            <div class="relative z-20 p-6 sm:p-16 md:p-24 md:w-2/3 lg:w-1/2">
                 <span class="inline-block py-1.5 px-4 rounded-full bg-mango text-gray-900 font-black text-xs uppercase tracking-widest mb-6">Flash Sale ⚡️</span>
-                <h2 class="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.1] mb-6">{!! nl2br(e(setting('hero_title', 'Upgrade your lifestyle.'))) !!}</h2>
-                <p class="text-gray-300 text-lg md:text-xl font-medium mb-10 max-w-lg">{{ setting('hero_subtitle', 'Discover the best tech, fashion, and home accessories delivered straight to your door. No hassle, just shopping.') }}</p>
-                <a href="#shop" class="inline-flex items-center justify-center bg-white text-gray-900 font-black px-8 py-4 rounded-full hover:bg-gray-100 active:scale-95 transition shadow-[0_0_40px_rgba(255,255,255,0.3)] group">
+                <h2 class="text-3xl sm:text-5xl md:text-6xl font-black text-white leading-[1.1] mb-4 sm:mb-6">{!! nl2br(e(setting('hero_title', 'Upgrade your lifestyle.'))) !!}</h2>
+                <p class="text-gray-300 text-sm sm:text-lg md:text-xl font-medium mb-6 sm:mb-10 max-w-lg">{{ setting('hero_subtitle', 'Discover the best tech, fashion, and home accessories delivered straight to your door. No hassle, just shopping.') }}</p>
+                <a href="#shop" class="inline-flex items-center justify-center bg-white text-gray-900 font-black px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-gray-100 active:scale-95 transition shadow-[0_0_40px_rgba(255,255,255,0.3)] group text-sm sm:text-base">
                     {{ setting('hero_cta', 'Shop Collection') }}
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                 </a>
@@ -130,16 +130,18 @@
     </section>
 
     <!-- 3. Category Pills -->
-    <section id="shop" class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mb-8 sticky top-[72px] md:top-[88px] z-30 bg-[#FDFFFC]/90 backdrop-blur-md py-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-            <button @click="activeCategory = 'all'" :class="activeCategory === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap border transition-all active:scale-95">
-                All Products
-            </button>
-            @foreach($categories as $category)
-                <button @click="activeCategory = '{{ $category->slug }}'" :class="activeCategory === '{{ $category->slug }}' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap border transition-all active:scale-95">
-                    {{ $category->name }}
+    <section id="shop" class="sticky top-[60px] md:top-[88px] z-30 bg-[#FDFFFC]/90 backdrop-blur-md py-3 md:py-4">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2">
+                <button @click="activeCategory = 'all'" :class="activeCategory === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'" class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold whitespace-nowrap border transition-all active:scale-95 text-sm sm:text-base">
+                    All Products
                 </button>
-            @endforeach
+                @foreach($categories as $category)
+                    <button @click="activeCategory = '{{ $category->slug }}'" :class="activeCategory === '{{ $category->slug }}' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'" class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold whitespace-nowrap border transition-all active:scale-95 text-sm sm:text-base">
+                        {{ $category->name }}
+                    </button>
+                @endforeach
+            </div>
         </div>
     </section>
 
@@ -156,9 +158,9 @@
             <button @click="searchQuery = ''; activeCategory = 'all'" class="mt-6 text-wildOrchid font-bold hover:underline">Clear all filters</button>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
             <template x-for="(product, index) in filteredProducts" :key="product.id">
-                <article class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 animate-staggered" :style="`animation-delay: ${index * 0.05}s`">
+                <article class="group bg-white rounded-2xl sm:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 animate-staggered" :style="`animation-delay: ${index * 0.05}s`">
                     
                     <!-- Image Container (Clickable for Quick View & Product Page) -->
                     <div class="aspect-[4/5] bg-gray-100 relative overflow-hidden group/img">
@@ -176,18 +178,18 @@
                         </div>
                     </div>
                     
-                    <div class="p-5 sm:p-6 flex flex-col flex-1 relative">
+                    <div class="p-3 sm:p-6 flex flex-col flex-1 relative">
                         <!-- Category Tag -->
-                        <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-wildOrchid mb-2 block" x-text="product.category?.name || 'Uncategorized'"></span>
+                        <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-wildOrchid mb-1 sm:mb-2 block" x-text="product.category?.name || 'Uncategorized'"></span>
                         
-                        <h3 class="font-black text-lg sm:text-xl text-gray-900 mb-1 leading-tight line-clamp-1" x-text="product.name"></h3>
-                        <p class="text-sm text-gray-500 mb-4 line-clamp-2 font-medium flex-1" x-text="product.description"></p>
+                        <h3 class="font-black text-sm sm:text-xl text-gray-900 mb-0.5 sm:mb-1 leading-tight line-clamp-1" x-text="product.name"></h3>
+                        <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-4 line-clamp-2 font-medium flex-1 hidden sm:block" x-text="product.description"></p>
                         
-                        <div class="flex items-center justify-between mt-auto">
-                            <span class="text-xl sm:text-2xl font-black text-gray-900">Rs.<span x-text="product.price.toLocaleString()"></span></span>
-                            <button @click.prevent="triggerAddToCart(product)" class="bg-gray-900 text-white font-bold text-sm px-5 py-2.5 rounded-full hover:bg-mango hover:text-gray-900 transition-all duration-300 active:scale-90 shadow-sm flex items-center gap-1.5 group/btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                                Buy
+                        <div class="flex items-center justify-between mt-auto gap-1">
+                            <span class="text-base sm:text-2xl font-black text-gray-900">Rs.<span x-text="product.price.toLocaleString()"></span></span>
+                            <button @click.prevent="triggerAddToCart(product)" class="bg-gray-900 text-white font-bold text-xs sm:text-sm px-3 sm:px-5 py-2 sm:py-2.5 rounded-full hover:bg-mango hover:text-gray-900 transition-all duration-300 active:scale-90 shadow-sm flex items-center gap-1 sm:gap-1.5 group/btn flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 sm:h-4 sm:w-4 transform group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                                <span class="hidden sm:inline">Buy</span>
                             </button>
                         </div>
                     </div>
@@ -197,9 +199,9 @@
     </main>
 
     <!-- 5. Footer -->
-    <footer id="about" class="bg-gray-900 text-white pt-20 pb-10 rounded-t-[3rem] mt-10">
+    <footer id="about" class="bg-gray-900 text-white pt-12 sm:pt-20 pb-8 sm:pb-10 rounded-t-[2rem] sm:rounded-t-[3rem] mt-10">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 mb-10 sm:mb-16">
                 <div class="md:col-span-2">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 mb-6">
                         <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center shadow-lg shadow-mango/20">
