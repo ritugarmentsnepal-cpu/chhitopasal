@@ -123,10 +123,37 @@ Route::get('/deploy/{token}', function ($token) {
     exec('cd ' . base_path() . ' && git pull origin main 2>&1', $output);
     exec('cd ' . base_path() . ' && composer install --no-dev --optimize-autoloader 2>&1', $output);
     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
     \Illuminate\Support\Facades\Artisan::call('config:cache');
     \Illuminate\Support\Facades\Artisan::call('route:cache');
     \Illuminate\Support\Facades\Artisan::call('view:cache');
     return response()->json(['status' => 'deployed', 'output' => implode("\n", $output)]);
+});
+
+// One-time fix route for settings (secured by token)
+Route::get('/fix-settings/{token}', function ($token) {
+    if ($token !== 'chhito-deploy-2026') {
+        abort(403);
+    }
+    // Fix Pathao store ID
+    \App\Models\Setting::updateOrCreate(['key' => 'pathao_store_id'], ['value' => '349722']);
+    // Fix any duplicated credentials
+    \App\Models\Setting::updateOrCreate(['key' => 'pathao_client_id'], ['value' => 'M7e5WQxb2v']);
+    \App\Models\Setting::updateOrCreate(['key' => 'pathao_client_secret'], ['value' => '6yBdORqUYqALw9bLoJRQ7Jqghl2z4j51rIE83ZoU']);
+    \App\Models\Setting::updateOrCreate(['key' => 'pathao_username'], ['value' => 'shoppingsantanepal@gmail.com']);
+    \App\Models\Setting::updateOrCreate(['key' => 'pathao_password'], ['value' => 'Pathao@123']);
+    // Clear all Pathao caches
+    \Illuminate\Support\Facades\Cache::forget('pathao_access_token');
+    \Illuminate\Support\Facades\Cache::forget('pathao_cities');
+    for ($i = 1; $i <= 500; $i++) {
+        \Illuminate\Support\Facades\Cache::forget("pathao_zones_{$i}");
+        \Illuminate\Support\Facades\Cache::forget("pathao_areas_{$i}");
+    }
+    return response()->json([
+        'status' => 'fixed',
+        'store_id' => \App\Models\Setting::where('key', 'pathao_store_id')->value('value'),
+        'all_settings' => \App\Models\Setting::whereIn('key', ['pathao_store_id','pathao_client_id','pathao_username'])->pluck('value','key'),
+    ]);
 });
 
 require __DIR__.'/auth.php';
