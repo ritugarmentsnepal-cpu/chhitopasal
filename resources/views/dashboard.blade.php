@@ -142,8 +142,9 @@
                             
                             <!-- Confirm Order Modal inside the loop -->
                             <x-modal name="confirm-order-modal-{{ $order->id }}" focusable>
-                                <form method="POST" action="{{ route('orders.confirm', $order) }}" class="p-8">
+                                <form method="POST" action="{{ route('orders.status', $order) }}" class="p-8">
                                     @csrf
+                                    <input type="hidden" name="status" value="confirmed">
                                     <div class="mb-6">
                                         <h2 class="text-2xl font-black text-gray-900">Verify Order #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</h2>
                                         <p class="text-sm text-gray-500 mt-1">Confirm quantities before sending to Pathao.</p>

@@ -72,12 +72,17 @@
 
             <!-- Right Actions -->
             <div class="flex items-center gap-3">
+                <!-- Desktop Cart Button -->
                 <button @click="toggleCart()" class="relative bg-gray-900 text-white p-3 rounded-xl hover:bg-gray-800 transition active:scale-95 shadow-lg hidden md:flex items-center gap-2 group">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                     <span class="font-bold">Cart</span>
                     <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" x-transition class="absolute -top-2 -right-2 bg-wildOrchid text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-sm"></span>
                 </button>
-
+                <!-- Mobile Cart Button -->
+                <button @click="toggleCart()" class="relative bg-gray-900 text-white p-2.5 rounded-xl hover:bg-gray-800 transition active:scale-95 shadow-lg md:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                    <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" x-transition class="absolute -top-1.5 -right-1.5 bg-wildOrchid text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm"></span>
+                </button>
 
             </div>
         </div>
@@ -195,8 +200,8 @@
                         <div class="flex items-center justify-between mt-auto gap-1">
                             <span class="text-base md:text-xl lg:text-2xl font-black text-gray-900">Rs.<span x-text="product.price.toLocaleString()"></span></span>
                             <button @click.prevent="triggerAddToCart(product)" class="bg-gray-900 text-white font-bold text-xs md:text-sm px-3 md:px-5 py-2 md:py-2.5 rounded-full hover:bg-mango hover:text-gray-900 transition-all duration-300 active:scale-90 shadow-sm flex items-center gap-1 md:gap-1.5 group/btn flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 md:h-4 md:w-4 transform group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                                <span class="hidden md:inline">Buy</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 md:h-4 md:w-4 transform group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                <span class="hidden md:inline">Add</span>
                             </button>
                         </div>
                     </div>
