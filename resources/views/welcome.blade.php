@@ -183,7 +183,7 @@
                         <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-wildOrchid mb-1 sm:mb-2 block" x-text="product.category?.name || 'Uncategorized'"></span>
                         
                         <h3 class="font-black text-sm sm:text-xl text-gray-900 mb-0.5 sm:mb-1 leading-tight line-clamp-1" x-text="product.name"></h3>
-                        <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-4 line-clamp-2 font-medium flex-1 hidden sm:block" x-text="product.description"></p>
+                        <div class="flex-1"></div>
                         
                         <div class="flex items-center justify-between mt-auto gap-1">
                             <span class="text-base sm:text-2xl font-black text-gray-900">Rs.<span x-text="product.price.toLocaleString()"></span></span>
