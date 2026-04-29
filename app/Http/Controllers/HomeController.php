@@ -12,7 +12,7 @@ class HomeController extends Controller
     public function index()
     {
         $categories = Category::all();
-        $products = Product::with('category')->latest()->get();
+        $products = Product::with('category')->latest()->get()->makeHidden(['cost_price', 'created_at', 'updated_at']);
         $settings = Setting::pluck('value', 'key')->toArray();
         return view('welcome', compact('products', 'categories', 'settings'));
     }

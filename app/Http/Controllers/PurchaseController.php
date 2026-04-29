@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseController extends Controller
 {
@@ -47,33 +48,35 @@ class PurchaseController extends Controller
             $validated['supplier_name'] = 'Unknown Supplier';
         }
 
-        $purchase = \App\Models\Purchase::create([
-            'supplier_name' => $validated['supplier_name'],
-            'party_id' => $validated['party_id'] ?? null,
-            'reference_no' => $validated['reference_no'],
-            'date' => $validated['date'],
-            'notes' => $validated['notes'],
-            'total_amount' => $totalAmount,
-            'status' => 'completed',
-            'payment_status' => 'unpaid',
-            'attachment_path' => $attachmentPath,
-        ]);
-
-        foreach ($validated['items'] as $item) {
-            $purchase->items()->create($item);
-
-            $product = \App\Models\Product::find($item['product_id']);
-            $currentTotalValue = $product->stock * $product->cost_price;
-            $newValue = $item['quantity'] * $item['unit_cost'];
-            $newStock = $product->stock + $item['quantity'];
-            
-            $newCostPrice = $newStock > 0 ? ($currentTotalValue + $newValue) / $newStock : $item['unit_cost'];
-
-            $product->update([
-                'stock' => $newStock,
-                'cost_price' => $newCostPrice
+        DB::transaction(function () use ($validated, $attachmentPath, $totalAmount) {
+            $purchase = \App\Models\Purchase::create([
+                'supplier_name' => $validated['supplier_name'],
+                'party_id' => $validated['party_id'] ?? null,
+                'reference_no' => $validated['reference_no'],
+                'date' => $validated['date'],
+                'notes' => $validated['notes'],
+                'total_amount' => $totalAmount,
+                'status' => 'completed',
+                'payment_status' => 'unpaid',
+                'attachment_path' => $attachmentPath,
             ]);
-        }
+
+            foreach ($validated['items'] as $item) {
+                $purchase->items()->create($item);
+
+                $product = \App\Models\Product::find($item['product_id']);
+                $currentTotalValue = $product->stock * $product->cost_price;
+                $newValue = $item['quantity'] * $item['unit_cost'];
+                $newStock = $product->stock + $item['quantity'];
+                
+                $newCostPrice = $newStock > 0 ? ($currentTotalValue + $newValue) / $newStock : $item['unit_cost'];
+
+                $product->update([
+                    'stock' => $newStock,
+                    'cost_price' => $newCostPrice
+                ]);
+            }
+        });
 
         return redirect()->route('accounting.index', ['tab' => 'purchases'])->with('success', 'Purchase recorded and stock updated.');
     }
@@ -84,27 +87,28 @@ class PurchaseController extends Controller
             return redirect()->route('purchases.index')->with('error', 'Access Denied: Only Administrators can delete purchases.');
         }
 
-        // Reverse all payment transactions
-        $transactions = \App\Models\Transaction::where('reference_type', 'Purchase')
-            ->where('reference_id', $purchase->id)->get();
-        foreach ($transactions as $tx) {
-            $account = \App\Models\Account::find($tx->account_id);
-            if ($account) {
-                // Payments were 'out' transactions, so restore the balance
-                $account->increment('balance', $tx->amount);
+        DB::transaction(function () use ($purchase) {
+            // Reverse all payment transactions
+            $transactions = \App\Models\Transaction::where('reference_type', 'Purchase')
+                ->where('reference_id', $purchase->id)->get();
+            foreach ($transactions as $tx) {
+                $account = \App\Models\Account::find($tx->account_id);
+                if ($account) {
+                    $account->increment('balance', $tx->amount);
+                }
+                $tx->delete();
             }
-            $tx->delete();
-        }
 
-        // Revert stock before deleting
-        foreach ($purchase->items as $item) {
-            $product = $item->product;
-            if ($product) {
-                $product->decrement('stock', $item->quantity);
+            // Revert stock before deleting
+            foreach ($purchase->items as $item) {
+                $product = $item->product;
+                if ($product) {
+                    $product->decrement('stock', $item->quantity);
+                }
             }
-        }
 
-        $purchase->delete();
+            $purchase->delete();
+        });
 
         return redirect()->route('purchases.index')->with('success', 'Purchase deleted, stock reverted, and transactions reversed.');
     }

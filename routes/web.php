@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/product/{slug}', [HomeController::class, 'show'])->name('product.show');
-Route::post('/checkout', [\App\Http\Controllers\OrderController::class, 'storeWeb'])->name('checkout.web');
+Route::post('/checkout', [\App\Http\Controllers\OrderController::class, 'storeWeb'])->middleware('throttle:10,1')->name('checkout.web');
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
@@ -25,7 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/orders/bulk-delete', [OrderController::class, 'bulkDelete'])->name('orders.bulkDelete');
     Route::post('/orders/bulk-ship', [OrderController::class, 'bulkShip'])->name('orders.bulkShip');
     Route::post('/orders/bulk-status-update', [OrderController::class, 'bulkStatusUpdate'])->name('orders.bulkStatusUpdate');
-    Route::post('orders/{order}/confirm', [OrderController::class, 'confirm'])->name('orders.confirm');
+
     Route::post('/orders/{order}/ship', [OrderController::class, 'shipWithPathao'])->name('orders.ship');
     Route::post('/orders/{order}/sync-pathao', [OrderController::class, 'syncPathaoStatus'])->name('orders.syncPathaoStatus');
     Route::post('/orders/master-sync-pathao', [OrderController::class, 'masterSyncPathao'])->name('orders.masterSyncPathao');
@@ -76,6 +76,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Staff / Users
         Route::resource('users', \App\Http\Controllers\UserController::class)->except(['create', 'show', 'edit']);
+
+        // Admin Utilities
+        Route::get('/admin/clear-cache', function () {
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+            return back()->with('success', 'All caches cleared successfully!');
+        })->name('admin.clearCache');
+
+        Route::get('/admin/optimize', function () {
+            \Illuminate\Support\Facades\Artisan::call('config:cache');
+            \Illuminate\Support\Facades\Artisan::call('route:cache');
+            \Illuminate\Support\Facades\Artisan::call('view:cache');
+            return back()->with('success', 'Application optimized for production!');
+        })->name('admin.optimize');
     });
 
     // Customers CRM
@@ -97,63 +112,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Admin utility routes for production management
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/admin/clear-cache', function () {
-        \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        \Illuminate\Support\Facades\Artisan::call('config:clear');
-        \Illuminate\Support\Facades\Artisan::call('view:clear');
-        return back()->with('success', 'All caches cleared successfully!');
-    })->name('admin.clearCache');
-
-    Route::get('/admin/optimize', function () {
-        \Illuminate\Support\Facades\Artisan::call('config:cache');
-        \Illuminate\Support\Facades\Artisan::call('route:cache');
-        \Illuminate\Support\Facades\Artisan::call('view:cache');
-        return back()->with('success', 'Application optimized for production!');
-    })->name('admin.optimize');
-});
-
-// Secure deploy webhook - pulls latest code from GitHub
-Route::get('/deploy/{token}', function ($token) {
-    if ($token !== 'chhito-deploy-2026') {
-        abort(403);
-    }
-    $output = [];
-    exec('cd ' . base_path() . ' && git pull origin main 2>&1', $output);
-    exec('cd ' . base_path() . ' && composer install --no-dev --optimize-autoloader 2>&1', $output);
-    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-    \Illuminate\Support\Facades\Artisan::call('cache:clear');
-    \Illuminate\Support\Facades\Artisan::call('config:cache');
-    \Illuminate\Support\Facades\Artisan::call('route:cache');
-    \Illuminate\Support\Facades\Artisan::call('view:cache');
-    return response()->json(['status' => 'deployed', 'output' => implode("\n", $output)]);
-});
-
-// One-time fix route for settings (secured by token)
-Route::get('/fix-settings/{token}', function ($token) {
-    if ($token !== 'chhito-deploy-2026') {
-        abort(403);
-    }
-    // Fix Pathao store ID
-    \App\Models\Setting::updateOrCreate(['key' => 'pathao_store_id'], ['value' => '349722']);
-    // Fix any duplicated credentials
-    \App\Models\Setting::updateOrCreate(['key' => 'pathao_client_id'], ['value' => 'M7e5WQxb2v']);
-    \App\Models\Setting::updateOrCreate(['key' => 'pathao_client_secret'], ['value' => '6yBdORqUYqALw9bLoJRQ7Jqghl2z4j51rIE83ZoU']);
-    \App\Models\Setting::updateOrCreate(['key' => 'pathao_username'], ['value' => 'shoppingsantanepal@gmail.com']);
-    \App\Models\Setting::updateOrCreate(['key' => 'pathao_password'], ['value' => 'Pathao@123']);
-    // Clear all Pathao caches
-    \Illuminate\Support\Facades\Cache::forget('pathao_access_token');
-    \Illuminate\Support\Facades\Cache::forget('pathao_cities');
-    for ($i = 1; $i <= 500; $i++) {
-        \Illuminate\Support\Facades\Cache::forget("pathao_zones_{$i}");
-        \Illuminate\Support\Facades\Cache::forget("pathao_areas_{$i}");
-    }
-    return response()->json([
-        'status' => 'fixed',
-        'store_id' => \App\Models\Setting::where('key', 'pathao_store_id')->value('value'),
-        'all_settings' => \App\Models\Setting::whereIn('key', ['pathao_store_id','pathao_client_id','pathao_username'])->pluck('value','key'),
-    ]);
-});
 
 require __DIR__.'/auth.php';

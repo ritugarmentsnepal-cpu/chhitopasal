@@ -9,7 +9,25 @@ class Order extends Model
 {
     use HasFactory, \App\Traits\Loggable;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'customer_name',
+        'customer_phone',
+        'address',
+        'city',
+        'pathao_city_id',
+        'pathao_zone_id',
+        'pathao_area_id',
+        'total_amount',
+        'delivery_charge',
+        'status',
+        'source',
+        'pathao_consignment_id',
+        'pathao_status',
+        'pathao_status_updated_at',
+        'payment_status',
+        'paid_amount',
+        'return_verified_at',
+    ];
 
     public function orderItems()
     {

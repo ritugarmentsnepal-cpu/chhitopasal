@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AccountingController extends Controller
 {
@@ -20,20 +21,16 @@ class AccountingController extends Controller
         $data = [];
 
         if ($tab === 'dashboard') {
-            $deliveredOrders = \App\Models\Order::with('orderItems')->where('status', 'delivered')->get();
-            $data['revenue'] = $deliveredOrders->sum('total_amount');
+            $data['revenue'] = \App\Models\Order::where('status', 'delivered')->sum('total_amount');
             $data['pendingRevenue'] = \App\Models\Order::whereIn('status', ['pending', 'confirmed', 'shipped'])->sum('total_amount');
             
-            $cogs = 0;
-            foreach ($deliveredOrders as $order) {
-                foreach ($order->orderItems as $item) {
-                    $cogs += ($item->quantity * $item->cost_at_purchase);
-                }
-            }
-            $data['cogs'] = $cogs;
+            $data['cogs'] = DB::table('order_items')
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->where('orders.status', 'delivered')
+                ->sum(DB::raw('order_items.quantity * order_items.cost_at_purchase'));
             $data['expenses'] = \App\Models\Expense::sum('amount');
             $data['purchases'] = \App\Models\Purchase::sum('total_amount');
-            $data['grossProfit'] = $data['revenue'] - $cogs;
+            $data['grossProfit'] = $data['revenue'] - $data['cogs'];
             $data['netProfit'] = $data['grossProfit'] - $data['expenses'];
             
             // Ledger Balances
@@ -127,8 +124,6 @@ class AccountingController extends Controller
             return redirect()->route('accounting.index', ['tab' => 'banking'])->with('error', 'Access Denied: Only Administrators can run Pathao settlement sync.');
         }
 
-        // Mocking Pathao Settlement Sync
-        // Find orders that are delivered but unpaid
         $orders = \App\Models\Order::where('status', 'delivered')
                     ->where('payment_status', 'unpaid')
                     ->whereNotNull('pathao_consignment_id')
@@ -138,28 +133,36 @@ class AccountingController extends Controller
         $syncedCount = 0;
 
         if ($clearingAccount) {
-            foreach ($orders as $order) {
-                // Simulate fetching Pathao Status...
-                // If Pathao says 'Settled'
-                
-                $order->update([
-                    'payment_status' => 'paid',
-                    'paid_amount' => $order->total_amount
-                ]);
+            DB::transaction(function () use ($orders, $clearingAccount, &$syncedCount) {
+                foreach ($orders as $order) {
+                    // Guard: prevent duplicate settlement transactions
+                    $alreadySynced = \App\Models\Transaction::where('reference_type', 'Order')
+                        ->where('reference_id', $order->id)
+                        ->where('account_id', $clearingAccount->id)
+                        ->where('notes', 'like', '%Auto-Sync Pathao Settlement%')
+                        ->exists();
 
-                \App\Models\Transaction::create([
-                    'account_id' => $clearingAccount->id,
-                    'type' => 'in',
-                    'amount' => $order->total_amount,
-                    'reference_type' => 'Order',
-                    'reference_id' => $order->id,
-                    'date' => now(),
-                    'notes' => 'Auto-Sync Pathao Settlement (Consignment: ' . $order->pathao_consignment_id . ')'
-                ]);
+                    if ($alreadySynced) continue;
 
-                $clearingAccount->increment('balance', $order->total_amount);
-                $syncedCount++;
-            }
+                    $order->update([
+                        'payment_status' => 'paid',
+                        'paid_amount' => $order->total_amount
+                    ]);
+
+                    \App\Models\Transaction::create([
+                        'account_id' => $clearingAccount->id,
+                        'type' => 'in',
+                        'amount' => $order->total_amount,
+                        'reference_type' => 'Order',
+                        'reference_id' => $order->id,
+                        'date' => now(),
+                        'notes' => 'Auto-Sync Pathao Settlement (Consignment: ' . $order->pathao_consignment_id . ')'
+                    ]);
+
+                    $clearingAccount->increment('balance', $order->total_amount);
+                    $syncedCount++;
+                }
+            });
         }
 
         return redirect()->route('accounting.index', ['tab' => 'banking'])->with('success', "Synced {$syncedCount} Pathao settlements successfully.");
@@ -174,33 +177,31 @@ class AccountingController extends Controller
             'notes' => 'nullable|string'
         ]);
 
-        $purchase = \App\Models\Purchase::findOrFail($validated['purchase_id']);
-        $account = \App\Models\Account::findOrFail($validated['account_id']);
+        DB::transaction(function () use ($validated) {
+            $purchase = \App\Models\Purchase::findOrFail($validated['purchase_id']);
+            $account = \App\Models\Account::findOrFail($validated['account_id']);
 
-        // Create transaction
-        \App\Models\Transaction::create([
-            'account_id' => $account->id,
-            'type' => 'out',
-            'amount' => $validated['amount'],
-            'reference_type' => 'Purchase',
-            'reference_id' => $purchase->id,
-            'party_id' => $purchase->party_id,
-            'date' => now(),
-            'notes' => $validated['notes']
-        ]);
+            \App\Models\Transaction::create([
+                'account_id' => $account->id,
+                'type' => 'out',
+                'amount' => $validated['amount'],
+                'reference_type' => 'Purchase',
+                'reference_id' => $purchase->id,
+                'party_id' => $purchase->party_id,
+                'date' => now(),
+                'notes' => $validated['notes']
+            ]);
 
-        // Deduct from account
-        $account->decrement('balance', $validated['amount']);
-
-        // Update purchase paid amount
-        $purchase->increment('paid_amount', $validated['amount']);
-        
-        // Check if fully paid
-        if ($purchase->paid_amount >= $purchase->total_amount) {
-            $purchase->update(['payment_status' => 'paid']);
-        } elseif ($purchase->paid_amount > 0) {
-            $purchase->update(['payment_status' => 'partial']);
-        }
+            $account->decrement('balance', $validated['amount']);
+            $purchase->increment('paid_amount', $validated['amount']);
+            
+            $purchase->refresh();
+            if ($purchase->paid_amount >= $purchase->total_amount) {
+                $purchase->update(['payment_status' => 'paid']);
+            } elseif ($purchase->paid_amount > 0) {
+                $purchase->update(['payment_status' => 'partial']);
+            }
+        });
 
         return redirect()->route('accounting.index', ['tab' => 'purchases'])->with('success', 'Payment recorded successfully.');
     }
@@ -244,22 +245,24 @@ class AccountingController extends Controller
             'notes' => 'nullable|string'
         ]);
 
-        $account = \App\Models\Account::findOrFail($validated['account_id']);
+        DB::transaction(function () use ($validated) {
+            $account = \App\Models\Account::findOrFail($validated['account_id']);
 
-        \App\Models\Transaction::create([
-            'account_id' => $account->id,
-            'type' => $validated['type'],
-            'amount' => $validated['amount'],
-            'party_id' => $validated['party_id'] ?? null,
-            'date' => now(),
-            'notes' => $validated['notes']
-        ]);
+            \App\Models\Transaction::create([
+                'account_id' => $account->id,
+                'type' => $validated['type'],
+                'amount' => $validated['amount'],
+                'party_id' => $validated['party_id'] ?? null,
+                'date' => now(),
+                'notes' => $validated['notes']
+            ]);
 
-        if ($validated['type'] === 'in') {
-            $account->increment('balance', $validated['amount']);
-        } else {
-            $account->decrement('balance', $validated['amount']);
-        }
+            if ($validated['type'] === 'in') {
+                $account->increment('balance', $validated['amount']);
+            } else {
+                $account->decrement('balance', $validated['amount']);
+            }
+        });
 
         return redirect()->route('accounting.index', ['tab' => 'banking'])->with('success', 'Manual transaction recorded successfully.');
     }
@@ -280,7 +283,9 @@ class AccountingController extends Controller
         if ($validated['type'] === 'add') {
             $product->increment('stock', $validated['quantity']);
         } else {
-            $product->decrement('stock', $validated['quantity']);
+            // Guard: prevent stock from going negative
+            \App\Models\Product::where('id', $product->id)->where('stock', '>=', $validated['quantity'])->decrement('stock', $validated['quantity']);
+            $product->refresh();
         }
 
         $actionName = $validated['type'] === 'add' ? 'stock_adjusted_add' : 'stock_adjusted_deduct';
@@ -365,67 +370,68 @@ class AccountingController extends Controller
                 ->with('error', "Order #{$order->id} has already been processed as a sale return.");
         }
 
-        // 1. Find and debit the Pathao Clearing account (receivable deduction)
-        $clearingAccount = \App\Models\Account::where('name', 'Pathao Clearing')->first();
+        DB::transaction(function () use ($order, $validated, $request) {
+            // 1. Find and debit the Pathao Clearing account (receivable deduction)
+            $clearingAccount = \App\Models\Account::where('name', 'Pathao Clearing')->first();
 
-        if ($clearingAccount) {
-            // Debit the amount from Pathao Clearing (they won't pay us for this order)
-            \App\Models\Transaction::create([
-                'account_id' => $clearingAccount->id,
-                'type' => 'out',
-                'amount' => $order->total_amount,
-                'reference_type' => 'SaleReturn',
-                'reference_id' => $order->id,
-                'date' => now(),
-                'notes' => "Sale Return: Order #{$order->id} ({$validated['reason']})" .
-                           ($order->pathao_consignment_id ? " | Consignment: {$order->pathao_consignment_id}" : ''),
-            ]);
-            $clearingAccount->decrement('balance', $order->total_amount);
-        }
-
-        // 2. Reverse any existing "in" payment transactions for this order
-        $existingPayments = \App\Models\Transaction::where('reference_type', 'Order')
-            ->where('reference_id', $order->id)
-            ->where('type', 'in')
-            ->get();
-
-        foreach ($existingPayments as $payment) {
-            \App\Models\Transaction::create([
-                'account_id' => $payment->account_id,
-                'type' => 'out',
-                'amount' => $payment->amount,
-                'reference_type' => 'SaleReturn',
-                'reference_id' => $order->id,
-                'date' => now(),
-                'notes' => "Payment reversal for returned Order #{$order->id}",
-            ]);
-            $account = \App\Models\Account::find($payment->account_id);
-            if ($account) {
-                $account->decrement('balance', $payment->amount);
+            if ($clearingAccount) {
+                \App\Models\Transaction::create([
+                    'account_id' => $clearingAccount->id,
+                    'type' => 'out',
+                    'amount' => $order->total_amount,
+                    'reference_type' => 'SaleReturn',
+                    'reference_id' => $order->id,
+                    'date' => now(),
+                    'notes' => "Sale Return: Order #{$order->id} ({$validated['reason']})" .
+                               ($order->pathao_consignment_id ? " | Consignment: {$order->pathao_consignment_id}" : ''),
+                ]);
+                $clearingAccount->decrement('balance', $order->total_amount);
             }
-        }
 
-        // 3. Restore stock if requested
-        if ($request->boolean('restore_stock', true)) {
-            foreach ($order->orderItems as $item) {
-                if ($item->product) {
-                    $item->product->increment('stock', $item->quantity);
+            // 2. Reverse any existing "in" payment transactions for this order
+            $existingPayments = \App\Models\Transaction::where('reference_type', 'Order')
+                ->where('reference_id', $order->id)
+                ->where('type', 'in')
+                ->get();
+
+            foreach ($existingPayments as $payment) {
+                \App\Models\Transaction::create([
+                    'account_id' => $payment->account_id,
+                    'type' => 'out',
+                    'amount' => $payment->amount,
+                    'reference_type' => 'SaleReturn',
+                    'reference_id' => $order->id,
+                    'date' => now(),
+                    'notes' => "Payment reversal for returned Order #{$order->id}",
+                ]);
+                $account = \App\Models\Account::find($payment->account_id);
+                if ($account) {
+                    $account->decrement('balance', $payment->amount);
                 }
             }
-        }
 
-        // 4. Update order status
-        if (!in_array($order->status, ['failed', 'rejected', 'return_delivered'])) {
-            $order->update(['status' => 'rejected']);
-        }
+            // 3. Restore stock if requested
+            if ($request->boolean('restore_stock', true)) {
+                foreach ($order->orderItems as $item) {
+                    if ($item->product) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
+                }
+            }
 
-        // 5. Log
-        $order->logActivity('sale_return_processed', [
-            'reason' => $validated['reason'],
-            'amount_deducted' => $order->total_amount,
-            'stock_restored' => $request->boolean('restore_stock', true),
-            'reversed_payments' => $existingPayments->count(),
-        ]);
+            // 4. Update order status
+            if (!in_array($order->status, ['failed', 'rejected', 'return_delivered'])) {
+                $order->update(['status' => 'rejected']);
+            }
+
+            // 5. Log
+            $order->logActivity('sale_return_processed', [
+                'reason' => $validated['reason'],
+                'amount_deducted' => $order->total_amount,
+                'stock_restored' => $request->boolean('restore_stock', true),
+                'reversed_payments' => $existingPayments->count(),
+            ]);
+        });
 
         return redirect()->route('accounting.index', ['tab' => 'returns'])
             ->with('success', "Sale return processed for Order #{$order->id}. Rs." . number_format($order->total_amount) . " deducted from Pathao receivables.");

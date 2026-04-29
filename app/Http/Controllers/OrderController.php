@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Services\PathaoService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
@@ -61,7 +62,7 @@ class OrderController extends Controller
         $orders = $query->latest()->paginate(20)->withQueryString();
 
         // Fetch products for bulk upload reference modal
-        $products = Product::all();
+        $products = Product::select('id', 'name', 'price', 'stock', 'bundles')->get();
         $accounts = \App\Models\Account::all();
 
         return view('orders.index', compact('orders', 'status', 'products', 'accounts'));
@@ -69,7 +70,6 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-        // Existing Manual Store logic (Single Order)
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
@@ -79,25 +79,27 @@ class OrderController extends Controller
             'quantity' => 'required|integer|min:1',
         ]);
 
-        $product = Product::findOrFail($validated['product_id']);
-        $totalAmount = $product->price * $validated['quantity'];
+        DB::transaction(function () use ($validated) {
+            $product = Product::findOrFail($validated['product_id']);
+            $totalAmount = $product->price * $validated['quantity'];
 
-        $order = Order::create([
-            'customer_name' => $validated['customer_name'],
-            'customer_phone' => $validated['customer_phone'],
-            'address' => $validated['address'],
-            'city' => $validated['city'],
-            'total_amount' => $totalAmount,
-            'status' => 'pending',
-            'source' => 'manual',
-        ]);
+            $order = Order::create([
+                'customer_name' => $validated['customer_name'],
+                'customer_phone' => $validated['customer_phone'],
+                'address' => $validated['address'],
+                'city' => $validated['city'],
+                'total_amount' => $totalAmount,
+                'status' => 'pending',
+                'source' => 'manual',
+            ]);
 
-        $order->orderItems()->create([
-            'product_id' => $product->id,
-            'quantity' => $validated['quantity'],
-            'price_at_purchase' => $product->price,
-            'cost_at_purchase' => $product->cost_price,
-        ]);
+            $order->orderItems()->create([
+                'product_id' => $product->id,
+                'quantity' => $validated['quantity'],
+                'price_at_purchase' => $product->price,
+                'cost_at_purchase' => $product->cost_price,
+            ]);
+        });
 
         return redirect()->route('orders.index', ['status' => 'pending'])->with('success', 'Order created manually.');
     }
@@ -112,56 +114,55 @@ class OrderController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        $totalAmount = 0;
-        $orderItemsData = [];
-        
-        foreach ($validated['items'] as $item) {
-            $product = Product::findOrFail($item['product_id']);
-            $totalAmount += $product->price * $item['quantity'];
+        $order = DB::transaction(function () use ($validated) {
+            $totalAmount = 0;
+            $orderItemsData = [];
             
-            $orderItemsData[] = [
-                'product_id' => $product->id,
-                'quantity' => $item['quantity'],
-                'price_at_purchase' => $product->price,
-                'cost_at_purchase' => $product->cost_price,
-            ];
-        }
-
-        $order = Order::create([
-            'customer_name' => $validated['customer_name'],
-            'customer_phone' => $validated['customer_phone'],
-            'address' => 'Store Pickup',
-            'city' => 'Local',
-            'total_amount' => $totalAmount,
-            'status' => 'delivered', // Immediate revenue realization
-            'payment_status' => 'paid',
-            'paid_amount' => $totalAmount,
-            'source' => 'pos',
-        ]);
-
-        foreach ($orderItemsData as $data) {
-            $order->orderItems()->create($data);
-            // Deduct stock immediately
-            $product = Product::find($data['product_id']);
-            if ($product) {
-                $product->decrement('stock', $data['quantity']);
+            foreach ($validated['items'] as $item) {
+                $product = Product::findOrFail($item['product_id']);
+                $totalAmount += $product->price * $item['quantity'];
+                
+                $orderItemsData[] = [
+                    'product_id' => $product->id,
+                    'quantity' => $item['quantity'],
+                    'price_at_purchase' => $product->price,
+                    'cost_at_purchase' => $product->cost_price,
+                ];
             }
-        }
 
-        // Record Transaction
-        $cashAccount = \App\Models\Account::where('name', 'Main Cash')->first();
-        if ($cashAccount) {
-            \App\Models\Transaction::create([
-                'account_id' => $cashAccount->id,
-                'type' => 'in',
-                'amount' => $totalAmount,
-                'reference_type' => 'Order',
-                'reference_id' => $order->id,
-                'date' => now(),
-                'notes' => 'POS Cash Sale'
+            $order = Order::create([
+                'customer_name' => $validated['customer_name'],
+                'customer_phone' => $validated['customer_phone'],
+                'address' => 'Store Pickup',
+                'city' => 'Local',
+                'total_amount' => $totalAmount,
+                'status' => 'delivered',
+                'payment_status' => 'paid',
+                'paid_amount' => $totalAmount,
+                'source' => 'pos',
             ]);
-            $cashAccount->increment('balance', $totalAmount);
-        }
+
+            foreach ($orderItemsData as $data) {
+                $order->orderItems()->create($data);
+                Product::where('id', $data['product_id'])->where('stock', '>=', $data['quantity'])->decrement('stock', $data['quantity']);
+            }
+
+            $cashAccount = \App\Models\Account::where('name', 'Main Cash')->first();
+            if ($cashAccount) {
+                \App\Models\Transaction::create([
+                    'account_id' => $cashAccount->id,
+                    'type' => 'in',
+                    'amount' => $totalAmount,
+                    'reference_type' => 'Order',
+                    'reference_id' => $order->id,
+                    'date' => now(),
+                    'notes' => 'POS Cash Sale'
+                ]);
+                $cashAccount->increment('balance', $totalAmount);
+            }
+
+            return $order;
+        });
 
         return redirect()->route('orders.invoice', $order);
     }
@@ -173,12 +174,11 @@ class OrderController extends Controller
 
     public function storeWeb(Request $request)
     {
-        // Existing Web Store logic
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
             'address' => 'required|string|max:255',
-            'delivery_charge' => 'required|numeric|min:0',
+            'delivery_location' => 'nullable|string|in:inside,outside',
             'items' => 'required|array|min:1',
             'items.*.id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -186,50 +186,60 @@ class OrderController extends Controller
             'items.*.size' => 'nullable|string|max:50',
         ]);
 
-        $totalAmount = 0;
-        $orderItemsData = [];
+        // Server-side delivery charge calculation — never trust client amounts
+        $insideValleyCharge = (float) setting('delivery_charge_inside', 50);
+        $outsideValleyCharge = (float) setting('delivery_charge_outside', 100);
+        $deliveryLocation = $validated['delivery_location'] ?? 'inside';
+        $deliveryCharge = $deliveryLocation === 'outside' ? $outsideValleyCharge : $insideValleyCharge;
 
-        foreach ($validated['items'] as $item) {
-            $product = Product::find($item['id']);
-            $quantity = $item['quantity'];
-            
-            $itemTotal = $product->price * $quantity;
-            $unitPrice = $product->price;
+        $order = DB::transaction(function () use ($validated, $deliveryCharge) {
+            $totalAmount = 0;
+            $orderItemsData = [];
 
-            if (!empty($product->bundles) && is_array($product->bundles)) {
-                $matchedBundle = collect($product->bundles)->first(function($bundle) use ($quantity) {
-                    return (int)$bundle['qty'] === (int)$quantity;
-                });
+            foreach ($validated['items'] as $item) {
+                $product = Product::find($item['id']);
+                if (!$product) continue;
+                $quantity = $item['quantity'];
+                
+                $itemTotal = $product->price * $quantity;
+                $unitPrice = $product->price;
 
-                if ($matchedBundle && isset($matchedBundle['price'])) {
-                    $itemTotal = (float)$matchedBundle['price'];
-                    $unitPrice = $itemTotal / $quantity;
+                if (!empty($product->bundles) && is_array($product->bundles)) {
+                    $matchedBundle = collect($product->bundles)->first(function($bundle) use ($quantity) {
+                        return (int)$bundle['qty'] === (int)$quantity;
+                    });
+
+                    if ($matchedBundle && isset($matchedBundle['price'])) {
+                        $itemTotal = (float)$matchedBundle['price'];
+                        $unitPrice = $itemTotal / $quantity;
+                    }
                 }
+
+                $totalAmount += $itemTotal;
+                $orderItemsData[] = [
+                    'product_id' => $product->id,
+                    'quantity' => $quantity,
+                    'price_at_purchase' => $unitPrice,
+                    'cost_at_purchase' => $product->cost_price,
+                    'color' => $item['color'] ?? null,
+                    'size' => $item['size'] ?? null,
+                ];
             }
 
-            $totalAmount += $itemTotal;
-            $orderItemsData[] = [
-                'product_id' => $product->id,
-                'quantity' => $quantity,
-                'price_at_purchase' => $unitPrice,
-                'cost_at_purchase' => $product->cost_price,
-                'color' => $item['color'] ?? null,
-                'size' => $item['size'] ?? null,
-            ];
-        }
+            $order = Order::create([
+                'customer_name' => $validated['customer_name'],
+                'customer_phone' => $validated['customer_phone'],
+                'address' => $validated['address'], 
+                'city' => null,
+                'delivery_charge' => $deliveryCharge,
+                'total_amount' => $totalAmount + $deliveryCharge,
+                'status' => 'pending',
+                'source' => 'web',
+            ]);
 
-        $order = Order::create([
-            'customer_name' => $validated['customer_name'],
-            'customer_phone' => $validated['customer_phone'],
-            'address' => $validated['address'], 
-            'city' => null,
-            'delivery_charge' => $validated['delivery_charge'],
-            'total_amount' => $totalAmount + $validated['delivery_charge'],
-            'status' => 'pending',
-            'source' => 'web',
-        ]);
-
-        $order->orderItems()->createMany($orderItemsData);
+            $order->orderItems()->createMany($orderItemsData);
+            return $order;
+        });
 
         return response()->json(['message' => 'Order created successfully!', 'order_id' => $order->id], 201);
     }
@@ -582,11 +592,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function confirm(Request $request, Order $order)
-    {
-        // This is now handled by fullUpdate. We keep it just in case, but it's redundant.
-        return redirect()->back();
-    }
+
 
     public function shipWithPathao(Request $request, Order $order, PathaoService $pathao)
     {
@@ -601,18 +607,18 @@ class OrderController extends Controller
         $result = $pathao->createOrder($order);
 
         if ($result['success']) {
-            $order->update([
-                'status' => 'shipped',
-                'pathao_consignment_id' => $result['consignment_id'],
-            ]);
+            DB::transaction(function () use ($order, $result) {
+                $order->update([
+                    'status' => 'shipped',
+                    'pathao_consignment_id' => $result['consignment_id'],
+                ]);
 
-            // Deduct stock only when shipped
-            foreach ($order->orderItems as $item) {
-                $product = $item->product;
-                if ($product) {
-                    $product->decrement('stock', $item->quantity);
+                foreach ($order->orderItems as $item) {
+                    if ($item->product) {
+                        Product::where('id', $item->product_id)->where('stock', '>=', $item->quantity)->decrement('stock', $item->quantity);
+                    }
                 }
-            }
+            });
 
             $printType = $request->input('print_type', 'both');
             return redirect()->route('orders.printLabel', ['order' => $order->id, 'type' => $printType])->with('success', 'Order shipped via Pathao! Consignment ID: ' . $result['consignment_id']);
@@ -634,50 +640,56 @@ class OrderController extends Controller
         $oldStatus = $order->status;
         $newStatus = $validated['status'];
 
-        // If it was shipped/delivered (stock deducted) and now failed/rejected (stock restored)
-        if (in_array($oldStatus, ['shipped', 'delivered']) && in_array($newStatus, ['failed', 'rejected'])) {
-            foreach ($order->orderItems as $item) {
-                if ($item->product) {
-                    $item->product->increment('stock', $item->quantity);
+        DB::transaction(function () use ($order, $oldStatus, $newStatus) {
+            // If it was shipped/delivered (stock deducted) and now failed/rejected (stock restored)
+            if (in_array($oldStatus, ['shipped', 'delivered']) && in_array($newStatus, ['failed', 'rejected'])) {
+                foreach ($order->orderItems as $item) {
+                    if ($item->product) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
                 }
             }
-        }
-        
-        // If it was pending/failed/rejected (stock untouched) and now shipped/delivered (stock deducted)
-        if (!in_array($oldStatus, ['shipped', 'delivered']) && in_array($newStatus, ['shipped', 'delivered'])) {
-            foreach ($order->orderItems as $item) {
-                if ($item->product) {
-                    $item->product->decrement('stock', $item->quantity);
+            
+            // If it was pending/failed/rejected (stock untouched) and now shipped/delivered (stock deducted)
+            if (!in_array($oldStatus, ['shipped', 'delivered']) && in_array($newStatus, ['shipped', 'delivered'])) {
+                foreach ($order->orderItems as $item) {
+                    if ($item->product) {
+                        Product::where('id', $item->product_id)->where('stock', '>=', $item->quantity)->decrement('stock', $item->quantity);
+                    }
                 }
             }
-        }
 
-        // Revenue / Accounts Receivable Logic for Pathao
-        // When Delivered, record as debt owed by Pathao Party (if it's COD or has remaining due)
-        if ($oldStatus !== 'delivered' && $newStatus === 'delivered') {
-            $pathaoParty = \App\Models\Party::where('type', 'pathao')->first();
-            $clearingAccount = \App\Models\Account::where('name', 'Pathao Clearing')->first();
-            if ($pathaoParty && $clearingAccount) {
-                $dueAmount = $order->total_amount - ($order->paid_amount ?? 0);
-                if ($dueAmount > 0) {
-                    // Pathao owes us this money — record as receivable in Pathao Clearing account
-                    \App\Models\Transaction::create([
-                        'account_id' => $clearingAccount->id,
-                        'party_id' => $pathaoParty->id,
-                        'type' => 'in',
-                        'amount' => $dueAmount,
-                        'reference_type' => 'Order Delivered',
-                        'reference_id' => $order->id,
-                        'date' => now(),
-                        'notes' => "Receivable from Pathao for Order #{$order->id}"
-                    ]);
-                    $clearingAccount->increment('balance', $dueAmount);
-                    $pathaoParty->increment('current_balance', $dueAmount);
+            // Revenue / Accounts Receivable Logic for Pathao
+            if ($oldStatus !== 'delivered' && $newStatus === 'delivered') {
+                // Guard: prevent duplicate delivered transactions
+                $existingDeliveredTx = \App\Models\Transaction::where('reference_type', 'Order Delivered')
+                    ->where('reference_id', $order->id)->exists();
+
+                if (!$existingDeliveredTx) {
+                    $pathaoParty = \App\Models\Party::where('type', 'pathao')->first();
+                    $clearingAccount = \App\Models\Account::where('name', 'Pathao Clearing')->first();
+                    if ($pathaoParty && $clearingAccount) {
+                        $dueAmount = $order->total_amount - ($order->paid_amount ?? 0);
+                        if ($dueAmount > 0) {
+                            \App\Models\Transaction::create([
+                                'account_id' => $clearingAccount->id,
+                                'party_id' => $pathaoParty->id,
+                                'type' => 'in',
+                                'amount' => $dueAmount,
+                                'reference_type' => 'Order Delivered',
+                                'reference_id' => $order->id,
+                                'date' => now(),
+                                'notes' => "Receivable from Pathao for Order #{$order->id}"
+                            ]);
+                            $clearingAccount->increment('balance', $dueAmount);
+                            $pathaoParty->increment('current_balance', $dueAmount);
+                        }
+                    }
                 }
             }
-        }
 
-        $order->update(['status' => $newStatus]);
+            $order->update(['status' => $newStatus]);
+        });
 
         return redirect()->back()->with('success', 'Order status updated to ' . ucfirst($newStatus));
     }
@@ -876,44 +888,43 @@ class OrderController extends Controller
             return back()->with('error', 'Invalid return verification request.');
         }
 
-        $order->update(['return_verified_at' => now()]);
+        DB::transaction(function () use ($order) {
+            $order->update(['return_verified_at' => now()]);
 
-        // Stock Increment
-        foreach ($order->orderItems as $item) {
-            if ($item->product) {
-                $item->product->increment('stock', $item->quantity);
+            // Stock Increment
+            foreach ($order->orderItems as $item) {
+                if ($item->product) {
+                    $item->product->increment('stock', $item->quantity);
+                }
             }
-        }
 
-        // Automatic Payment Reversal if any payment was recorded
-        // Since we are dealing with payments for this order, we reverse any "in" transaction linked to this order.
-        $payments = \App\Models\Transaction::where('reference_type', 'Order')
-            ->where('reference_id', $order->id)
-            ->where('type', 'in')
-            ->get();
+            // Automatic Payment Reversal if any payment was recorded
+            $payments = \App\Models\Transaction::where('reference_type', 'Order')
+                ->where('reference_id', $order->id)
+                ->where('type', 'in')
+                ->get();
 
-        foreach ($payments as $payment) {
-            // Create negative reversal transaction
-            \App\Models\Transaction::create([
-                'account_id' => $payment->account_id,
-                'type' => 'out',
-                'amount' => $payment->amount,
-                'reference_type' => 'Order',
-                'reference_id' => $order->id,
-                'date' => now(),
-                'notes' => "Reversal for Returned Order #{$order->id}"
+            foreach ($payments as $payment) {
+                \App\Models\Transaction::create([
+                    'account_id' => $payment->account_id,
+                    'type' => 'out',
+                    'amount' => $payment->amount,
+                    'reference_type' => 'Order',
+                    'reference_id' => $order->id,
+                    'date' => now(),
+                    'notes' => "Reversal for Returned Order #{$order->id}"
+                ]);
+
+                $account = \App\Models\Account::find($payment->account_id);
+                if ($account) {
+                    $account->decrement('balance', $payment->amount);
+                }
+            }
+
+            $order->logActivity('return_verified', [
+                'reversed_payments_count' => $payments->count()
             ]);
-
-            // Adjust account balance
-            $account = \App\Models\Account::find($payment->account_id);
-            if ($account) {
-                $account->decrement('balance', $payment->amount);
-            }
-        }
-
-        $order->logActivity('return_verified', [
-            'reversed_payments_count' => $payments->count()
-        ]);
+        });
 
         return back()->with('success', 'Return receipt verified. Stock updated and payments reversed (if any).');
     }
@@ -927,10 +938,7 @@ class OrderController extends Controller
             'notes' => 'nullable|string'
         ]);
 
-        // payment_method is tracked via payment_status (unpaid/partial/paid), no separate column needed
-
         if ($validated['payment_method'] === 'cod') {
-            // No cash received now. Status remains pending payment.
             $order->logActivity('payment_method_set', [
                 'method' => 'COD',
                 'notes' => 'Order set to Cash on Delivery.'
@@ -938,35 +946,37 @@ class OrderController extends Controller
             return back()->with('success', 'Payment method set to COD.');
         }
 
-        // For Paid / Partial
-        $account = \App\Models\Account::findOrFail($validated['account_id']);
-        $amountToPay = $validated['amount'];
+        DB::transaction(function () use ($validated, $order) {
+            $account = \App\Models\Account::findOrFail($validated['account_id']);
+            $amountToPay = $validated['amount'];
 
-        if ($amountToPay > 0) {
-            \App\Models\Transaction::create([
-                'account_id' => $account->id,
-                'type' => 'in',
+            if ($amountToPay > 0) {
+                \App\Models\Transaction::create([
+                    'account_id' => $account->id,
+                    'type' => 'in',
+                    'amount' => $amountToPay,
+                    'reference_type' => 'Order',
+                    'reference_id' => $order->id,
+                    'date' => now(),
+                    'notes' => $validated['notes'] ?: 'Manual Payment for Order #' . $order->id
+                ]);
+                $account->increment('balance', $amountToPay);
+                $order->increment('paid_amount', $amountToPay);
+            }
+            
+            $order->refresh();
+            if ($order->paid_amount >= $order->total_amount) {
+                $order->update(['payment_status' => 'paid']);
+            } elseif ($order->paid_amount > 0) {
+                $order->update(['payment_status' => 'partial']);
+            }
+
+            $order->logActivity('payment_recorded', [
+                'method' => $validated['payment_method'],
                 'amount' => $amountToPay,
-                'reference_type' => 'Order',
-                'reference_id' => $order->id,
-                'date' => now(),
-                'notes' => $validated['notes'] ?: 'Manual Payment for Order #' . $order->id
+                'account' => $account->name
             ]);
-            $account->increment('balance', $amountToPay);
-            $order->increment('paid_amount', $amountToPay);
-        }
-        
-        if ($order->paid_amount >= $order->total_amount) {
-            $order->update(['payment_status' => 'paid']);
-        } elseif ($order->paid_amount > 0) {
-            $order->update(['payment_status' => 'partial']);
-        }
-
-        $order->logActivity('payment_recorded', [
-            'method' => $validated['payment_method'],
-            'amount' => $amountToPay,
-            'account' => $account->name
-        ]);
+        });
 
         return back()->with('success', 'Payment recorded successfully.');
     }
