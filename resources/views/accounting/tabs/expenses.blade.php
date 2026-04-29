@@ -1,17 +1,18 @@
 <div class="space-y-8" x-data="{ expenseModal: false, categoryModal: false }">
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h3 class="text-2xl font-black text-gray-900">Expenses</h3>
-        <div class="space-x-3">
-            <button @click="categoryModal = true" class="bg-gray-200 text-gray-700 font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-300 transition-colors">
-                + Add Category
+        <div class="flex gap-2 sm:space-x-3">
+            <button @click="categoryModal = true" class="bg-gray-200 text-gray-700 font-bold py-2.5 px-4 sm:px-5 rounded-xl shadow-sm hover:bg-gray-300 transition-colors text-sm sm:text-base whitespace-nowrap">
+                + Category
             </button>
-            <button @click="expenseModal = true" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-800 transition-colors">
-                + Record Expense
+            <button @click="expenseModal = true" class="bg-gray-900 text-white font-bold py-2.5 px-4 sm:px-5 rounded-xl shadow-sm hover:bg-gray-800 transition-colors text-sm sm:text-base whitespace-nowrap">
+                + Expense
             </button>
         </div>
     </div>
 
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50/50">
                 <tr>
@@ -46,6 +47,7 @@
                 @endforeach
             </tbody>
         </table>
+      </div>
     </div>
 
     <!-- Record Expense Modal -->
@@ -59,7 +61,7 @@
                     <h3 class="text-2xl font-black text-gray-900 mb-6">Record Expense</h3>
                     
                     <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Category</label>
                                 <select name="expense_category_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango" required>
@@ -79,13 +81,13 @@
                             </div>
                         </div>
                         
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Amount (Rs.)</label>
                                 <input type="number" name="amount" step="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango" required>
                             </div>
                         
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Date</label>
                                 <input type="date" name="date" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango" required>

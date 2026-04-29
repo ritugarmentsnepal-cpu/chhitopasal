@@ -1,27 +1,27 @@
 <div class="space-y-8" x-data="{ paymentInModal: false, paymentOutModal: false }">
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h3 class="text-2xl font-black text-gray-900">Banking & Ledger</h3>
-        <div class="flex gap-3">
-            <button @click="paymentInModal = true" class="bg-green-100 text-green-700 font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-green-200 transition-colors flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
-                Payment In
+        <div class="flex flex-wrap gap-2 sm:gap-3">
+            <button @click="paymentInModal = true" class="bg-green-100 text-green-700 font-bold py-2 sm:py-2.5 px-3 sm:px-5 rounded-xl shadow-sm hover:bg-green-200 transition-colors flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
+                Pay In
             </button>
-            <button @click="paymentOutModal = true" class="bg-red-100 text-red-700 font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-red-200 transition-colors flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path></svg>
-                Payment Out
+            <button @click="paymentOutModal = true" class="bg-red-100 text-red-700 font-bold py-2 sm:py-2.5 px-3 sm:px-5 rounded-xl shadow-sm hover:bg-red-200 transition-colors flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path></svg>
+                Pay Out
             </button>
             <form action="{{ route('accounting.syncPathao') }}" method="POST">
                 @csrf
-                <button type="submit" class="bg-mango text-gray-900 font-black py-2.5 px-5 rounded-xl shadow-sm hover:bg-yellow-400 transition-colors flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    Sync Pathao Settlements
+                <button type="submit" class="bg-mango text-gray-900 font-black py-2 sm:py-2.5 px-3 sm:px-5 rounded-xl shadow-sm hover:bg-yellow-400 transition-colors flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Sync Pathao
                 </button>
             </form>
         </div>
     </div>
 
     <!-- Account Balances -->
-    <div class="grid grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         @foreach($data['accounts'] as $account)
         <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center justify-between">
             <div>
@@ -36,6 +36,7 @@
     </div>
 
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50/50">
                 <tr>
@@ -67,6 +68,7 @@
                 @endforeach
             </tbody>
         </table>
+      </div>
     </div>
 
     <!-- Payment In Modal -->

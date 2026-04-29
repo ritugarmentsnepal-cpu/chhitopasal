@@ -49,7 +49,7 @@
         </div>
 
         <!-- Main Content Area -->
-        <div class="flex-1 min-w-0 p-4 pt-16 lg:p-8 lg:pt-8">
+        <div class="flex-1 min-w-0 p-4 pt-[120px] lg:p-8 lg:pt-8">
             @if(session('success'))
                 <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-xl shadow-sm mb-6">
                     <p class="font-bold text-green-800">{{ session('success') }}</p>

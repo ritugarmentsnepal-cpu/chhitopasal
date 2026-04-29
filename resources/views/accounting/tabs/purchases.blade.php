@@ -29,14 +29,15 @@
         this.paymentModal = true;
     }
 }">
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h3 class="text-2xl font-black text-gray-900">Purchase Bills</h3>
-        <button @click="purchaseModal = true" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-800 transition-colors">
+        <button @click="purchaseModal = true" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-800 transition-colors whitespace-nowrap">
             + Record Purchase
         </button>
     </div>
 
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50/50">
                 <tr>
@@ -92,6 +93,7 @@
                 @endforeach
             </tbody>
         </table>
+      </div>
     </div>
 
     <!-- Record Purchase Modal -->
@@ -112,7 +114,7 @@
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-1">Supplier Party</label>
                             <select name="party_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango" required>

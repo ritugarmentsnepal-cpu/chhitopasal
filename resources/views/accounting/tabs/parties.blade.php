@@ -1,13 +1,13 @@
 <div class="space-y-8" x-data="{ partyModal: false }">
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h3 class="text-2xl font-black text-gray-900">CRM & Parties</h3>
-        <button @click="partyModal = true" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-800 transition-colors">
+        <button @click="partyModal = true" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-800 transition-colors whitespace-nowrap">
             + Add New Party
         </button>
     </div>
 
     <!-- Stats -->
-    <div class="grid grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div class="bg-red-50 rounded-2xl p-6 border border-red-100">
             <h4 class="text-sm font-bold text-red-600 uppercase tracking-wider mb-2">Total Payables</h4>
             <div class="text-3xl font-black text-red-700">Rs. {{ number_format($data['payables'] ?? 0, 2) }}</div>
@@ -21,6 +21,7 @@
     </div>
 
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50/50">
                 <tr>
@@ -57,6 +58,7 @@
                 @endforeach
             </tbody>
         </table>
+      </div>
     </div>
 
     <!-- Add Party Modal -->
@@ -70,7 +72,7 @@
                     <h3 class="text-2xl font-black text-gray-900 mb-6">Add New Party</h3>
                     
                     <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Party Name</label>
                                 <input type="text" name="name" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango" required>
@@ -85,7 +87,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Phone Number</label>
                                 <input type="text" name="phone" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango">
@@ -101,7 +103,7 @@
                             <input type="text" name="address" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Opening Debit Bal (Dr)</label>
                                 <input type="number" name="debit_balance" value="0" step="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango">

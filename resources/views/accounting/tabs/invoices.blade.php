@@ -4,6 +4,7 @@
     </div>
 
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50/50">
                 <tr>
@@ -46,6 +47,7 @@
                 @endforeach
             </tbody>
         </table>
+      </div>
         <div class="p-4 border-t border-gray-100">
             {{ $data['orders']->links() }}
         </div>

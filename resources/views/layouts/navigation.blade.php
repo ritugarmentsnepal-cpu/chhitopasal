@@ -12,31 +12,31 @@
                 </a>
 
                 <!-- Desktop Navigation Links -->
-                <div class="hidden sm:flex items-center gap-2 h-full ml-4">
-                    <a href="{{ route('dashboard') }}" class="px-4 h-full flex items-center font-bold text-sm transition-all border-b-2 {{ request()->routeIs('dashboard') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
+                <div class="hidden sm:flex items-center gap-1 h-full ml-4">
+                    <a href="{{ route('dashboard') }}" class="px-3 h-full flex items-center font-bold text-sm transition-all border-b-2 whitespace-nowrap {{ request()->routeIs('dashboard') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
                         Dashboard
                     </a>
                     
                     @if(in_array(auth()->user()->role, ['admin', 'manager', 'operational_staff']))
-                        <a href="{{ route('orders.index') }}" class="px-4 h-full flex items-center font-bold text-sm transition-all border-b-2 {{ request()->routeIs('orders.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
+                        <a href="{{ route('orders.index') }}" class="px-3 h-full flex items-center font-bold text-sm transition-all border-b-2 whitespace-nowrap {{ request()->routeIs('orders.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
                             Orders
                         </a>
-                        <a href="{{ route('products.index') }}" class="px-4 h-full flex items-center font-bold text-sm transition-all border-b-2 {{ request()->routeIs('products.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
+                        <a href="{{ route('products.index') }}" class="px-3 h-full flex items-center font-bold text-sm transition-all border-b-2 whitespace-nowrap {{ request()->routeIs('products.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
                             Products
                         </a>
-                        <a href="{{ route('categories.index') }}" class="px-4 h-full flex items-center font-bold text-sm transition-all border-b-2 {{ request()->routeIs('categories.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
+                        <a href="{{ route('categories.index') }}" class="px-3 h-full flex items-center font-bold text-sm transition-all border-b-2 whitespace-nowrap {{ request()->routeIs('categories.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
                             Categories
                         </a>
-                        <a href="{{ route('customers.index') }}" class="px-4 h-full flex items-center font-bold text-sm transition-all border-b-2 {{ request()->routeIs('customers.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
+                        <a href="{{ route('customers.index') }}" class="px-3 h-full flex items-center font-bold text-sm transition-all border-b-2 whitespace-nowrap {{ request()->routeIs('customers.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
                             Customers
                         </a>
-                        <a href="{{ route('pathao.index') }}" class="px-4 h-full flex items-center font-bold text-sm transition-all border-b-2 {{ request()->routeIs('pathao.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
-                            Pathao Manager
+                        <a href="{{ route('pathao.index') }}" class="px-3 h-full flex items-center font-bold text-sm transition-all border-b-2 whitespace-nowrap {{ request()->routeIs('pathao.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
+                            Pathao
                         </a>
                     @endif
 
                     @if(in_array(auth()->user()->role, ['admin', 'manager', 'accountant']))
-                        <div class="hidden sm:flex sm:items-center h-full px-4 border-b-2 {{ request()->routeIs('accounting.*') || request()->routeIs('purchases.*') || request()->routeIs('expenses.*') ? 'border-mango' : 'border-transparent' }}">
+                        <div class="hidden sm:flex sm:items-center h-full px-3 border-b-2 {{ request()->routeIs('accounting.*') || request()->routeIs('purchases.*') || request()->routeIs('expenses.*') ? 'border-mango' : 'border-transparent' }}">
                             <x-dropdown align="left" width="48">
                                 <x-slot name="trigger">
                                     <button class="flex items-center font-bold text-sm transition-colors {{ request()->routeIs('accounting.*') || request()->routeIs('purchases.*') || request()->routeIs('expenses.*') ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">
@@ -65,11 +65,11 @@
                     @endif
 
                     @if(auth()->user()->role === 'admin')
-                        <a href="{{ route('users.index') }}" class="px-4 h-full flex items-center font-bold text-sm transition-all border-b-2 {{ request()->routeIs('users.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
+                        <a href="{{ route('users.index') }}" class="px-3 h-full flex items-center font-bold text-sm transition-all border-b-2 whitespace-nowrap {{ request()->routeIs('users.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
                             Staff
                         </a>
 
-                        <div class="hidden sm:flex sm:items-center h-full px-4 border-b-2 {{ request()->routeIs('settings.*') ? 'border-mango' : 'border-transparent' }}">
+                        <div class="hidden sm:flex sm:items-center h-full px-3 border-b-2 {{ request()->routeIs('settings.*') ? 'border-mango' : 'border-transparent' }}">
                             <x-dropdown align="left" width="48">
                                 <x-slot name="trigger">
                                     <button class="flex items-center font-bold text-sm transition-colors {{ request()->routeIs('settings.*') ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">
@@ -107,8 +107,8 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <a href="{{ route('home') }}" target="_blank" class="mr-6 text-sm font-bold text-gray-500 hover:text-wildOrchid transition-colors flex items-center gap-1">
-                    View Store <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                <a href="{{ route('home') }}" target="_blank" class="mr-4 text-sm font-bold text-gray-500 hover:text-wildOrchid transition-colors flex items-center gap-1 whitespace-nowrap">
+                    Store <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                 </a>
                 
                 <x-dropdown align="right" width="48">
