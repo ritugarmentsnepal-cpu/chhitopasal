@@ -97,4 +97,36 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Admin utility routes for production management
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/admin/clear-cache', function () {
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        return back()->with('success', 'All caches cleared successfully!');
+    })->name('admin.clearCache');
+
+    Route::get('/admin/optimize', function () {
+        \Illuminate\Support\Facades\Artisan::call('config:cache');
+        \Illuminate\Support\Facades\Artisan::call('route:cache');
+        \Illuminate\Support\Facades\Artisan::call('view:cache');
+        return back()->with('success', 'Application optimized for production!');
+    })->name('admin.optimize');
+});
+
+// Secure deploy webhook - pulls latest code from GitHub
+Route::get('/deploy/{token}', function ($token) {
+    if ($token !== 'chhito-deploy-2026') {
+        abort(403);
+    }
+    $output = [];
+    exec('cd ' . base_path() . ' && git pull origin main 2>&1', $output);
+    exec('cd ' . base_path() . ' && composer install --no-dev --optimize-autoloader 2>&1', $output);
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    \Illuminate\Support\Facades\Artisan::call('config:cache');
+    \Illuminate\Support\Facades\Artisan::call('route:cache');
+    \Illuminate\Support\Facades\Artisan::call('view:cache');
+    return response()->json(['status' => 'deployed', 'output' => implode("\n", $output)]);
+});
+
 require __DIR__.'/auth.php';
