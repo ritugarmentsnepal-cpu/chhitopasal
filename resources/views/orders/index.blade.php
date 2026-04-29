@@ -590,6 +590,13 @@
                                                     </select>
                                                     <input type="hidden" :name="`items[${index}][product_id]`" :value="item.product_id">
                                                     <input type="hidden" :name="`items[${index}][id]`" :value="item.id" x-show="item.id">
+                                                    <input type="hidden" :name="`items[${index}][color]`" :value="item.color || ''">
+                                                    <input type="hidden" :name="`items[${index}][size]`" :value="item.size || ''">
+                                                    <!-- Variant badges -->
+                                                    <div x-show="item.color || item.size" class="flex gap-1.5 mt-1.5 flex-wrap">
+                                                        <span x-show="item.color" class="bg-purple-50 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-md border border-purple-100" x-text="item.color"></span>
+                                                        <span x-show="item.size" class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-md border border-blue-100" x-text="'Size: ' + item.size"></span>
+                                                    </div>
                                                 </div>
                                                 <div class="w-20">
                                                     <label class="block text-xs font-bold text-gray-500 mb-1">Qty</label>
@@ -1055,7 +1062,9 @@
                             selection: selection,
                             quantity: item.quantity,
                             unit_price: item.price_at_purchase,
-                            total_price: item.quantity * item.price_at_purchase
+                            total_price: item.quantity * item.price_at_purchase,
+                            color: item.color || '',
+                            size: item.size || ''
                         };
                     });
                     

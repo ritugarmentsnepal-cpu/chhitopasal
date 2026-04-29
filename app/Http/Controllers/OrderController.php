@@ -182,6 +182,8 @@ class OrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
+            'items.*.color' => 'nullable|string|max:50',
+            'items.*.size' => 'nullable|string|max:50',
         ]);
 
         $totalAmount = 0;
@@ -211,6 +213,8 @@ class OrderController extends Controller
                 'quantity' => $quantity,
                 'price_at_purchase' => $unitPrice,
                 'cost_at_purchase' => $product->cost_price,
+                'color' => $item['color'] ?? null,
+                'size' => $item['size'] ?? null,
             ];
         }
 
