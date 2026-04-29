@@ -35,7 +35,7 @@
                             </div>
                             
                             <div class="flex items-center gap-2">
-                                <button type="button" @click="openEditModal({!! $category->toJson() !!})" class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center hover:bg-indigo-100 transition-colors active:scale-95">
+                                <button type="button" @click="openEditModal({{ $category->id }})" class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center hover:bg-indigo-100 transition-colors active:scale-95">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                     </svg>
@@ -226,6 +226,7 @@
 
     <!-- AlpineJS Logic -->
     <script>
+        const __categories = @json($categories);
         document.addEventListener('alpine:init', () => {
             Alpine.data('categoryManager', () => ({
                 editModalOpen: false,
@@ -239,7 +240,9 @@
                     size_options_text: '',
                 },
 
-                openEditModal(category) {
+                openEditModal(categoryId) {
+                    const category = __categories.find(c => c.id === categoryId);
+                    if (!category) return;
                     this.editingCategory = category;
                     this.formData.name = category.name;
                     this.formData.has_color_variants = !!category.has_color_variants;
