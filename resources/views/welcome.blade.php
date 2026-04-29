@@ -133,11 +133,11 @@
     <section id="shop" class="sticky top-[60px] md:top-[88px] z-30 bg-[#FDFFFC]/90 backdrop-blur-md py-3 md:py-4">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2">
-                <button @click="activeCategory = 'all'" :class="activeCategory === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'" class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold whitespace-nowrap border transition-all active:scale-95 text-sm sm:text-base">
+                <button @click="activeCategory = 'all'" :class="activeCategory === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'" class="px-4 md:px-6 py-2 md:py-2.5 rounded-full font-bold whitespace-nowrap border transition-all active:scale-95 text-sm md:text-base">
                     All Products
                 </button>
                 @foreach($categories as $category)
-                    <button @click="activeCategory = '{{ $category->slug }}'" :class="activeCategory === '{{ $category->slug }}' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'" class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold whitespace-nowrap border transition-all active:scale-95 text-sm sm:text-base">
+                    <button @click="activeCategory = '{{ $category->slug }}'" :class="activeCategory === '{{ $category->slug }}' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'" class="px-4 md:px-6 py-2 md:py-2.5 rounded-full font-bold whitespace-nowrap border transition-all active:scale-95 text-sm md:text-base">
                         {{ $category->name }}
                     </button>
                 @endforeach
@@ -158,9 +158,9 @@
             <button @click="searchQuery = ''; activeCategory = 'all'" class="mt-6 text-wildOrchid font-bold hover:underline">Clear all filters</button>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 lg:gap-8">
             <template x-for="(product, index) in filteredProducts" :key="product.id">
-                <article class="group bg-white rounded-2xl sm:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 animate-staggered" :style="`animation-delay: ${index * 0.05}s`">
+                <article class="group bg-white rounded-2xl md:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 animate-staggered" :style="`animation-delay: ${index * 0.05}s`">
                     
                     <!-- Image Container (Clickable for Quick View & Product Page) -->
                     <div class="aspect-[4/5] bg-gray-100 relative overflow-hidden group/img">
@@ -178,18 +178,18 @@
                         </div>
                     </div>
                     
-                    <div class="p-3 sm:p-6 flex flex-col flex-1 relative">
+                    <div class="p-3 md:p-5 lg:p-6 flex flex-col flex-1 relative">
                         <!-- Category Tag -->
-                        <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-wildOrchid mb-1 sm:mb-2 block" x-text="product.category?.name || 'Uncategorized'"></span>
+                        <span class="text-[10px] md:text-xs font-black uppercase tracking-wider text-wildOrchid mb-1 md:mb-2 block" x-text="product.category?.name || 'Uncategorized'"></span>
                         
-                        <h3 class="font-black text-sm sm:text-xl text-gray-900 mb-0.5 sm:mb-1 leading-tight line-clamp-1" x-text="product.name"></h3>
+                        <h3 class="font-black text-sm md:text-lg lg:text-xl text-gray-900 mb-0.5 md:mb-1 leading-tight line-clamp-1" x-text="product.name"></h3>
                         <div class="flex-1"></div>
                         
                         <div class="flex items-center justify-between mt-auto gap-1">
-                            <span class="text-base sm:text-2xl font-black text-gray-900">Rs.<span x-text="product.price.toLocaleString()"></span></span>
-                            <button @click.prevent="triggerAddToCart(product)" class="bg-gray-900 text-white font-bold text-xs sm:text-sm px-3 sm:px-5 py-2 sm:py-2.5 rounded-full hover:bg-mango hover:text-gray-900 transition-all duration-300 active:scale-90 shadow-sm flex items-center gap-1 sm:gap-1.5 group/btn flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 sm:h-4 sm:w-4 transform group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                                <span class="hidden sm:inline">Buy</span>
+                            <span class="text-base md:text-xl lg:text-2xl font-black text-gray-900">Rs.<span x-text="product.price.toLocaleString()"></span></span>
+                            <button @click.prevent="triggerAddToCart(product)" class="bg-gray-900 text-white font-bold text-xs md:text-sm px-3 md:px-5 py-2 md:py-2.5 rounded-full hover:bg-mango hover:text-gray-900 transition-all duration-300 active:scale-90 shadow-sm flex items-center gap-1 md:gap-1.5 group/btn flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 md:h-4 md:w-4 transform group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                                <span class="hidden md:inline">Buy</span>
                             </button>
                         </div>
                     </div>
