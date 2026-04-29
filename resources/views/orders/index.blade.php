@@ -1293,10 +1293,18 @@
                         });
                         const data = await res.json();
                         if (res.ok) {
-                            alert(data.message || 'Orders shipped successfully!');
+                            let msg = data.message || 'Orders shipped successfully!';
+                            if (data.errors && data.errors.length > 0) {
+                                msg += '\n\nFailed orders:\n' + data.errors.join('\n');
+                            }
+                            alert(msg);
                             window.location.href = '{{ route("orders.index", ["status" => "shipped"]) }}';
                         } else {
-                            alert(data.message || 'Failed to ship orders.');
+                            let msg = data.message || 'Failed to ship orders.';
+                            if (data.errors && data.errors.length > 0) {
+                                msg += '\n\nReasons:\n' + data.errors.join('\n');
+                            }
+                            alert(msg);
                         }
                     } catch (e) {
                         console.error(e);
