@@ -36,6 +36,23 @@ class SettingController extends Controller
         $data = $request->except(['_token', 'hero_image', 'store_logo', 'store_favicon', 'redirect_tab']);
         $tab = $request->input('redirect_tab', 'frontend');
 
+        // SEC-MED-02: Allowlist of valid setting keys to prevent arbitrary key injection
+        $allowedKeys = [
+            // Frontend
+            'store_name', 'hero_title', 'hero_subtitle', 'hero_cta', 'meta_description',
+            'contact_email', 'contact_phone', 'contact_address',
+            'facebook_url', 'instagram_url', 'tiktok_url',
+            'company_name', 'company_phone',
+            // ERP
+            'delivery_charge_inside', 'delivery_charge_outside',
+            'default_cash_account', 'invoice_terms', 'invoice_footer',
+            // Integrations (Pathao)
+            'pathao_client_id', 'pathao_client_secret', 'pathao_username',
+            'pathao_password', 'pathao_store_id',
+            // Automation
+            'auto_sync_pathao', 'pathao_sync_interval',
+        ];
+
         // Handle image uploads separately
         $fileFields = ['hero_image', 'store_logo', 'store_favicon'];
         foreach ($fileFields as $field) {
@@ -45,8 +62,13 @@ class SettingController extends Controller
             }
         }
 
-        // Save string/boolean values
+        // Save string/boolean values — only allowed keys
         foreach ($data as $key => $value) {
+            if (!in_array($key, $allowedKeys)) {
+                continue; // SEC-MED-02: Skip any unknown keys
+            }
+            // SEC-PHASE-04: Auto-encrypt sensitive settings before saving
+            $value = encrypt_setting_value($key, $value);
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 

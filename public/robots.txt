@@ -1,2 +1,25 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /product/
+
+# SEC: Block admin and internal paths from crawlers
+Disallow: /dashboard
+Disallow: /orders
+Disallow: /products
+Disallow: /categories
+Disallow: /accounting
+Disallow: /settings
+Disallow: /users
+Disallow: /customers
+Disallow: /purchases
+Disallow: /expenses
+Disallow: /pathao
+Disallow: /login
+Disallow: /register
+Disallow: /profile
+Disallow: /admin/
+Disallow: /api/
+Disallow: /storage/
+
+# Sitemap
+Sitemap: https://www.chhitopasal.com/sitemap.xml

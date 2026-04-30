@@ -199,9 +199,9 @@
                         
                         <div class="flex items-center justify-between mt-auto gap-1">
                             <span class="text-base md:text-xl lg:text-2xl font-black text-gray-900">Rs.<span x-text="product.price.toLocaleString()"></span></span>
-                            <button @click.prevent="triggerAddToCart(product)" class="bg-gray-900 text-white font-bold text-xs md:text-sm px-3 md:px-5 py-2 md:py-2.5 rounded-full hover:bg-mango hover:text-gray-900 transition-all duration-300 active:scale-90 shadow-sm flex items-center gap-1 md:gap-1.5 group/btn flex-shrink-0">
+                            <button @click.prevent="triggerAddToCart(product)" :disabled="!product.in_stock" :class="product.in_stock ? 'bg-gray-900 hover:bg-mango hover:text-gray-900' : 'bg-gray-300 cursor-not-allowed'" class="text-white font-bold text-xs md:text-sm px-3 md:px-5 py-2 md:py-2.5 rounded-full transition-all duration-300 active:scale-90 shadow-sm flex items-center gap-1 md:gap-1.5 group/btn flex-shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 md:h-4 md:w-4 transform group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                <span class="hidden md:inline">Add</span>
+                                <span class="hidden md:inline" x-text="product.in_stock ? 'Add' : 'Sold Out'"></span>
                             </button>
                         </div>
                     </div>
@@ -335,9 +335,9 @@
                                 </div>
                                 
                                 <div class="flex items-center gap-4 text-sm font-bold text-gray-600 mb-8">
-                                    <div class="flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-100">
+                                    <div :class="selectedProduct.in_stock ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
-                                        <span x-text="selectedProduct.stock + ' in stock'"></span>
+                                        <span x-text="selectedProduct.in_stock ? 'In Stock' : 'Out of Stock'"></span>
                                     </div>
                                     <div class="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-lg">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM5.94 12.06a1 1 0 010-1.41l4-4a1 1 0 011.41 0l4 4a1 1 0 01-1.41 1.41L11 9.41V15a1 1 0 11-2 0V9.41L6.65 11.76a1 1 0 01-1.41 0z" clip-rule="evenodd" /></svg>

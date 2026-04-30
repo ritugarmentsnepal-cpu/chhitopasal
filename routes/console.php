@@ -9,4 +9,7 @@ Artisan::command('inspire', function () {
 
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('pathao:sync')->everyFiveMinutes();
+// AUTO-01: Only sync if auto_sync_pathao is enabled in settings
+Schedule::command('pathao:sync')->everyFiveMinutes()->when(function () {
+    return setting('auto_sync_pathao', false);
+});

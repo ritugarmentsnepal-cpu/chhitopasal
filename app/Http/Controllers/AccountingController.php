@@ -7,11 +7,19 @@ use Illuminate\Support\Facades\DB;
 
 class AccountingController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * AUTH-01: Helper to check if the current user has financial access.
+     */
+    private function requireFinancialAccess()
     {
         if (in_array(auth()->user()->role, ['operational_staff'])) {
-            return redirect()->route('dashboard')->with('error', 'Access Denied.');
+            abort(403, 'Access Denied: You do not have permission to perform this action.');
         }
+    }
+
+    public function index(Request $request)
+    {
+        $this->requireFinancialAccess();
 
         $tab = $request->query('tab', 'dashboard');
         $allowedTabs = ['dashboard', 'pos', 'invoices', 'returns', 'parties', 'purchases', 'expenses', 'banking', 'inventory', 'reports', 'activity'];
@@ -46,9 +54,10 @@ class AccountingController extends Controller
         } elseif ($tab === 'invoices') {
             $data['orders'] = \App\Models\Order::with('orderItems')->latest()->paginate(20);
         } elseif ($tab === 'returns') {
+            // PERF-02: Paginate returns instead of loading all
             $data['returned_orders'] = \App\Models\Order::with('orderItems')
                 ->whereIn('status', ['failed', 'rejected', 'return_delivered'])
-                ->latest()->get();
+                ->latest()->paginate(20);
             $data['pathao_clearing'] = \App\Models\Account::where('name', 'Pathao Clearing')->first();
             $data['accounts'] = \App\Models\Account::all();
         } elseif ($tab === 'parties') {
@@ -57,7 +66,8 @@ class AccountingController extends Controller
             $data['payables'] = \App\Models\Party::where('current_balance', '<', 0)->sum(\Illuminate\Support\Facades\DB::raw('ABS(current_balance)'));
             $data['receivables'] = \App\Models\Party::where('current_balance', '>', 0)->sum('current_balance');
         } elseif ($tab === 'purchases') {
-            $data['purchases'] = \App\Models\Purchase::with('party')->latest()->get();
+            // PERF-02: Paginate purchases
+            $data['purchases'] = \App\Models\Purchase::with('party')->latest()->paginate(20);
             $data['parties'] = \App\Models\Party::whereIn('type', ['supplier'])->get();
         } elseif ($tab === 'expenses') {
             $data['expenses'] = \App\Models\Expense::with('category')->latest()->get();
@@ -87,16 +97,17 @@ class AccountingController extends Controller
             $data['accounts'] = \App\Models\Account::all();
 
             if ($reportType === 'pl') {
-                $deliveredOrders = \App\Models\Order::with('orderItems')->where('status', 'delivered')->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])->get();
-                $data['pl_revenue'] = $deliveredOrders->sum('total_amount');
+                // PERF-03: Use DB aggregates instead of loading all orders into PHP memory
+                $data['pl_revenue'] = \App\Models\Order::where('status', 'delivered')
+                    ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                    ->sum('total_amount');
                 
-                $cogs = 0;
-                foreach ($deliveredOrders as $order) {
-                    foreach ($order->orderItems as $item) {
-                        $cogs += ($item->quantity * $item->cost_at_purchase);
-                    }
-                }
-                $data['pl_cogs'] = $cogs;
+                $data['pl_cogs'] = DB::table('order_items')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->where('orders.status', 'delivered')
+                    ->whereBetween('orders.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                    ->sum(DB::raw('order_items.quantity * order_items.cost_at_purchase'));
+
                 $data['pl_expenses'] = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])->sum('amount');
                 $data['pl_gross'] = $data['pl_revenue'] - $data['pl_cogs'];
                 $data['pl_net'] = $data['pl_gross'] - $data['pl_expenses'];
@@ -152,6 +163,7 @@ class AccountingController extends Controller
 
     public function payPurchase(Request $request)
     {
+        $this->requireFinancialAccess();
         $validated = $request->validate([
             'purchase_id' => 'required|exists:purchases,id',
             'amount' => 'required|numeric|min:0.01',
@@ -190,6 +202,8 @@ class AccountingController extends Controller
 
     public function storeCategory(Request $request)
     {
+        $this->requireFinancialAccess();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string'
@@ -202,6 +216,8 @@ class AccountingController extends Controller
 
     public function storeParty(Request $request)
     {
+        $this->requireFinancialAccess();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:customer,supplier,pathao',
@@ -219,6 +235,8 @@ class AccountingController extends Controller
 
     public function storeTransaction(Request $request)
     {
+        $this->requireFinancialAccess();
+
         $validated = $request->validate([
             'account_id' => 'required|exists:accounts,id',
             'type' => 'required|in:in,out',
@@ -229,6 +247,11 @@ class AccountingController extends Controller
 
         DB::transaction(function () use ($validated) {
             $account = \App\Models\Account::findOrFail($validated['account_id']);
+
+            // FIN-02: Guard against negative balance on outgoing transactions
+            if ($validated['type'] === 'out' && $account->balance < $validated['amount']) {
+                throw new \RuntimeException("Insufficient balance in {$account->name}. Available: Rs." . number_format($account->balance, 2) . ", Requested: Rs." . number_format($validated['amount'], 2));
+            }
 
             \App\Models\Transaction::create([
                 'account_id' => $account->id,
@@ -251,6 +274,8 @@ class AccountingController extends Controller
 
     public function adjustStock(Request $request)
     {
+        $this->requireFinancialAccess();
+
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'type' => 'required|in:add,deduct',
@@ -336,6 +361,7 @@ class AccountingController extends Controller
      */
     public function saleReturn(Request $request)
     {
+        $this->requireFinancialAccess();
         $validated = $request->validate([
             'order_id' => 'required|exists:orders,id',
             'reason' => 'required|string|max:500',
@@ -457,15 +483,16 @@ class AccountingController extends Controller
                 fputcsv($file, ['Income Statement (P&L)', "From: $startDate", "To: $endDate"]);
                 fputcsv($file, []);
                 
-                $deliveredOrders = \App\Models\Order::where('status', 'delivered')->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])->get();
-                $revenue = $deliveredOrders->sum('total_amount');
+                // BACK-03: Use DB aggregates instead of loading all orders into memory
+                $revenue = \App\Models\Order::where('status', 'delivered')
+                    ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                    ->sum('total_amount');
                 
-                $cogs = 0;
-                foreach ($deliveredOrders as $order) {
-                    foreach ($order->orderItems as $item) {
-                        $cogs += ($item->quantity * $item->cost_at_purchase);
-                    }
-                }
+                $cogs = DB::table('order_items')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->where('orders.status', 'delivered')
+                    ->whereBetween('orders.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                    ->sum(DB::raw('order_items.quantity * order_items.cost_at_purchase'));
                 
                 $expenses = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])->sum('amount');
                 $gross = $revenue - $cogs;
@@ -492,24 +519,25 @@ class AccountingController extends Controller
                 if ($partyId) $query->where('party_id', $partyId);
                 if ($accountId) $query->where('account_id', $accountId);
 
-                $transactions = $query->orderBy('date', 'asc')->get();
-
                 $totalIn = 0;
                 $totalOut = 0;
 
-                foreach ($transactions as $tx) {
-                    if ($tx->type === 'in') $totalIn += $tx->amount;
-                    else $totalOut += $tx->amount;
+                // BACK-03: Use chunk to prevent memory exhaustion on large datasets
+                $query->orderBy('date', 'asc')->chunk(200, function ($transactions) use ($file, &$totalIn, &$totalOut) {
+                    foreach ($transactions as $tx) {
+                        if ($tx->type === 'in') $totalIn += $tx->amount;
+                        else $totalOut += $tx->amount;
 
-                    fputcsv($file, [
-                        \Carbon\Carbon::parse($tx->date)->format('Y-m-d'),
-                        $tx->account->name,
-                        $tx->party ? $tx->party->name : '-',
-                        $tx->notes ?: $tx->reference_type . ' #' . $tx->reference_id,
-                        $tx->type === 'in' ? $tx->amount : '',
-                        $tx->type === 'out' ? $tx->amount : ''
-                    ]);
-                }
+                        fputcsv($file, [
+                            \Carbon\Carbon::parse($tx->date)->format('Y-m-d'),
+                            $tx->account->name,
+                            $tx->party ? $tx->party->name : '-',
+                            $tx->notes ?: $tx->reference_type . ' #' . $tx->reference_id,
+                            $tx->type === 'in' ? $tx->amount : '',
+                            $tx->type === 'out' ? $tx->amount : ''
+                        ]);
+                    }
+                });
                 
                 fputcsv($file, []);
                 fputcsv($file, ['Totals', '', '', '', $totalIn, $totalOut]);

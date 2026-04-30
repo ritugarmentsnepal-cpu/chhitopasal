@@ -10,9 +10,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $pendingOrders = Order::with('orderItems.product')->where('status', 'pending')->latest()->get();
-        $confirmedOrders = Order::with('orderItems.product')->where('status', 'confirmed')->latest()->get();
-        $shippedOrders = Order::with('orderItems.product')->where('status', 'shipped')->latest()->get();
+        // PERF-01: Limit to latest 20 per column to prevent page crashes at scale
+        $pendingOrders = Order::with('orderItems.product')->where('status', 'pending')->latest()->take(20)->get();
+        $confirmedOrders = Order::with('orderItems.product')->where('status', 'confirmed')->latest()->take(20)->get();
+        $shippedOrders = Order::with('orderItems.product')->where('status', 'shipped')->latest()->take(20)->get();
         
         $products = Product::all();
         

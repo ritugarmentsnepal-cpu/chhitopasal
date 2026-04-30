@@ -78,6 +78,9 @@ class SyncPathaoOrders extends Command
                 Log::error("Pathao Sync Error for Order #{$order->id}: " . $e->getMessage());
                 $errors++;
             }
+
+            // INT-01: Rate limit API calls — 200ms delay between requests
+            usleep(200000);
         }
 
         $this->info("Sync completed. Updated {$count} orders. Encountered {$errors} errors.");

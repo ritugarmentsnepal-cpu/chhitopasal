@@ -20,7 +20,7 @@ class ExpenseController extends Controller
 
         $validated = $request->validate([
             'expense_category_id' => 'required|exists:expense_categories,id',
-            'amount' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:0.01', // SEC-MED-04: Prevent zero-amount phantom transactions
             'date' => 'required|date',
             'account_id' => 'required|exists:accounts,id',
             'description' => 'nullable|string',

@@ -19,6 +19,11 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        // SEC-MED-05: Only admins can create products
+        if (auth()->user()->role !== 'admin') {
+            return redirect()->route('products.index')->with('error', 'Access Denied: Only Administrators can create products.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -51,7 +56,7 @@ class ProductController extends Controller
 
         Product::create([
             'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']) . '-' . uniqid(),
+            'slug' => Str::slug($validated['name']) . '-' . Str::random(8),
             'category_id' => $validated['category_id'],
             'description' => $validated['description'],
             'price' => $validated['price'],

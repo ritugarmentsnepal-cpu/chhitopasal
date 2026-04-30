@@ -12,7 +12,8 @@ class HomeController extends Controller
     public function index()
     {
         $categories = Category::all();
-        $products = Product::with('category')->latest()->get()->makeHidden(['cost_price', 'created_at', 'updated_at']);
+        // FRONT-01: Hide stock count and cost_price from public JSON
+        $products = Product::with('category')->latest()->get()->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
         $settings = Setting::pluck('value', 'key')->toArray();
         return view('welcome', compact('products', 'categories', 'settings'));
     }
@@ -21,9 +22,9 @@ class HomeController extends Controller
     {
         // UX-02: Hide cost_price on product detail page to prevent leaking sensitive data
         $product = Product::with('category')->where('slug', $slug)->firstOrFail()
-            ->makeHidden(['cost_price', 'created_at', 'updated_at']);
+            ->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
         $products = Product::with('category')->latest()->get()
-            ->makeHidden(['cost_price', 'created_at', 'updated_at']);
+            ->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
         $settings = Setting::pluck('value', 'key')->toArray();
         return view('product.show', compact('product', 'products', 'settings'));
     }

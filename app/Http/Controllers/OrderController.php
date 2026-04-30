@@ -148,6 +148,15 @@ class OrderController extends Controller
                 ];
             }
 
+            // SEC-HIGH-07: Log POS sale with user and IP for audit trail
+            Log::info('POS Sale initiated', [
+                'user_id' => auth()->id(),
+                'user_name' => auth()->user()->name,
+                'ip' => request()->ip(),
+                'total_amount' => $totalAmount,
+                'item_count' => count($validated['items']),
+            ]);
+
             $order = Order::create([
                 'customer_name' => $validated['customer_name'],
                 'customer_phone' => $validated['customer_phone'],
@@ -162,9 +171,13 @@ class OrderController extends Controller
 
             foreach ($orderItemsData as $data) {
                 $order->orderItems()->create($data);
-                Product::where('id', $data['product_id'])->where('stock', '>=', $data['quantity'])->decrement('stock', $data['quantity']);
             }
 
+            // FIN-01: Use OrderService for consistent stock deduction with failure logging
+            $orderService = app(OrderService::class);
+            $orderService->deductStock($order);
+
+            // Record cash revenue
             $cashAccount = SystemAccounts::mainCash();
             if (!$cashAccount) {
                 Log::error('POS Sale: Main Cash account not found. Financial transaction skipped for Order #' . $order->id);
@@ -189,6 +202,10 @@ class OrderController extends Controller
 
     public function invoice(Order $order)
     {
+        // SEC-MED-07: Only authenticated users can view invoices
+        if (!auth()->check()) {
+            abort(403, 'Unauthorized access.');
+        }
         return view('orders.invoice', compact('order'));
     }
 
@@ -196,12 +213,12 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:20',
+            'customer_phone' => ['required', 'string', 'max:20', 'regex:/^(\+?977)?[9][6-8]\d{8}$/'],
             'address' => 'required|string|max:255',
             'delivery_location' => 'nullable|string|in:inside,outside',
-            'items' => 'required|array|min:1',
+            'items' => 'required|array|min:1|max:20',
             'items.*.id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.quantity' => 'required|integer|min:1|max:10', // SEC-HIGH-06: Max 10 per item
             'items.*.color' => 'nullable|string|max:50',
             'items.*.size' => 'nullable|string|max:50',
         ]);
@@ -485,9 +502,14 @@ class OrderController extends Controller
 
     public function bulkPrint(Request $request)
     {
-        $ids = json_decode($request->input('order_ids', '[]'), true);
-        if (empty($ids)) {
+        // BACK-01: Validate order_ids properly
+        $decoded = json_decode($request->input('order_ids', '[]'), true);
+        if (!is_array($decoded) || empty($decoded)) {
             return redirect()->back()->with('error', 'No orders selected.');
+        }
+        $ids = array_map('intval', array_filter($decoded, 'is_numeric'));
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Invalid order selection.');
         }
 
         $orders = Order::with('orderItems.product')->whereIn('id', $ids)->get();
@@ -502,6 +524,11 @@ class OrderController extends Controller
 
     public function bulkDelete(Request $request)
     {
+        // SEC-HIGH-08: Only admins can bulk delete orders
+        if (auth()->user()->role !== 'admin') {
+            return response()->json(['message' => 'Access Denied: Only administrators can delete orders.'], 403);
+        }
+
         $validated = $request->validate([
             'order_ids' => 'required|array|min:1',
             'order_ids.*' => 'integer|exists:orders,id',
@@ -696,14 +723,17 @@ class OrderController extends Controller
             'status' => 'required|string|in:pending,confirmed,shipped,delivered,failed,rejected,return_delivered'
         ]);
 
-        $oldStatus = $order->status;
         $newStatus = $validated['status'];
-
         $orderService = app(OrderService::class);
 
-        DB::transaction(function () use ($order, $newStatus, $orderService) {
-            $orderService->transitionStatus($order, $newStatus);
-        });
+        // BUG-05: Catch invalid transition errors gracefully
+        try {
+            DB::transaction(function () use ($order, $newStatus, $orderService) {
+                $orderService->transitionStatus($order, $newStatus);
+            });
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
 
         return redirect()->back()->with('success', 'Order status updated to ' . ucfirst($newStatus));
     }
@@ -738,11 +768,14 @@ class OrderController extends Controller
         }
 
         if ($newLocalStatus !== $order->status) {
-            // NEW-INT-02: Use OrderService directly instead of creating a fake Request
             $orderService = app(OrderService::class);
-            DB::transaction(function () use ($order, $newLocalStatus, $orderService) {
-                $orderService->transitionStatus($order, $newLocalStatus);
-            });
+            try {
+                DB::transaction(function () use ($order, $newLocalStatus, $orderService) {
+                    $orderService->transitionStatus($order, $newLocalStatus);
+                });
+            } catch (\InvalidArgumentException $e) {
+                return redirect()->back()->with('error', $e->getMessage());
+            }
             return redirect()->back()->with('success', 'Pathao status synced successfully. Order is now ' . $newLocalStatus);
         }
 
@@ -757,6 +790,11 @@ class OrderController extends Controller
 
     public function updateAmount(Request $request, Order $order)
     {
+        // AUTH-02: Only admin/manager can modify order amounts
+        if (!in_array(auth()->user()->role, ['admin', 'manager'])) {
+            return back()->with('error', 'Access Denied: Only admins and managers can modify order amounts.');
+        }
+
         $request->validate(['total_amount' => 'required|numeric|min:0']);
         
         $oldAmount = $order->total_amount;

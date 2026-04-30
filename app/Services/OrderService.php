@@ -31,6 +31,16 @@ class OrderService
             return;
         }
 
+        // BUG-05: Guard against invalid transitions
+        if (!$this->isValidTransition($oldStatus, $newStatus)) {
+            Log::warning("Invalid status transition attempted", [
+                'order_id' => $order->id,
+                'from' => $oldStatus,
+                'to' => $newStatus,
+            ]);
+            throw new \InvalidArgumentException("Cannot transition order #{$order->id} from '{$oldStatus}' to '{$newStatus}'.");
+        }
+
         $stockDeductedStatuses = ['shipped', 'delivered'];
 
         // If stock was deducted and we're moving to a non-deducted status
@@ -58,9 +68,20 @@ class OrderService
     {
         foreach ($order->orderItems as $item) {
             if ($item->product) {
-                Product::where('id', $item->product_id)
+                $affected = Product::where('id', $item->product_id)
                     ->where('stock', '>=', $item->quantity)
                     ->decrement('stock', $item->quantity);
+
+                // BUG-04: Alert when stock deduction silently fails
+                if ($affected === 0) {
+                    Log::error('Stock deduction FAILED — insufficient stock', [
+                        'order_id' => $order->id,
+                        'product_id' => $item->product_id,
+                        'product_name' => $item->product->name ?? 'Unknown',
+                        'requested_qty' => $item->quantity,
+                        'available_stock' => $item->product->fresh()->stock ?? 0,
+                    ]);
+                }
             }
         }
     }

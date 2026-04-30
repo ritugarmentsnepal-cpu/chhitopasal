@@ -12,7 +12,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 
     <style>
         [x-cloak] { display: none !important; }
@@ -135,10 +135,17 @@
                 </div>
                 
                 <div class="flex items-center gap-4 text-sm font-bold text-gray-600 mb-10">
+                    @if($product->in_stock)
                     <div class="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-100">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
-                        <span>{{ $product->stock }} in stock</span>
+                        <span>In Stock</span>
                     </div>
+                    @else
+                    <div class="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-xl border border-red-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                        <span>Out of Stock</span>
+                    </div>
+                    @endif
                     <div class="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-xl border border-gray-200">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM5.94 12.06a1 1 0 010-1.41l4-4a1 1 0 011.41 0l4 4a1 1 0 01-1.41 1.41L11 9.41V15a1 1 0 11-2 0V9.41L6.65 11.76a1 1 0 01-1.41 0z" clip-rule="evenodd" /></svg>
                         <span>{{ $product->weight_grams }}g per unit</span>
@@ -173,7 +180,7 @@
             
             <div class="space-y-3">
                 <!-- Single Piece -->
-                <button @click="processAddToCart(bundleProduct, 1, bundleProduct.price, false)" class="w-full border-2 border-gray-200 rounded-2xl p-4 flex justify-between items-center hover:border-mango hover:bg-mango/5 transition text-left group">
+                <button @click="bundleSelectionOpen = false; if(needsVariants(bundleProduct)) { openVariantModal(bundleProduct, 1, bundleProduct.price, false); } else { processAddToCart(bundleProduct, 1, bundleProduct.price, false, '', ''); }" class="w-full border-2 border-gray-200 rounded-2xl p-4 flex justify-between items-center hover:border-mango hover:bg-mango/5 transition text-left group">
                     <div>
                         <span class="block font-black text-gray-900 text-lg">Single Piece</span>
                         <span class="block text-gray-500 text-sm">Standard price</span>
@@ -183,7 +190,7 @@
                 
                 <!-- Bundles -->
                 <template x-for="bundle in bundleProduct?.bundles" :key="bundle.qty">
-                    <button @click="processAddToCart(bundleProduct, parseInt(bundle.qty), bundle.price / parseInt(bundle.qty), true)" class="w-full border-2 border-mango bg-mango/10 rounded-2xl p-4 flex justify-between items-center hover:bg-mango/20 transition text-left group relative overflow-hidden">
+                    <button @click="bundleSelectionOpen = false; if(needsVariants(bundleProduct)) { openVariantModal(bundleProduct, parseInt(bundle.qty), bundle.price / parseInt(bundle.qty), true); } else { processAddToCart(bundleProduct, parseInt(bundle.qty), bundle.price / parseInt(bundle.qty), true, '', ''); }" class="w-full border-2 border-mango bg-mango/10 rounded-2xl p-4 flex justify-between items-center hover:bg-mango/20 transition text-left group relative overflow-hidden">
                         <div class="absolute -right-4 -top-4 w-16 h-16 bg-mango/30 rounded-full blur-xl"></div>
                         <div class="relative z-10">
                             <span class="block font-black text-gray-900 text-lg"><span x-text="bundle.qty"></span> Pieces Bundle</span>
@@ -193,6 +200,44 @@
                     </button>
                 </template>
             </div>
+        </div>
+    </div>
+
+    <!-- Variant Selection Modal (Color / Size) -->
+    <div x-show="variantModalOpen" x-cloak class="fixed inset-0 flex items-center justify-center p-4" style="z-index: 100;">
+        <div x-show="variantModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" @click="variantModalOpen = false"></div>
+        <div x-show="variantModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="relative bg-white rounded-3xl p-6 sm:p-8 w-full shadow-2xl z-10 mx-auto" style="max-width: 450px;">
+            <button @click="variantModalOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 bg-gray-50 p-2 rounded-full"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <h3 class="text-2xl font-black text-gray-900 mb-1">Select Options</h3>
+            <p class="text-gray-500 mb-6 font-medium text-sm" x-text="variantProduct?.name"></p>
+            <!-- Color Selection -->
+            <template x-if="variantProduct?.category?.has_color_variants && variantProduct?.category?.color_options?.length > 0">
+                <div class="mb-6">
+                    <label class="block text-sm font-black text-gray-700 mb-3 uppercase tracking-wider">Color</label>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="color in variantProduct.category.color_options" :key="color">
+                            <button type="button" @click="selectedColor = color" :class="selectedColor === color ? 'border-gray-900 bg-gray-900 text-white shadow-lg scale-105' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'" class="px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all duration-200 active:scale-95" x-text="color"></button>
+                        </template>
+                    </div>
+                    <p x-show="variantError && !selectedColor" class="text-red-500 text-xs font-bold mt-2">Please select a color</p>
+                </div>
+            </template>
+            <!-- Size Selection -->
+            <template x-if="variantProduct?.category?.has_size_variants && variantProduct?.category?.size_options?.length > 0">
+                <div class="mb-6">
+                    <label class="block text-sm font-black text-gray-700 mb-3 uppercase tracking-wider">Size</label>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="size in variantProduct.category.size_options" :key="size">
+                            <button type="button" @click="selectedSize = size" :class="selectedSize === size ? 'border-gray-900 bg-gray-900 text-white shadow-lg scale-105' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'" class="w-14 h-14 rounded-xl border-2 font-black text-sm transition-all duration-200 active:scale-95 flex items-center justify-center" x-text="size"></button>
+                        </template>
+                    </div>
+                    <p x-show="variantError && !selectedSize" class="text-red-500 text-xs font-bold mt-2">Please select a size</p>
+                </div>
+            </template>
+            <button @click="confirmVariantAddToCart()" class="w-full bg-gray-900 text-white font-black py-4 rounded-2xl hover:bg-gray-800 active:scale-95 transition-all shadow-xl shadow-gray-900/20 flex items-center justify-center gap-3 mt-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                Add to Cart
+            </button>
         </div>
     </div>
 
@@ -224,6 +269,11 @@
                         <img :src="'{{ asset('storage') }}/' + item.image_path" :alt="item.name" class="w-20 h-20 object-cover rounded-2xl bg-gray-50">
                         <div class="flex-1">
                             <h3 class="font-black text-gray-900 text-base leading-tight mb-1" x-text="item.name"></h3>
+                            <!-- Variant badges -->
+                            <div x-show="item.selectedColor || item.selectedSize" class="flex gap-1.5 mb-1.5 flex-wrap">
+                                <span x-show="item.selectedColor" class="bg-purple-50 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-md border border-purple-100" x-text="item.selectedColor"></span>
+                                <span x-show="item.selectedSize" class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-md border border-blue-100" x-text="'Size: ' + item.selectedSize"></span>
+                            </div>
                             <p class="text-mango font-black text-sm mb-2">
                                 <span x-show="item.isBundle">Bundle Price: </span>
                                 Rs.<span x-text="(item.price * item.quantity).toLocaleString()"></span>
@@ -264,8 +314,8 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Delivery Location</label>
                             <select x-model="customer.delivery_location" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango focus:border-mango font-bold py-3 text-gray-900 cursor-pointer">
-                                <option value="inside">Inside Kathmandu Valley (+ Rs. 50)</option>
-                                <option value="outside">Outside Kathmandu Valley (+ Rs. 100)</option>
+                                <option value="inside">Inside Kathmandu Valley (+ Rs. {{ setting('delivery_charge_inside', 50) }})</option>
+                                <option value="outside">Outside Kathmandu Valley (+ Rs. {{ setting('delivery_charge_outside', 100) }})</option>
                             </select>
                         </div>
                         <p x-show="formError" x-text="formError" class="text-red-500 text-sm font-bold bg-red-50 p-3 rounded-xl border border-red-100"></p>
@@ -317,27 +367,74 @@
                 bundleSelectionOpen: false,
                 bundleProduct: null,
 
+                // Variant selection state
+                variantModalOpen: false,
+                variantProduct: null,
+                selectedColor: '',
+                selectedSize: '',
+                variantError: false,
+                pendingVariantQty: 1,
+                pendingVariantPrice: 0,
+                pendingVariantIsBundle: false,
+
                 init() {
                     this.$watch('cart', val => localStorage.setItem('cart', JSON.stringify(val)));
+                },
+
+                needsVariants(product) {
+                    const cat = product.category;
+                    if (!cat) return false;
+                    return (cat.has_color_variants && cat.color_options && cat.color_options.length > 0) ||
+                           (cat.has_size_variants && cat.size_options && cat.size_options.length > 0);
                 },
 
                 triggerAddToCart(product) {
                     if (product.bundles && product.bundles.length > 0) {
                         this.bundleProduct = product;
                         this.bundleSelectionOpen = true;
+                    } else if (this.needsVariants(product)) {
+                        this.openVariantModal(product, 1, product.price, false);
                     } else {
-                        this.processAddToCart(product, 1, product.price, false);
+                        this.processAddToCart(product, 1, product.price, false, '', '');
                     }
                 },
 
-                processAddToCart(product, qty, unitPrice, isBundle) {
-                    const cartItemId = `${product.id}_${qty}`;
+                openVariantModal(product, qty, unitPrice, isBundle) {
+                    this.variantProduct = product;
+                    this.selectedColor = '';
+                    this.selectedSize = '';
+                    this.variantError = false;
+                    this.pendingVariantQty = qty;
+                    this.pendingVariantPrice = unitPrice;
+                    this.pendingVariantIsBundle = isBundle;
+                    this.variantModalOpen = true;
+                },
+
+                confirmVariantAddToCart() {
+                    const cat = this.variantProduct.category;
+                    const needsColor = cat.has_color_variants && cat.color_options && cat.color_options.length > 0;
+                    const needsSize = cat.has_size_variants && cat.size_options && cat.size_options.length > 0;
+                    if ((needsColor && !this.selectedColor) || (needsSize && !this.selectedSize)) {
+                        this.variantError = true;
+                        return;
+                    }
+                    this.variantModalOpen = false;
+                    this.processAddToCart(
+                        this.variantProduct, this.pendingVariantQty, this.pendingVariantPrice,
+                        this.pendingVariantIsBundle, this.selectedColor, this.selectedSize
+                    );
+                },
+
+                processAddToCart(product, qty, unitPrice, isBundle, color = '', size = '') {
+                    const cartItemId = `${product.id}_${qty}_${color}_${size}`;
                     const existing = this.cart.find(i => i.cartItemId === cartItemId);
-                    
                     if (existing) {
                         existing.quantity += qty;
                     } else {
-                        this.cart.push({ ...product, quantity: qty, price: unitPrice, isBundle: isBundle, cartItemId: cartItemId });
+                        this.cart.push({ 
+                            ...product, quantity: qty, price: unitPrice, isBundle: isBundle, 
+                            cartItemId: cartItemId, selectedColor: color || null, selectedSize: size || null
+                        });
                     }
                     this.bundleSelectionOpen = false;
                     this.cartOpen = true;
@@ -366,7 +463,7 @@
                 },
 
                 get deliveryCharge() {
-                    return this.customer.delivery_location === 'inside' ? 50 : 100;
+                    return this.customer.delivery_location === 'inside' ? {{ (int) setting('delivery_charge_inside', 50) }} : {{ (int) setting('delivery_charge_outside', 100) }};
                 },
 
                 get cartTotal() {
@@ -393,9 +490,14 @@
                                 customer_name: this.customer.name,
                                 customer_phone: this.customer.phone,
                                 address: this.customer.address,
-                                delivery_charge: this.deliveryCharge,
+                                delivery_location: this.customer.delivery_location,
                                 source: 'Web',
-                                items: this.cart.map(item => ({ id: item.id, quantity: item.quantity }))
+                                items: this.cart.map(item => ({
+                                    id: item.id,
+                                    quantity: item.quantity,
+                                    color: item.selectedColor || null,
+                                    size: item.selectedSize || null
+                                }))
                             })
                         });
 

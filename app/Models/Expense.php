@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Expense extends Model
 {
-    use \App\Traits\Loggable;
+    use SoftDeletes, \App\Traits\Loggable;
 
     protected $fillable = [
         'expense_category_id',

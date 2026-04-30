@@ -90,11 +90,17 @@ class PathaoManagerController extends Controller
 
     public function getZones($cityId, PathaoService $pathao)
     {
+        // SEC-HIGH-05: Validate parameter to prevent injection
+        $cityId = (int) $cityId;
+        if ($cityId <= 0) return response()->json([], 400);
         return response()->json($pathao->getZones($cityId));
     }
 
     public function getAreas($zoneId, PathaoService $pathao)
     {
+        // SEC-HIGH-05: Validate parameter to prevent injection
+        $zoneId = (int) $zoneId;
+        if ($zoneId <= 0) return response()->json([], 400);
         return response()->json($pathao->getAreas($zoneId));
     }
 }
