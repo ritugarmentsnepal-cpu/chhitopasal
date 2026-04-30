@@ -136,14 +136,16 @@
                     <span class="text-sm font-bold {{ $status === 'pending' ? 'text-red-900' : ($status === 'confirmed' ? 'text-emerald-900' : 'text-blue-900') }}"><span x-text="selectedOrders.length"></span> orders selected</span>
                     <div class="flex items-center gap-2">
                         @if($status === 'pending')
-                            <button type="button" @click="bulkDeleteOrders()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-sm flex items-center gap-2 transition active:scale-95">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                Delete Selected
+                            <button type="button" @click="bulkDeleteOrders()" :disabled="bulkProcessing" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-sm flex items-center gap-2 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg x-show="!bulkProcessing" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                <svg x-show="bulkProcessing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                <span x-text="bulkProcessing ? 'Deleting...' : 'Delete Selected'"></span>
                             </button>
                         @elseif($status === 'confirmed')
-                            <button type="button" @click="bulkShipOrders()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-sm flex items-center gap-2 transition active:scale-95">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-                                Ship All via Pathao
+                            <button type="button" @click="bulkShipOrders()" :disabled="bulkProcessing" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-sm flex items-center gap-2 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg x-show="!bulkProcessing" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                                <svg x-show="bulkProcessing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                <span x-text="bulkProcessing ? 'Shipping...' : 'Ship All via Pathao'"></span>
                             </button>
                         @else
                             <form action="{{ route('orders.bulkPrint') }}" method="POST" target="_blank" class="inline">
@@ -968,6 +970,7 @@
                 // Bulk Spreadsheet State
                 bulkModalOpen: false,
                 bulkSubmitting: false,
+                bulkProcessing: false, // UX-05: Loading state for bulk ship/delete
                 bulkRows: [],
 
                 async init() {
@@ -1273,7 +1276,9 @@
                 },
 
                 async bulkDeleteOrders() {
+                    if (this.bulkProcessing) return;
                     if (!confirm('Are you sure you want to delete ' + this.selectedOrders.length + ' pending orders? This cannot be undone.')) return;
+                    this.bulkProcessing = true;
                     try {
                         const res = await fetch('{{ route("orders.bulkDelete") }}', {
                             method: 'POST',
@@ -1290,10 +1295,13 @@
                         console.error(e);
                         alert('Network error. Please try again.');
                     }
+                    this.bulkProcessing = false;
                 },
 
                 async bulkShipOrders() {
+                    if (this.bulkProcessing) return;
                     if (!confirm('Ship ' + this.selectedOrders.length + ' orders via Pathao? This will create consignments for all selected orders.')) return;
+                    this.bulkProcessing = true;
                     try {
                         const res = await fetch('{{ route("orders.bulkShip") }}', {
                             method: 'POST',
@@ -1319,6 +1327,7 @@
                         console.error(e);
                         alert('Network error. Please try again.');
                     }
+                    this.bulkProcessing = false;
                 },
 
                 async bulkRejectOrders() {

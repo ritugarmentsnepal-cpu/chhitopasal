@@ -81,9 +81,10 @@ class ExpenseController extends Controller
             $expense->update($validated);
 
             if ($oldAmount != $newAmount) {
-                $tx = \App\Models\Transaction::where('reference_type', 'Expense')
-                    ->where('reference_id', $expense->id)->first();
-                if ($tx) {
+                // FIN-05: Handle ALL linked transactions, not just the first
+                $transactions = \App\Models\Transaction::where('reference_type', 'Expense')
+                    ->where('reference_id', $expense->id)->get();
+                foreach ($transactions as $tx) {
                     $account = \App\Models\Account::find($tx->account_id);
                     if ($account) {
                         $account->increment('balance', $oldAmount);
@@ -104,9 +105,10 @@ class ExpenseController extends Controller
         }
 
         DB::transaction(function () use ($expense) {
-            $tx = \App\Models\Transaction::where('reference_type', 'Expense')
-                ->where('reference_id', $expense->id)->first();
-            if ($tx) {
+            // FIN-05: Handle ALL linked transactions
+            $transactions = \App\Models\Transaction::where('reference_type', 'Expense')
+                ->where('reference_id', $expense->id)->get();
+            foreach ($transactions as $tx) {
                 $account = \App\Models\Account::find($tx->account_id);
                 if ($account) {
                     $account->increment('balance', $tx->amount);

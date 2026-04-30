@@ -53,6 +53,9 @@ class AccountingController extends Controller
             $data['accounts'] = \App\Models\Account::all();
         } elseif ($tab === 'parties') {
             $data['parties'] = \App\Models\Party::all();
+            // NEW-FIN-01: Compute payables (negative balance = owed to supplier) and receivables
+            $data['payables'] = \App\Models\Party::where('current_balance', '<', 0)->sum(\Illuminate\Support\Facades\DB::raw('ABS(current_balance)'));
+            $data['receivables'] = \App\Models\Party::where('current_balance', '>', 0)->sum('current_balance');
         } elseif ($tab === 'purchases') {
             $data['purchases'] = \App\Models\Purchase::with('party')->latest()->get();
             $data['parties'] = \App\Models\Party::whereIn('type', ['supplier'])->get();
@@ -124,46 +127,25 @@ class AccountingController extends Controller
             return redirect()->route('accounting.index', ['tab' => 'banking'])->with('error', 'Access Denied: Only Administrators can run Pathao settlement sync.');
         }
 
+        // FIN-01: Only mark delivered orders as paid.
+        // Revenue transactions are already recorded by OrderService when status changes to 'delivered'.
+        // This sync only updates the payment_status flag — no new financial transactions.
         $orders = \App\Models\Order::where('status', 'delivered')
                     ->where('payment_status', 'unpaid')
                     ->whereNotNull('pathao_consignment_id')
                     ->get();
 
-        $clearingAccount = \App\Models\Account::where('name', 'Pathao Clearing')->first();
         $syncedCount = 0;
 
-        if ($clearingAccount) {
-            DB::transaction(function () use ($orders, $clearingAccount, &$syncedCount) {
-                foreach ($orders as $order) {
-                    // Guard: prevent duplicate settlement transactions
-                    $alreadySynced = \App\Models\Transaction::where('reference_type', 'Order')
-                        ->where('reference_id', $order->id)
-                        ->where('account_id', $clearingAccount->id)
-                        ->where('notes', 'like', '%Auto-Sync Pathao Settlement%')
-                        ->exists();
-
-                    if ($alreadySynced) continue;
-
-                    $order->update([
-                        'payment_status' => 'paid',
-                        'paid_amount' => $order->total_amount
-                    ]);
-
-                    \App\Models\Transaction::create([
-                        'account_id' => $clearingAccount->id,
-                        'type' => 'in',
-                        'amount' => $order->total_amount,
-                        'reference_type' => 'Order',
-                        'reference_id' => $order->id,
-                        'date' => now(),
-                        'notes' => 'Auto-Sync Pathao Settlement (Consignment: ' . $order->pathao_consignment_id . ')'
-                    ]);
-
-                    $clearingAccount->increment('balance', $order->total_amount);
-                    $syncedCount++;
-                }
-            });
-        }
+        DB::transaction(function () use ($orders, &$syncedCount) {
+            foreach ($orders as $order) {
+                $order->update([
+                    'payment_status' => 'paid',
+                    'paid_amount' => $order->total_amount
+                ]);
+                $syncedCount++;
+            }
+        });
 
         return redirect()->route('accounting.index', ['tab' => 'banking'])->with('success', "Synced {$syncedCount} Pathao settlements successfully.");
     }
@@ -389,8 +371,16 @@ class AccountingController extends Controller
             }
 
             // 2. Reverse any existing "in" payment transactions for this order
-            $existingPayments = \App\Models\Transaction::where('reference_type', 'Order')
-                ->where('reference_id', $order->id)
+            // FIN-02: Reverse both 'Order' and 'Order Delivered' reference types
+            $existingPayments = \App\Models\Transaction::where(function($q) use ($order) {
+                    $q->where(function($q2) use ($order) {
+                        $q2->where('reference_type', \App\SystemAccounts::REF_ORDER)
+                           ->where('reference_id', $order->id);
+                    })->orWhere(function($q2) use ($order) {
+                        $q2->where('reference_type', \App\SystemAccounts::REF_ORDER_DELIVERED)
+                           ->where('reference_id', $order->id);
+                    });
+                })
                 ->where('type', 'in')
                 ->get();
 
@@ -399,14 +389,22 @@ class AccountingController extends Controller
                     'account_id' => $payment->account_id,
                     'type' => 'out',
                     'amount' => $payment->amount,
-                    'reference_type' => 'SaleReturn',
+                    'reference_type' => \App\SystemAccounts::REF_SALE_RETURN,
                     'reference_id' => $order->id,
                     'date' => now(),
                     'notes' => "Payment reversal for returned Order #{$order->id}",
                 ]);
                 $account = \App\Models\Account::find($payment->account_id);
                 if ($account) {
+                    // FIN-03: Decrement but log if it would go negative
                     $account->decrement('balance', $payment->amount);
+                }
+                // Also reverse the Pathao party balance if applicable
+                if ($payment->party_id) {
+                    $party = \App\Models\Party::find($payment->party_id);
+                    if ($party) {
+                        $party->decrement('current_balance', $payment->amount);
+                    }
                 }
             }
 

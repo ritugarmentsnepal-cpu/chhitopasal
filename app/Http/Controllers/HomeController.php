@@ -19,8 +19,11 @@ class HomeController extends Controller
 
     public function show($slug)
     {
-        $product = Product::with('category')->where('slug', $slug)->firstOrFail();
-        $products = Product::with('category')->latest()->get();
+        // UX-02: Hide cost_price on product detail page to prevent leaking sensitive data
+        $product = Product::with('category')->where('slug', $slug)->firstOrFail()
+            ->makeHidden(['cost_price', 'created_at', 'updated_at']);
+        $products = Product::with('category')->latest()->get()
+            ->makeHidden(['cost_price', 'created_at', 'updated_at']);
         $settings = Setting::pluck('value', 'key')->toArray();
         return view('product.show', compact('product', 'products', 'settings'));
     }

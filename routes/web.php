@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/product/{slug}', [HomeController::class, 'show'])->name('product.show');
-Route::post('/checkout', [\App\Http\Controllers\OrderController::class, 'storeWeb'])->middleware('throttle:10,1')->name('checkout.web');
+Route::post('/checkout', [\App\Http\Controllers\OrderController::class, 'storeWeb'])->middleware('throttle:5,1')->name('checkout.web');
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
@@ -77,15 +77,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Staff / Users
         Route::resource('users', \App\Http\Controllers\UserController::class)->except(['create', 'show', 'edit']);
 
-        // Admin Utilities
-        Route::get('/admin/clear-cache', function () {
+        // Admin Utilities — SEC-09: Changed from GET to POST to prevent CSRF via link/image tags
+        Route::post('/admin/clear-cache', function () {
             \Illuminate\Support\Facades\Artisan::call('cache:clear');
             \Illuminate\Support\Facades\Artisan::call('config:clear');
             \Illuminate\Support\Facades\Artisan::call('view:clear');
+            clear_settings_cache();
             return back()->with('success', 'All caches cleared successfully!');
         })->name('admin.clearCache');
 
-        Route::get('/admin/optimize', function () {
+        Route::post('/admin/optimize', function () {
             \Illuminate\Support\Facades\Artisan::call('config:cache');
             \Illuminate\Support\Facades\Artisan::call('route:cache');
             \Illuminate\Support\Facades\Artisan::call('view:cache');
@@ -101,9 +102,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Pathao Manager Routes
     Route::get('/pathao', [\App\Http\Controllers\PathaoManagerController::class, 'index'])->name('pathao.index');
     Route::post('/pathao/settlement', [\App\Http\Controllers\PathaoManagerController::class, 'recordSettlement'])->name('pathao.settlement');
-    Route::get('/api/pathao/cities', [\App\Http\Controllers\PathaoManagerController::class, 'getCities']);
-    Route::get('/api/pathao/zones/{cityId}', [\App\Http\Controllers\PathaoManagerController::class, 'getZones']);
-    Route::get('/api/pathao/areas/{zoneId}', [\App\Http\Controllers\PathaoManagerController::class, 'getAreas']);
+    // ARCH-05: Add rate limiting to API proxy routes
+    Route::get('/api/pathao/cities', [\App\Http\Controllers\PathaoManagerController::class, 'getCities'])->middleware('throttle:30,1');
+    Route::get('/api/pathao/zones/{cityId}', [\App\Http\Controllers\PathaoManagerController::class, 'getZones'])->middleware('throttle:30,1');
+    Route::get('/api/pathao/areas/{zoneId}', [\App\Http\Controllers\PathaoManagerController::class, 'getAreas'])->middleware('throttle:30,1');
 });
 
 Route::middleware('auth')->group(function () {

@@ -36,6 +36,11 @@ class Order extends Model
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'reference_id')->where('reference_type', 'Order');
+        return $this->hasMany(Transaction::class, 'reference_id')
+            ->whereIn('reference_type', [
+                \App\SystemAccounts::REF_ORDER,
+                \App\SystemAccounts::REF_ORDER_DELIVERED,
+                \App\SystemAccounts::REF_SALE_RETURN,
+            ]);
     }
 }

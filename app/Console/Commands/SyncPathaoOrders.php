@@ -5,35 +5,32 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Order;
 use App\Services\PathaoService;
-use Illuminate\Http\Request;
-use App\Http\Controllers\OrderController;
+use App\Services\OrderService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class SyncPathaoOrders extends Command
 {
     /**
      * The name and signature of the console command.
-     *
-     * @var string
      */
     protected $signature = 'pathao:sync';
 
     /**
      * The console command description.
-     *
-     * @var string
      */
     protected $description = 'Automatically sync shipped orders with Pathao tracking status';
 
     /**
-     * Execute the console command.
+     * INT-01: Uses OrderService instead of OrderController for CLI-safe execution.
      */
-    public function handle(PathaoService $pathao, OrderController $orderController)
+    public function handle(PathaoService $pathao, OrderService $orderService)
     {
         $this->info('Starting Pathao status sync...');
 
-        // Fetch all shipped orders that have a consignment ID
-        $orders = Order::where('status', 'shipped')
+        // NEW-INT-01: Also sync 'delivered' orders to catch late Pathao returns
+        $orders = Order::with('orderItems.product')
+                       ->whereIn('status', ['shipped', 'delivered'])
                        ->whereNotNull('pathao_consignment_id')
                        ->get();
 
@@ -56,7 +53,7 @@ class SyncPathaoOrders extends Command
                 ]);
 
                 $normalizedStatus = strtolower($status);
-                $newLocalStatus = $order->status;
+                $newLocalStatus = null;
 
                 // Map Pathao's status strings to our local database statuses
                 if (in_array($normalizedStatus, ['delivered', 'successful'])) {
@@ -67,11 +64,12 @@ class SyncPathaoOrders extends Command
                     $newLocalStatus = 'rejected';
                 }
 
-                if ($newLocalStatus !== $order->status) {
-                    // Re-use the controller's logic to handle stock, finance, and status update
-                    $request = new Request(['status' => $newLocalStatus]);
-                    $orderController->updateStatus($request, $order);
-                    
+                if ($newLocalStatus && $newLocalStatus !== $order->status) {
+                    // INT-01: Use OrderService directly — no HTTP controller dependency
+                    DB::transaction(function () use ($order, $newLocalStatus, $orderService) {
+                        $orderService->transitionStatus($order, $newLocalStatus);
+                    });
+
                     $this->info("Updated Order #{$order->id} from shipped to {$newLocalStatus}.");
                     $count++;
                 }

@@ -213,7 +213,7 @@
     <!-- 5. Footer -->
     <footer id="about" class="bg-gray-900 text-white pt-12 sm:pt-20 pb-8 sm:pb-10 rounded-t-[2rem] sm:rounded-t-[3rem] mt-10">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 mb-10 sm:mb-16">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 mb-10 sm:mb-16">
                 <div>
                     <a href="{{ route('home') }}" class="flex items-center gap-2 mb-6">
                         <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center shadow-lg shadow-mango/20">
@@ -234,27 +234,27 @@
                         </a>
                     </div>
                 </div>
-                <div>
-                    <h4 class="font-black text-lg mb-6">Quick Links</h4>
-                    <ul class="space-y-4 text-gray-400 font-medium">
+                <div class="border-t border-gray-800 pt-8 md:border-t-0 md:pt-0">
+                    <h4 class="font-black text-lg mb-5">Quick Links</h4>
+                    <ul class="space-y-3 text-gray-400 font-medium">
                         <li><a href="#" class="hover:text-mango transition-colors">Home</a></li>
                         <li><a href="#shop" class="hover:text-mango transition-colors">Shop</a></li>
                         <li><a href="#" class="hover:text-mango transition-colors">Categories</a></li>
                         <li><a href="{{ route('login') }}" class="hover:text-mango transition-colors">Staff Login</a></li>
                     </ul>
                 </div>
-                <div>
-                    <h4 class="font-black text-lg mb-6">Support</h4>
-                    <ul class="space-y-4 text-gray-400 font-medium">
+                <div class="border-t border-gray-800 pt-8 md:border-t-0 md:pt-0">
+                    <h4 class="font-black text-lg mb-5">Support</h4>
+                    <ul class="space-y-3 text-gray-400 font-medium">
                         <li><a href="mailto:{{ setting('contact_email', 'support@chhitopasal.com') }}" class="hover:text-mango transition-colors">{{ setting('contact_email', 'support@chhitopasal.com') }}</a></li>
                         <li><a href="tel:{{ setting('contact_phone', '+977 9800000000') }}" class="hover:text-mango transition-colors">{{ setting('contact_phone', '+977 9800000000') }}</a></li>
                         <li><a href="#" class="hover:text-mango transition-colors cursor-default">{{ setting('contact_address', 'Kathmandu, Nepal') }}</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between text-gray-500 font-medium text-sm">
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between text-gray-500 font-medium text-sm gap-2">
                 <p>&copy; {{ date('Y') }} {{ setting('store_name', 'Chhito Pasal') }}. All rights reserved.</p>
-                <p class="mt-2 md:mt-0">Crafted with ❤️ for premium shopping.</p>
+                <p>Crafted with ❤️ for premium shopping.</p>
             </div>
         </div>
     </footer>
@@ -563,8 +563,8 @@
                         <div class="pt-2">
                             <label class="block text-sm font-bold text-gray-700 mb-2">Delivery Location</label>
                             <select x-model="customer.delivery_location" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango focus:border-mango font-bold py-3 text-gray-900 cursor-pointer">
-                                <option value="inside">Inside Kathmandu Valley (+ Rs. 50)</option>
-                                <option value="outside">Outside Kathmandu Valley (+ Rs. 100)</option>
+                                <option value="inside">Inside Kathmandu Valley (+ Rs. {{ setting('delivery_charge_inside', 50) }})</option>
+                                <option value="outside">Outside Kathmandu Valley (+ Rs. {{ setting('delivery_charge_outside', 100) }})</option>
                             </select>
                         </div>
 
@@ -781,7 +781,7 @@
                 },
 
                 get deliveryCharge() {
-                    return this.customer.delivery_location === 'inside' ? 50 : 100;
+                    return this.customer.delivery_location === 'inside' ? {{ (int) setting('delivery_charge_inside', 50) }} : {{ (int) setting('delivery_charge_outside', 100) }};
                 },
 
                 get cartTotal() {

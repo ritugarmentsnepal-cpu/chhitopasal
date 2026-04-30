@@ -32,22 +32,56 @@ class PathaoService
      */
     private function getAccessToken(): string
     {
-        return Cache::remember('pathao_access_token', 86400, function () { // Cache for 24h, though token is usually longer
-            $response = Http::post("{$this->baseUrl}/aladdin/api/v1/issue-token", [
-                'client_id' => $this->clientId,
-                'client_secret' => $this->clientSecret,
-                'username' => $this->username,
-                'password' => $this->password,
-                'grant_type' => 'password',
-            ]);
-
-            if ($response->failed()) {
-                Log::error('Pathao Authentication Failed', ['response' => $response->body()]);
-                throw new Exception("Could not authenticate with Pathao API.");
-            }
-
-            return $response->json('access_token');
+        return Cache::remember('pathao_access_token', 43200, function () { // Cache for 12h
+            return $this->requestNewToken();
         });
+    }
+
+    /**
+     * INT-02: Request a fresh token and cache it.
+     */
+    private function requestNewToken(): string
+    {
+        $response = Http::post("{$this->baseUrl}/aladdin/api/v1/issue-token", [
+            'client_id' => $this->clientId,
+            'client_secret' => $this->clientSecret,
+            'username' => $this->username,
+            'password' => $this->password,
+            'grant_type' => 'password',
+        ]);
+
+        if ($response->failed()) {
+            Log::error('Pathao Authentication Failed', ['response' => $response->body()]);
+            throw new Exception("Could not authenticate with Pathao API.");
+        }
+
+        return $response->json('access_token');
+    }
+
+    /**
+     * INT-02: Make an authenticated request with automatic token refresh on 401.
+     */
+    private function authenticatedRequest(string $method, string $url, array $data = [], array $headers = [])
+    {
+        $token = $this->getAccessToken();
+        $request = Http::withToken($token);
+        if (!empty($headers)) {
+            $request = $request->withHeaders($headers);
+        }
+        $response = $request->{$method}($url, $data);
+
+        if ($response->status() === 401) {
+            // Token expired — refresh and retry once
+            Cache::forget('pathao_access_token');
+            $token = $this->getAccessToken();
+            $request = Http::withToken($token);
+            if (!empty($headers)) {
+                $request = $request->withHeaders($headers);
+            }
+            $response = $request->{$method}($url, $data);
+        }
+
+        return $response;
     }
 
     /**
@@ -66,10 +100,7 @@ class PathaoService
         $weightKg = max(0.5, $totalWeightGrams / 1000);
 
         try {
-            // 2. Retrieve valid Access Token
-            $token = $this->getAccessToken();
-
-            // 3. Prepare payload mapped to Pathao's expected schema
+            // 2. Prepare payload mapped to Pathao's expected schema
             $payload = [
                 'store_id' => $this->storeId,
                 'merchant_order_id' => (string) $order->id,
@@ -91,10 +122,13 @@ class PathaoService
 
             Log::info("Sending order to Pathao API", ['payload' => $payload]);
 
-            // 4. Send API Request
-            $response = Http::withToken($token)
-                ->withHeaders(['Accept' => 'application/json'])
-                ->post("{$this->baseUrl}/aladdin/api/v1/orders", $payload);
+            // 3. NEW-SEC-02: Send via authenticatedRequest for automatic token refresh on 401
+            $response = $this->authenticatedRequest(
+                'post',
+                "{$this->baseUrl}/aladdin/api/v1/orders",
+                $payload,
+                ['Accept' => 'application/json']
+            );
             
             if ($response->successful()) {
                 $consignmentId = $response->json('data.consignment_id');
@@ -130,8 +164,7 @@ class PathaoService
     {
         return Cache::remember('pathao_cities', 86400, function () {
             try {
-                $response = Http::withToken($this->getAccessToken())
-                    ->get("{$this->baseUrl}/aladdin/api/v1/countries/1/city-list");
+                $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/countries/1/city-list");
                 
                 if ($response->successful()) {
                     return $response->json('data.data') ?? [];
@@ -140,12 +173,8 @@ class PathaoService
                 Log::error("Failed to fetch Pathao cities: " . $e->getMessage());
             }
 
-            // Mock Data Fallback for Development/Testing
-            return [
-                ['city_id' => 1, 'city_name' => 'Kathmandu'],
-                ['city_id' => 2, 'city_name' => 'Lalitpur'],
-                ['city_id' => 3, 'city_name' => 'Bhaktapur'],
-            ];
+            // INT-03: Return empty array instead of mock data in production
+            return [];
         });
     }
 
@@ -153,8 +182,7 @@ class PathaoService
     {
         return Cache::remember("pathao_zones_{$cityId}", 86400, function () use ($cityId) {
             try {
-                $response = Http::withToken($this->getAccessToken())
-                    ->get("{$this->baseUrl}/aladdin/api/v1/cities/{$cityId}/zone-list");
+                $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/cities/{$cityId}/zone-list");
                 
                 if ($response->successful()) {
                     return $response->json('data.data') ?? [];
@@ -163,11 +191,7 @@ class PathaoService
                 Log::error("Failed to fetch Pathao zones for city {$cityId}: " . $e->getMessage());
             }
 
-            // Mock Data Fallback for Development/Testing
-            if ($cityId == 1) return [['zone_id' => 101, 'zone_name' => 'Baneshwor'], ['zone_id' => 102, 'zone_name' => 'Koteshwor']];
-            if ($cityId == 2) return [['zone_id' => 201, 'zone_name' => 'Patan'], ['zone_id' => 202, 'zone_name' => 'Jawalakhel']];
-            if ($cityId == 3) return [['zone_id' => 301, 'zone_name' => 'Suryabinayak']];
-            return [['zone_id' => 999, 'zone_name' => 'Default Zone']];
+            return [];
         });
     }
 
@@ -175,8 +199,7 @@ class PathaoService
     {
         return Cache::remember("pathao_areas_{$zoneId}", 86400, function () use ($zoneId) {
             try {
-                $response = Http::withToken($this->getAccessToken())
-                    ->get("{$this->baseUrl}/aladdin/api/v1/zones/{$zoneId}/area-list");
+                $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/zones/{$zoneId}/area-list");
                 
                 if ($response->successful()) {
                     return $response->json('data.data') ?? [];
@@ -185,11 +208,7 @@ class PathaoService
                 Log::error("Failed to fetch Pathao areas for zone {$zoneId}: " . $e->getMessage());
             }
 
-            // Mock Data Fallback for Development/Testing
-            if ($zoneId == 101) return [['area_id' => 1001, 'area_name' => 'New Baneshwor'], ['area_id' => 1002, 'area_name' => 'Old Baneshwor']];
-            if ($zoneId == 102) return [['area_id' => 1003, 'area_name' => 'Balkumari']];
-            if ($zoneId == 201) return [['area_id' => 2001, 'area_name' => 'Mangal Bazar']];
-            return [['area_id' => 9999, 'area_name' => 'Default Area']];
+            return [];
         });
     }
 
@@ -206,8 +225,8 @@ class PathaoService
     public function getOrderDetails($consignmentId): ?array
     {
         try {
-            $response = Http::withToken($this->getAccessToken())
-                ->get("{$this->baseUrl}/aladdin/api/v1/orders/{$consignmentId}");
+            // NEW-SEC-01: Use authenticatedRequest for automatic token refresh on 401
+            $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/orders/{$consignmentId}");
             
             if ($response->successful()) {
                 return $response->json('data') ?? null;

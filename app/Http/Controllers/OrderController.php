@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Transaction;
 use App\Services\PathaoService;
+use App\Services\OrderService;
+use App\SystemAccounts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -27,10 +30,11 @@ class OrderController extends Controller
         $query = Order::with('orderItems.product')->where('status', $status);
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('id', 'like', "%$search%")
-                  ->orWhere('customer_name', 'like', "%$search%")
-                  ->orWhere('customer_phone', 'like', "%$search%");
+            $escaped = OrderService::escapeLike($search);
+            $query->where(function($q) use ($escaped) {
+                $q->where('id', 'like', "%{$escaped}%")
+                  ->orWhere('customer_name', 'like', "%{$escaped}%")
+                  ->orWhere('customer_phone', 'like', "%{$escaped}%");
             });
         }
 
@@ -55,7 +59,8 @@ class OrderController extends Controller
                     $q->whereNull('pathao_status')->orWhere('pathao_status', '');
                 });
             } else {
-                $query->where('pathao_status', 'like', "%{$pathaoFilter}%");
+                $escapedFilter = OrderService::escapeLike($pathaoFilter);
+                $query->where('pathao_status', 'like', "%{$escapedFilter}%");
             }
         }
 
@@ -81,7 +86,20 @@ class OrderController extends Controller
 
         DB::transaction(function () use ($validated) {
             $product = Product::findOrFail($validated['product_id']);
-            $totalAmount = $product->price * $validated['quantity'];
+            $quantity = $validated['quantity'];
+            $totalAmount = $product->price * $quantity;
+            $unitPrice = $product->price;
+
+            // ORD-05: Apply bundle pricing in manual orders
+            if (!empty($product->bundles) && is_array($product->bundles)) {
+                $matchedBundle = collect($product->bundles)->first(function($bundle) use ($quantity) {
+                    return (int)$bundle['qty'] === (int)$quantity;
+                });
+                if ($matchedBundle && isset($matchedBundle['price'])) {
+                    $totalAmount = (float)$matchedBundle['price'];
+                    $unitPrice = $totalAmount / $quantity;
+                }
+            }
 
             $order = Order::create([
                 'customer_name' => $validated['customer_name'],
@@ -95,8 +113,8 @@ class OrderController extends Controller
 
             $order->orderItems()->create([
                 'product_id' => $product->id,
-                'quantity' => $validated['quantity'],
-                'price_at_purchase' => $product->price,
+                'quantity' => $quantity,
+                'price_at_purchase' => $unitPrice,
                 'cost_at_purchase' => $product->cost_price,
             ]);
         });
@@ -147,13 +165,15 @@ class OrderController extends Controller
                 Product::where('id', $data['product_id'])->where('stock', '>=', $data['quantity'])->decrement('stock', $data['quantity']);
             }
 
-            $cashAccount = \App\Models\Account::where('name', 'Main Cash')->first();
-            if ($cashAccount) {
+            $cashAccount = SystemAccounts::mainCash();
+            if (!$cashAccount) {
+                Log::error('POS Sale: Main Cash account not found. Financial transaction skipped for Order #' . $order->id);
+            } elseif ($totalAmount > 0) {
                 \App\Models\Transaction::create([
                     'account_id' => $cashAccount->id,
                     'type' => 'in',
                     'amount' => $totalAmount,
-                    'reference_type' => 'Order',
+                    'reference_type' => SystemAccounts::REF_ORDER,
                     'reference_id' => $order->id,
                     'date' => now(),
                     'notes' => 'POS Cash Sale'
@@ -185,6 +205,15 @@ class OrderController extends Controller
             'items.*.color' => 'nullable|string|max:50',
             'items.*.size' => 'nullable|string|max:50',
         ]);
+
+        // ORD-04: Validate stock availability before creating order
+        $orderService = app(OrderService::class);
+        $stockCheck = $orderService->validateStockAvailability(
+            array_map(fn($i) => ['id' => $i['id'], 'quantity' => $i['quantity']], $validated['items'])
+        );
+        if (!$stockCheck['valid']) {
+            return response()->json(['message' => implode(' ', $stockCheck['errors'])], 422);
+        }
 
         // Server-side delivery charge calculation — never trust client amounts
         $insideValleyCharge = (float) setting('delivery_charge_inside', 50);
@@ -333,58 +362,64 @@ class OrderController extends Controller
         $header = array_shift($rows); // Remove header
         
         $successCount = 0;
-        foreach ($rows as $row) {
-            if (empty($row[0]) || empty($row[4])) continue; // Need name and product
-            
-            $customerName = trim($row[0]);
-            $phone = trim($row[1] ?? '');
-            $address = trim($row[2] ?? '');
-            $city = trim($row[3] ?? '');
-            $productSelection = trim($row[4]);
-            
-            // Extract ID and Qty using regex: [ID:QTY] Name
-            if (preg_match('/\[(\d+):(\d+)\]/', $productSelection, $matches)) {
-                $productId = (int)$matches[1];
-                $qty = (int)$matches[2];
-            } else {
-                continue; // Skip invalid formats
-            }
-            
-            $product = Product::find($productId);
-            if (!$product) continue;
-            
-            $itemTotal = $product->price * $qty;
-            $unitPrice = $product->price;
 
-            // Check if it's a bundle price
-            if (!empty($product->bundles) && is_array($product->bundles)) {
-                $matchedBundle = collect($product->bundles)->first(function($bundle) use ($qty) {
-                    return (int)$bundle['qty'] === (int)$qty;
-                });
+        // NEW-FIN-04 + NEW-ARCH-01: Wrap in transaction, suppress logging for bulk
+        Order::$suppressLogging = true;
+        try {
+            DB::transaction(function () use ($rows, &$successCount) {
+                foreach ($rows as $row) {
+                    if (empty($row[0]) || empty($row[4])) continue;
+                    
+                    $customerName = trim($row[0]);
+                    $phone = trim($row[1] ?? '');
+                    $address = trim($row[2] ?? '');
+                    $city = trim($row[3] ?? '');
+                    $productSelection = trim($row[4]);
+                    
+                    if (preg_match('/\[(\d+):(\d+)\]/', $productSelection, $matches)) {
+                        $productId = (int)$matches[1];
+                        $qty = (int)$matches[2];
+                    } else {
+                        continue;
+                    }
+                    
+                    $product = Product::find($productId);
+                    if (!$product) continue;
+                    
+                    $itemTotal = $product->price * $qty;
+                    $unitPrice = $product->price;
 
-                if ($matchedBundle && isset($matchedBundle['price'])) {
-                    $itemTotal = (float)$matchedBundle['price'];
-                    $unitPrice = $itemTotal / $qty;
+                    if (!empty($product->bundles) && is_array($product->bundles)) {
+                        $matchedBundle = collect($product->bundles)->first(function($bundle) use ($qty) {
+                            return (int)$bundle['qty'] === (int)$qty;
+                        });
+                        if ($matchedBundle && isset($matchedBundle['price'])) {
+                            $itemTotal = (float)$matchedBundle['price'];
+                            $unitPrice = $itemTotal / $qty;
+                        }
+                    }
+                    
+                    $order = Order::create([
+                        'customer_name' => $customerName,
+                        'customer_phone' => $phone,
+                        'address' => $address,
+                        'city' => $city,
+                        'total_amount' => $itemTotal,
+                        'status' => 'pending',
+                        'source' => 'csv',
+                    ]);
+                    
+                    $order->orderItems()->create([
+                        'product_id' => $product->id,
+                        'quantity' => $qty,
+                        'price_at_purchase' => $unitPrice,
+                        'cost_at_purchase' => $product->cost_price,
+                    ]);
+                    $successCount++;
                 }
-            }
-            
-            $order = Order::create([
-                'customer_name' => $customerName,
-                'customer_phone' => $phone,
-                'address' => $address,
-                'city' => $city,
-                'total_amount' => $itemTotal,
-                'status' => 'pending',
-                'source' => 'csv',
-            ]);
-            
-            $order->orderItems()->create([
-                'product_id' => $product->id,
-                'quantity' => $qty,
-                'price_at_purchase' => $unitPrice,
-                'cost_at_purchase' => $product->cost_price,
-            ]);
-            $successCount++;
+            });
+        } finally {
+            Order::$suppressLogging = false;
         }
 
         return redirect()->back()->with('success', "Bulk uploaded $successCount orders.");
@@ -405,32 +440,40 @@ class OrderController extends Controller
 
         $successCount = 0;
 
-        foreach ($validated['orders'] as $row) {
-            $product = Product::find($row['product_id']);
-            if (!$product) continue;
+        // NEW-FIN-04 + NEW-ARCH-01: Wrap in transaction, suppress logging for bulk
+        Order::$suppressLogging = true;
+        try {
+            DB::transaction(function () use ($validated, &$successCount) {
+                foreach ($validated['orders'] as $row) {
+                    $product = Product::find($row['product_id']);
+                    if (!$product) continue;
 
-            $totalAmount = $row['amount'];
-            $qty = $row['quantity'];
-            $unitPrice = $qty > 0 ? $totalAmount / $qty : 0;
+                    $totalAmount = $row['amount'];
+                    $qty = $row['quantity'];
+                    $unitPrice = $qty > 0 ? $totalAmount / $qty : 0;
 
-            $order = Order::create([
-                'customer_name' => $row['customer_name'],
-                'customer_phone' => $row['customer_phone'],
-                'address' => $row['address'],
-                'city' => $row['city'] ?? null,
-                'total_amount' => $totalAmount,
-                'status' => 'pending',
-                'source' => 'manual',
-            ]);
+                    $order = Order::create([
+                        'customer_name' => $row['customer_name'],
+                        'customer_phone' => $row['customer_phone'],
+                        'address' => $row['address'],
+                        'city' => $row['city'] ?? null,
+                        'total_amount' => $totalAmount,
+                        'status' => 'pending',
+                        'source' => 'manual',
+                    ]);
 
-            $order->orderItems()->create([
-                'product_id' => $product->id,
-                'quantity' => $qty,
-                'price_at_purchase' => $unitPrice,
-                'cost_at_purchase' => $product->cost_price,
-            ]);
+                    $order->orderItems()->create([
+                        'product_id' => $product->id,
+                        'quantity' => $qty,
+                        'price_at_purchase' => $unitPrice,
+                        'cost_at_purchase' => $product->cost_price,
+                    ]);
 
-            $successCount++;
+                    $successCount++;
+                }
+            });
+        } finally {
+            Order::$suppressLogging = false;
         }
 
         return response()->json([
@@ -473,11 +516,17 @@ class OrderController extends Controller
             return response()->json(['message' => 'No pending orders found to delete.'], 422);
         }
 
+        // NEW-ARCH-01: Suppress logging for bulk delete
+        Order::$suppressLogging = true;
         $deletedCount = 0;
-        foreach ($orders as $order) {
-            $order->orderItems()->delete();
-            $order->delete();
-            $deletedCount++;
+        try {
+            foreach ($orders as $order) {
+                $order->orderItems()->delete();
+                $order->delete();
+                $deletedCount++;
+            }
+        } finally {
+            Order::$suppressLogging = false;
         }
 
         return response()->json([
@@ -506,35 +555,40 @@ class OrderController extends Controller
         $shipped = 0;
         $failed = 0;
         $errors = [];
+        $orderService = app(OrderService::class);
 
-        foreach ($orders as $order) {
-            if (!$order->pathao_city_id || !$order->pathao_zone_id) {
-                $failed++;
-                $errors[] = "Order #{$order->id}: Missing Pathao location IDs.";
-                continue;
-            }
-
-            try {
-                $result = $pathao->createOrder($order);
-                if ($result['success']) {
-                    $order->update([
-                        'status' => 'shipped',
-                        'pathao_consignment_id' => $result['consignment_id'],
-                    ]);
-                    foreach ($order->orderItems as $item) {
-                        if ($item->product) {
-                            $item->product->decrement('stock', $item->quantity);
-                        }
-                    }
-                    $shipped++;
-                } else {
+        // NEW-ARCH-01: Suppress logging for bulk ship
+        Order::$suppressLogging = true;
+        Transaction::$suppressLogging = true;
+        try {
+            foreach ($orders as $order) {
+                if (!$order->pathao_city_id || !$order->pathao_zone_id) {
                     $failed++;
-                    $errors[] = "Order #{$order->id}: " . ($result['error'] ?? 'Unknown error');
+                    $errors[] = "Order #{$order->id}: Missing Pathao location IDs.";
+                    continue;
                 }
-            } catch (\Exception $e) {
-                $failed++;
-                $errors[] = "Order #{$order->id}: " . $e->getMessage();
+
+                try {
+                    $result = $pathao->createOrder($order);
+                    if ($result['success']) {
+                        // NEW-FIN-03: Use OrderService for atomic stock deduction
+                        DB::transaction(function () use ($order, $result, $orderService) {
+                            $order->update(['pathao_consignment_id' => $result['consignment_id']]);
+                            $orderService->transitionStatus($order, 'shipped');
+                        });
+                        $shipped++;
+                    } else {
+                        $failed++;
+                        $errors[] = "Order #{$order->id}: " . ($result['error'] ?? 'Unknown error');
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = "Order #{$order->id}: " . $e->getMessage();
+                }
             }
+        } finally {
+            Order::$suppressLogging = false;
+            Transaction::$suppressLogging = false;
         }
 
         $message = "Shipped: {$shipped}";
@@ -569,25 +623,37 @@ class OrderController extends Controller
         }
 
         $updated = 0;
-        foreach ($orders as $order) {
-            $oldStatus = $order->status;
+        $skipped = 0;
+        $orderService = app(OrderService::class);
 
-            // Handle stock changes
-            if (in_array($oldStatus, ['shipped', 'delivered']) && in_array($newStatus, ['failed', 'rejected'])) {
-                foreach ($order->orderItems as $item) {
-                    if ($item->product) {
-                        $item->product->increment('stock', $item->quantity);
-                    }
+        // NEW-ARCH-01: Suppress logging for bulk status update
+        Order::$suppressLogging = true;
+        Transaction::$suppressLogging = true;
+        try {
+            foreach ($orders as $order) {
+                if (!$orderService->isValidTransition($order->status, $newStatus)) {
+                    $skipped++;
+                    continue;
                 }
-            }
 
-            $order->update(['status' => $newStatus]);
-            $updated++;
+                DB::transaction(function () use ($order, $newStatus, $orderService) {
+                    $orderService->transitionStatus($order, $newStatus);
+                });
+                $updated++;
+            }
+        } finally {
+            Order::$suppressLogging = false;
+            Transaction::$suppressLogging = false;
+        }
+
+        $message = "Updated {$updated} orders to {$newStatus}.";
+        if ($skipped > 0) {
+            $message .= " Skipped {$skipped} orders (invalid transition).";
         }
 
         return response()->json([
             'success' => true,
-            'message' => "Updated {$updated} orders to {$newStatus}.",
+            'message' => $message,
             'count' => $updated
         ]);
     }
@@ -607,17 +673,10 @@ class OrderController extends Controller
         $result = $pathao->createOrder($order);
 
         if ($result['success']) {
+            // NEW-FIN-03: Use OrderService for atomic stock deduction
             DB::transaction(function () use ($order, $result) {
-                $order->update([
-                    'status' => 'shipped',
-                    'pathao_consignment_id' => $result['consignment_id'],
-                ]);
-
-                foreach ($order->orderItems as $item) {
-                    if ($item->product) {
-                        Product::where('id', $item->product_id)->where('stock', '>=', $item->quantity)->decrement('stock', $item->quantity);
-                    }
-                }
+                $order->update(['pathao_consignment_id' => $result['consignment_id']]);
+                app(OrderService::class)->transitionStatus($order, 'shipped');
             });
 
             $printType = $request->input('print_type', 'both');
@@ -640,55 +699,10 @@ class OrderController extends Controller
         $oldStatus = $order->status;
         $newStatus = $validated['status'];
 
-        DB::transaction(function () use ($order, $oldStatus, $newStatus) {
-            // If it was shipped/delivered (stock deducted) and now failed/rejected (stock restored)
-            if (in_array($oldStatus, ['shipped', 'delivered']) && in_array($newStatus, ['failed', 'rejected'])) {
-                foreach ($order->orderItems as $item) {
-                    if ($item->product) {
-                        $item->product->increment('stock', $item->quantity);
-                    }
-                }
-            }
-            
-            // If it was pending/failed/rejected (stock untouched) and now shipped/delivered (stock deducted)
-            if (!in_array($oldStatus, ['shipped', 'delivered']) && in_array($newStatus, ['shipped', 'delivered'])) {
-                foreach ($order->orderItems as $item) {
-                    if ($item->product) {
-                        Product::where('id', $item->product_id)->where('stock', '>=', $item->quantity)->decrement('stock', $item->quantity);
-                    }
-                }
-            }
+        $orderService = app(OrderService::class);
 
-            // Revenue / Accounts Receivable Logic for Pathao
-            if ($oldStatus !== 'delivered' && $newStatus === 'delivered') {
-                // Guard: prevent duplicate delivered transactions
-                $existingDeliveredTx = \App\Models\Transaction::where('reference_type', 'Order Delivered')
-                    ->where('reference_id', $order->id)->exists();
-
-                if (!$existingDeliveredTx) {
-                    $pathaoParty = \App\Models\Party::where('type', 'pathao')->first();
-                    $clearingAccount = \App\Models\Account::where('name', 'Pathao Clearing')->first();
-                    if ($pathaoParty && $clearingAccount) {
-                        $dueAmount = $order->total_amount - ($order->paid_amount ?? 0);
-                        if ($dueAmount > 0) {
-                            \App\Models\Transaction::create([
-                                'account_id' => $clearingAccount->id,
-                                'party_id' => $pathaoParty->id,
-                                'type' => 'in',
-                                'amount' => $dueAmount,
-                                'reference_type' => 'Order Delivered',
-                                'reference_id' => $order->id,
-                                'date' => now(),
-                                'notes' => "Receivable from Pathao for Order #{$order->id}"
-                            ]);
-                            $clearingAccount->increment('balance', $dueAmount);
-                            $pathaoParty->increment('current_balance', $dueAmount);
-                        }
-                    }
-                }
-            }
-
-            $order->update(['status' => $newStatus]);
+        DB::transaction(function () use ($order, $newStatus, $orderService) {
+            $orderService->transitionStatus($order, $newStatus);
         });
 
         return redirect()->back()->with('success', 'Order status updated to ' . ucfirst($newStatus));
@@ -724,9 +738,11 @@ class OrderController extends Controller
         }
 
         if ($newLocalStatus !== $order->status) {
-            // Re-use the controller's logic to handle stock, finance, and status update
-            $request = new Request(['status' => $newLocalStatus]);
-            $this->updateStatus($request, $order);
+            // NEW-INT-02: Use OrderService directly instead of creating a fake Request
+            $orderService = app(OrderService::class);
+            DB::transaction(function () use ($order, $newLocalStatus, $orderService) {
+                $orderService->transitionStatus($order, $newLocalStatus);
+            });
             return redirect()->back()->with('success', 'Pathao status synced successfully. Order is now ' . $newLocalStatus);
         }
 
@@ -778,6 +794,9 @@ class OrderController extends Controller
             'status' => 'nullable|string|in:pending,confirmed,shipped,delivered,failed,rejected,return_delivered',
             'confirm_order' => 'nullable|boolean',
         ]);
+
+        // ORD-03: Wrap entire edit in a transaction for atomicity
+        DB::transaction(function () use ($order, $validated) {
 
         $orderTotal = 0;
 
@@ -865,10 +884,9 @@ class OrderController extends Controller
         if (isset($validated['pathao_zone_id'])) $updateData['pathao_zone_id'] = $validated['pathao_zone_id'];
 
         if (auth()->user()->role === 'admin' && isset($validated['status']) && $validated['status'] !== $order->status) {
-            // Admin manual status override. Use existing update logic to handle stock/finance
-            $statusReq = new Request(['status' => $validated['status']]);
-            $this->updateStatus($statusReq, $order);
-            $order->refresh(); // Reload model to reflect status change from updateStatus
+            $orderService = app(OrderService::class);
+            $orderService->transitionStatus($order, $validated['status']);
+            $order->refresh();
         } elseif (!empty($validated['confirm_order']) && $order->status === 'pending') {
             $updateData['status'] = 'confirmed';
         }
@@ -878,6 +896,8 @@ class OrderController extends Controller
         $order->logActivity('full_edit', [
             'notes' => 'Order details and items fully edited by staff.'
         ]);
+
+        }); // end DB::transaction
 
         return back()->with('success', 'Order updated successfully.');
     }
@@ -898,9 +918,16 @@ class OrderController extends Controller
                 }
             }
 
-            // Automatic Payment Reversal if any payment was recorded
-            $payments = \App\Models\Transaction::where('reference_type', 'Order')
-                ->where('reference_id', $order->id)
+            // NEW-FIN-05: Reverse ALL payment types (Order + Order Delivered), matching saleReturn() logic
+            $payments = \App\Models\Transaction::where(function ($q) use ($order) {
+                    $q->where(function ($q2) use ($order) {
+                        $q2->where('reference_type', SystemAccounts::REF_ORDER)
+                           ->where('reference_id', $order->id);
+                    })->orWhere(function ($q2) use ($order) {
+                        $q2->where('reference_type', SystemAccounts::REF_ORDER_DELIVERED)
+                           ->where('reference_id', $order->id);
+                    });
+                })
                 ->where('type', 'in')
                 ->get();
 
@@ -909,7 +936,7 @@ class OrderController extends Controller
                     'account_id' => $payment->account_id,
                     'type' => 'out',
                     'amount' => $payment->amount,
-                    'reference_type' => 'Order',
+                    'reference_type' => $payment->reference_type,
                     'reference_id' => $order->id,
                     'date' => now(),
                     'notes' => "Reversal for Returned Order #{$order->id}"
@@ -918,6 +945,15 @@ class OrderController extends Controller
                 $account = \App\Models\Account::find($payment->account_id);
                 if ($account) {
                     $account->decrement('balance', $payment->amount);
+                }
+            }
+
+            // Also reverse Pathao party balance if applicable
+            $pathaoParty = \App\Models\Party::where('type', 'pathao')->first();
+            if ($pathaoParty) {
+                $pathaoTxTotal = $payments->where('reference_type', SystemAccounts::REF_ORDER_DELIVERED)->sum('amount');
+                if ($pathaoTxTotal > 0) {
+                    $pathaoParty->decrement('current_balance', $pathaoTxTotal);
                 }
             }
 

@@ -50,6 +50,9 @@ class SettingController extends Controller
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 
+        // Clear cached settings so changes take effect immediately
+        clear_settings_cache();
+
         return redirect()->route('settings.index', ['tab' => $tab])->with('success', 'Settings updated successfully.');
     }
     
@@ -78,6 +81,7 @@ class SettingController extends Controller
     {
         $request->validate([
             'password' => 'required|string',
+            'confirmation_word' => 'required|string|in:RESET',
         ]);
 
         // Verify admin password

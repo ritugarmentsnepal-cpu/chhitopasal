@@ -7,13 +7,21 @@ use Illuminate\Support\Facades\Auth;
 
 trait Loggable
 {
+    /**
+     * ARCH-02: Static flag to suppress logging during bulk operations.
+     * Set Loggable::$suppressLogging = true before bulk ops, false after.
+     */
+    public static bool $suppressLogging = false;
+
     protected static function bootLoggable()
     {
         static::created(function ($model) {
+            if (static::$suppressLogging) return;
             $model->logActivity('created', ['attributes' => $model->getAttributes()]);
         });
 
         static::updated(function ($model) {
+            if (static::$suppressLogging) return;
             $changes = $model->getChanges();
             $original = array_intersect_key($model->getOriginal(), $changes);
             
@@ -24,6 +32,7 @@ trait Loggable
         });
 
         static::deleted(function ($model) {
+            if (static::$suppressLogging) return;
             $model->logActivity('deleted', ['attributes' => $model->getAttributes()]);
         });
     }

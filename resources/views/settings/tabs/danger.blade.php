@@ -9,7 +9,7 @@
             <p class="text-red-100 mt-2 font-medium">This action will permanently delete ALL data from your system. This cannot be undone.</p>
         </div>
         
-        <div class="p-8" x-data="{ showConfirm: false, password: '', processing: false }">
+        <div class="p-8" x-data="{ showConfirm: false, password: '', confirmWord: '', processing: false }">
             <div class="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
                 <h4 class="font-bold text-red-800 text-lg mb-3">⚠️ What will be deleted:</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -54,24 +54,28 @@
                 </button>
             </div>
 
-            <!-- Step 2: Password Confirmation -->
+            <!-- Step 2: Password + Confirmation Word -->
             <div x-show="showConfirm" x-transition class="bg-red-50 border-2 border-red-300 rounded-2xl p-6">
                 <h4 class="font-black text-red-800 text-lg mb-2">Confirm your identity</h4>
-                <p class="text-red-600 font-medium text-sm mb-4">Enter your admin password to confirm the factory reset.</p>
+                <p class="text-red-600 font-medium text-sm mb-4">Enter your admin password and type <strong>RESET</strong> to confirm the factory reset.</p>
                 
                 <form method="POST" action="{{ route('settings.factoryReset') }}" @submit="processing = true">
                     @csrf
-                    <div class="flex items-center gap-4">
+                    <div class="space-y-3">
                         <input type="password" name="password" x-model="password" placeholder="Enter admin password" required
-                               class="flex-1 bg-white border-red-300 rounded-xl focus:ring-red-500 focus:border-red-500 font-medium py-3" autocomplete="current-password">
-                        <button type="submit" :disabled="!password || processing"
-                                class="bg-red-600 hover:bg-red-700 text-white font-black px-6 py-3 rounded-xl transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap">
-                            <span x-show="!processing">🗑️ RESET NOW</span>
-                            <span x-show="processing">Processing...</span>
-                        </button>
-                        <button type="button" @click="showConfirm = false; password = ''" class="text-gray-500 hover:text-gray-900 font-bold px-4 py-3 rounded-xl bg-white border border-gray-200 transition">
-                            Cancel
-                        </button>
+                               class="w-full bg-white border-red-300 rounded-xl focus:ring-red-500 focus:border-red-500 font-medium py-3" autocomplete="current-password">
+                        <input type="text" name="confirmation_word" x-model="confirmWord" placeholder='Type "RESET" to confirm' required
+                               class="w-full bg-white border-red-300 rounded-xl focus:ring-red-500 focus:border-red-500 font-medium py-3" autocomplete="off">
+                        <div class="flex items-center gap-4">
+                            <button type="submit" :disabled="!password || confirmWord !== 'RESET' || processing"
+                                    class="bg-red-600 hover:bg-red-700 text-white font-black px-6 py-3 rounded-xl transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap">
+                                <span x-show="!processing">🗑️ RESET NOW</span>
+                                <span x-show="processing">Processing...</span>
+                            </button>
+                            <button type="button" @click="showConfirm = false; password = ''; confirmWord = ''" class="text-gray-500 hover:text-gray-900 font-bold px-4 py-3 rounded-xl bg-white border border-gray-200 transition">
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

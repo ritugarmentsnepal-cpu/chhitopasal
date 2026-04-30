@@ -47,11 +47,8 @@
                         <div class="text-sm text-gray-500">{{ $party->email }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right">
-                        @php
-                            $balance = ($party->debit_balance ?? 0) - ($party->credit_balance ?? 0);
-                        @endphp
-                        <span class="font-black {{ $balance >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                            Rs. {{ number_format(abs($balance), 2) }} {{ $balance >= 0 ? '(Dr)' : '(Cr)' }}
+                        <span class="font-black {{ ($party->current_balance ?? 0) >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                            Rs. {{ number_format(abs($party->current_balance ?? 0), 2) }} {{ ($party->current_balance ?? 0) >= 0 ? '(Dr)' : '(Cr)' }}
                         </span>
                     </td>
                 </tr>
@@ -105,12 +102,12 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">Opening Debit Bal (Dr)</label>
-                                <input type="number" name="debit_balance" value="0" step="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango">
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Opening Balance</label>
+                                <input type="number" name="opening_balance" value="0" step="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango">
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">Opening Credit Bal (Cr)</label>
-                                <input type="number" name="credit_balance" value="0" step="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango">
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Current Balance</label>
+                                <input type="number" name="current_balance" value="0" step="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango">
                             </div>
                         </div>
                     </div>

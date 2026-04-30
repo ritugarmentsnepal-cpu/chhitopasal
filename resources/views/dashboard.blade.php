@@ -13,7 +13,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-[#F8FAFC] min-h-screen" x-data="{ activeTab: 'pending' }">
+    <div class="py-8 bg-[#F8FAFC] min-h-screen" x-data="{ activeTab: 'pending', isMobile: window.innerWidth < 768 }" x-init="window.addEventListener('resize', () => { isMobile = window.innerWidth < 768 })">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             
             @if (session('success'))
@@ -98,7 +98,7 @@
             <div class="flex flex-col md:flex-row gap-8 items-start overflow-x-auto pb-8 -mx-4 px-4 sm:mx-0 sm:px-0">
                 
                 <!-- Column: Pending -->
-                <div class="w-full md:w-[400px] shrink-0" x-show="window.innerWidth >= 768 || activeTab === 'pending'">
+                <div class="w-full md:w-[400px] shrink-0" x-show="!isMobile || activeTab === 'pending'">
                     <div class="flex items-center justify-between mb-4 px-1">
                         <div class="flex items-center gap-3">
                             <div class="w-3 h-3 bg-mango rounded-full animate-pulse shadow-[0_0_10px_#FFD166]"></div>
@@ -155,11 +155,9 @@
                                             <div class="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border border-gray-100">
                                                 <div>
                                                     <p class="font-bold text-gray-900">{{ $item->product->name ?? 'Unknown Product' }}</p>
-                                                    <p class="text-xs text-wildOrchid font-bold mt-1">Rs.{{ number_format($item->price_at_purchase) }}</p>
+                                                    <p class="text-xs text-wildOrchid font-bold mt-1">Rs.{{ number_format($item->price_at_purchase) }} × {{ $item->quantity }}</p>
                                                 </div>
-                                                <div class="w-24">
-                                                    <input id="quantity_{{ $item->id }}" name="quantities[{{ $item->id }}]" type="number" min="1" class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-wildOrchid focus:ring focus:ring-wildOrchid/20 font-bold text-center" value="{{ $item->quantity }}" required />
-                                                </div>
+                                                <span class="font-black text-gray-900">{{ $item->quantity }} pcs</span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -179,7 +177,7 @@
                 </div>
 
                 <!-- Column: Confirmed (Ready to Ship) -->
-                <div class="w-full md:w-[400px] shrink-0" x-show="window.innerWidth >= 768 || activeTab === 'confirmed'">
+                <div class="w-full md:w-[400px] shrink-0" x-show="!isMobile || activeTab === 'confirmed'">
                     <div class="flex items-center justify-between mb-4 px-1">
                         <div class="flex items-center gap-3">
                             <div class="w-3 h-3 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
@@ -224,7 +222,7 @@
                 </div>
 
                 <!-- Column: Dispatched -->
-                <div class="w-full md:w-[400px] shrink-0" x-show="window.innerWidth >= 768 || activeTab === 'shipped'">
+                <div class="w-full md:w-[400px] shrink-0" x-show="!isMobile || activeTab === 'shipped'">
                     <div class="flex items-center justify-between mb-4 px-1">
                         <div class="flex items-center gap-3">
                             <div class="w-3 h-3 bg-green-500 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
