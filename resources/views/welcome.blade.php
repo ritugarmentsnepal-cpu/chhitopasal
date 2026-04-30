@@ -211,7 +211,7 @@
     </main>
 
     <!-- 5. Footer -->
-    <footer id="about" class="bg-gray-900 text-white pt-16 sm:pt-20 pb-8 sm:pb-10 rounded-t-[2rem] sm:rounded-t-[3rem] mt-10">
+    <footer id="about" class="bg-gray-900 text-white pb-8 rounded-t-[2rem] sm:rounded-t-[3rem] mt-10" style="padding-top: 5rem;">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 mb-10 sm:mb-16">
                 <div>
