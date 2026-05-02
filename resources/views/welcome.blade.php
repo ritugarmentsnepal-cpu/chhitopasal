@@ -11,15 +11,18 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url('/') }}">
     <link rel="canonical" href="{{ url('/') }}">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    @if(setting('store_favicon'))
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . setting('store_favicon')) }}">
+    @else
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    @endif
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+    {{-- Alpine.js is already bundled via app.js — do NOT load the CDN version too --}}
 
     <style>
         [x-cloak] { display: none !important; }
@@ -28,12 +31,85 @@
         body { font-family: 'Outfit', sans-serif; background-color: #FDFFFC; }
         
         @keyframes staggeredFadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(30px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .animate-staggered {
-            animation: staggeredFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: staggeredFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
+        }
+
+        /* Product card shimmer sweep on hover */
+        .card-shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: none;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .group:hover .card-shimmer::after {
+            animation: shimmerSweep 0.8s ease forwards;
+        }
+        @keyframes shimmerSweep {
+            to { left: 130%; }
+        }
+
+        /* Floating action buttons slide up */
+        .card-actions {
+            opacity: 0;
+            transform: translateY(12px);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .group:hover .card-actions {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Cart button pulse on hover */
+        @keyframes cartPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 209, 102, 0.5); }
+            50% { box-shadow: 0 0 0 8px rgba(255, 209, 102, 0); }
+        }
+        .cart-btn-pulse:hover {
+            animation: cartPulse 1s ease infinite;
+        }
+
+        /* Price tag float */
+        @keyframes priceFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+        .group:hover .price-float {
+            animation: priceFloat 2s ease-in-out infinite;
+        }
+        .buy-btn-card {
+            border-radius: 12px !important;
+            border: none !important;
+            padding: 10px 22px !important;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2b55 100%) !important;
+            color: #fff !important;
+            font-weight: 800 !important;
+            font-size: 14px !important;
+            letter-spacing: 0.04em !important;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            box-shadow: 0 4px 14px rgba(26, 26, 46, 0.25);
+        }
+        .buy-btn-card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 24px rgba(26, 26, 46, 0.35) !important;
+        }
+        .buy-btn-card:active {
+            transform: scale(0.96) !important;
+        }
+        .buy-btn-card:disabled {
+            background: #e2e8f0 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            transform: none !important;
         }
     </style>
 </head>
@@ -51,10 +127,14 @@
 
             <!-- Brand -->
             <a href="{{ route('home') }}" class="flex items-center gap-2 group">
-                <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center transform rotate-3 group-hover:rotate-6 transition-transform shadow-lg shadow-mango/40">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
-                </div>
-                <h1 class="text-2xl font-black tracking-tight text-gray-900 hidden sm:block">{{ setting('store_name', 'Chhito Pasal') }}</h1>
+                @if(setting('store_logo'))
+                    <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-16 w-auto object-contain transform group-hover:scale-105 transition-transform">
+                @else
+                    <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center transform rotate-3 group-hover:rotate-6 transition-transform shadow-lg shadow-mango/40">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
+                    </div>
+                    <h1 class="text-2xl font-black tracking-tight text-gray-900 hidden sm:block">{{ setting('store_name', 'Chhito Pasal') }}</h1>
+                @endif
             </a>
 
             <!-- Desktop Nav & Search -->
@@ -94,9 +174,13 @@
         <div x-show="mobileMenuOpen" x-transition:enter="transform transition ease-in-out duration-300 sm:duration-500" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transform transition ease-in-out duration-300 sm:duration-500" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="fixed inset-y-0 left-0 w-4/5 max-w-sm bg-white shadow-2xl flex flex-col p-6">
             <div class="flex items-center justify-between mb-8">
                 <a href="{{ route('home') }}" class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-mango rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
-                    </div>
+                    @if(setting('store_logo'))
+                        <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-12 w-auto object-contain">
+                    @else
+                        <div class="w-8 h-8 bg-mango rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
+                        </div>
+                    @endif
                     <span class="text-xl font-black text-gray-900">Menu</span>
                 </a>
                 <button @click="mobileMenuOpen = false" class="text-gray-400 hover:text-gray-900"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
@@ -117,14 +201,14 @@
     </div>
 
     <!-- 2. Hero Section -->
-    <section class="pt-32 sm:pt-40 pb-10 sm:pb-16 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
+    <section style="padding-top: 120px;" class="pb-10 sm:pb-16 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
         <div class="bg-gray-900 rounded-2xl sm:rounded-[3rem] overflow-hidden relative shadow-2xl flex flex-col md:flex-row items-center min-h-[280px] sm:min-h-0">
             <div class="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/90 to-transparent z-10 hidden md:block"></div>
             <div class="absolute inset-0 bg-gradient-to-b from-gray-900 via-gray-900/80 to-gray-900 z-10 md:hidden"></div>
             
             <!-- Hero Image Background -->
             @if(setting('hero_image'))
-                <img src="{{ Storage::url(setting('hero_image')) }}" class="absolute inset-0 w-full h-full object-cover opacity-50 md:opacity-100" alt="Hero">
+                <img src="{{ asset('storage/' . setting('hero_image')) }}" class="absolute inset-0 w-full h-full object-cover opacity-50 md:opacity-100" alt="Hero">
             @else
                 <img src="https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=2074&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-50 md:opacity-100" alt="Hero">
             @endif
@@ -170,38 +254,79 @@
             <button @click="searchQuery = ''; activeCategory = 'all'" class="mt-6 text-wildOrchid font-bold hover:underline">Clear all filters</button>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 lg:gap-8">
+        <div class="grid gap-5 md:gap-7" style="grid-template-columns: repeat(auto-fill, minmax(240px, 280px));">
             <template x-for="(product, index) in filteredProducts" :key="product.id">
-                <article class="group bg-white rounded-2xl md:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 animate-staggered" :style="`animation-delay: ${index * 0.05}s`">
+                <article class="group relative bg-white overflow-hidden flex flex-col animate-staggered cursor-pointer"
+                         :style="`animation-delay: ${index * 0.07}s`"
+                         style="border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.04); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); max-width: 320px;"
+                         @mouseenter="$el.style.boxShadow='0 16px 48px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08)'; $el.style.transform='translateY(-5px)'"
+                         @mouseleave="$el.style.boxShadow='0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.04)'; $el.style.transform='translateY(0)'">
                     
-                    <!-- Image Container (Clickable for Quick View & Product Page) -->
-                    <div class="aspect-[4/5] bg-gray-100 relative overflow-hidden group/img">
-                        <img :src="'{{ asset('storage') }}/' + product.image_path" :alt="product.name" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+                    <!-- Image Container -->
+                    <div class="relative overflow-hidden card-shimmer" style="aspect-ratio: 4/5;">
+                        <img :src="'{{ asset('storage') }}/' + product.image_path" :alt="product.name" 
+                             class="w-full h-full object-cover" 
+                             style="transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);"
+                             @mouseenter="$el.style.transform='scale(1.08)'"
+                             @mouseleave="$el.style.transform='scale(1)'"
+                             loading="lazy">
                         
-                        <!-- Overlay -->
-                        <div class="absolute inset-0 bg-black/0 group-hover/img:bg-black/5 transition-colors duration-300 flex items-center justify-center gap-2">
-                            <button @click="openQuickView(product)" class="bg-white/90 backdrop-blur text-gray-900 font-bold px-4 py-2 rounded-full shadow-lg opacity-0 group-hover/img:opacity-100 transform translate-y-4 group-hover/img:translate-y-0 transition-all duration-300 text-sm flex items-center gap-1 hover:bg-mango hover:text-gray-900">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        <!-- Gradient overlay on hover -->
+                        <div class="absolute inset-0 group-hover:opacity-100" 
+                             style="background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.08) 40%, transparent 70%); opacity: 0; transition: opacity 0.35s ease; z-index: 4; pointer-events: none;"></div>
+
+                        <!-- Top-left: Category pill -->
+                        <div class="absolute" style="top: 12px; left: 12px; z-index: 10;">
+                            <span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255,255,255,0.92); color: #1a1a2e; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
+                                  x-text="product.category?.name || 'Shop'"></span>
+                        </div>
+
+                        <!-- Top-right: Stock indicator -->
+                        <div class="absolute" style="top: 12px; right: 12px; z-index: 10;">
+                            <div style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
+                                 :style="product.in_stock 
+                                    ? 'background: rgba(236,253,245,0.92); color: #059669; border: 1px solid rgba(16,185,129,0.3);' 
+                                    : 'background: rgba(254,242,242,0.92); color: #dc2626; border: 1px solid rgba(239,68,68,0.3);'">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; display: inline-block;" 
+                                      :style="product.in_stock ? 'background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,0.6);' : 'background: #ef4444;'"></span>
+                                <span x-text="product.in_stock ? 'In Stock' : 'Sold Out'"></span>
+                            </div>
+                        </div>
+
+                        <!-- Hover action buttons -->
+                        <div class="card-actions absolute flex gap-2" style="bottom: 14px; left: 14px; right: 14px; z-index: 10;">
+                            <button @click.stop="openQuickView(product)" 
+                                    class="flex-1 flex items-center justify-center gap-2"
+                                    style="padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.93); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #1a1a2e; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.2s ease;">
+                                <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                 Quick View
                             </button>
-                            <a :href="'{{ url('product') }}/' + product.slug" class="bg-gray-900 text-white font-bold px-4 py-2 rounded-full shadow-lg opacity-0 group-hover/img:opacity-100 transform translate-y-4 group-hover/img:translate-y-0 transition-all duration-300 text-sm flex items-center gap-1 hover:bg-gray-800 delay-75">
-                                View Details
+                            <a :href="'{{ url('product') }}/' + product.slug" @click.stop
+                               class="flex items-center justify-center"
+                               style="padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; background: #1a1a2e; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.2s ease;">
+                                <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                             </a>
                         </div>
                     </div>
                     
-                    <div class="p-3 md:p-5 lg:p-6 flex flex-col flex-1 relative">
-                        <!-- Category Tag -->
-                        <span class="text-[10px] md:text-xs font-black uppercase tracking-wider text-wildOrchid mb-1 md:mb-2 block" x-text="product.category?.name || 'Uncategorized'"></span>
+                    <!-- Product Info -->
+                    <div style="padding: 16px 18px 18px 18px; display: flex; flex-direction: column; flex: 1;">
+                        <!-- Product Name -->
+                        <h3 style="font-weight: 700; font-size: 15px; color: #1e293b; line-height: 1.35; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: color 0.2s;" x-text="product.name"></h3>
                         
-                        <h3 class="font-black text-sm md:text-lg lg:text-xl text-gray-900 mb-0.5 md:mb-1 leading-tight line-clamp-1" x-text="product.name"></h3>
-                        <div class="flex-1"></div>
-                        
-                        <div class="flex items-center justify-between mt-auto gap-1">
-                            <span class="text-base md:text-xl lg:text-2xl font-black text-gray-900">Rs.<span x-text="product.price.toLocaleString()"></span></span>
-                            <button @click.prevent="triggerAddToCart(product)" :disabled="!product.in_stock" :class="product.in_stock ? 'bg-gray-900 hover:bg-mango hover:text-gray-900' : 'bg-gray-300 cursor-not-allowed'" class="text-white font-bold text-xs md:text-sm px-3 md:px-5 py-2 md:py-2.5 rounded-full transition-all duration-300 active:scale-90 shadow-sm flex items-center gap-1 md:gap-1.5 group/btn flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 md:h-4 md:w-4 transform group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                <span class="hidden md:inline" x-text="product.in_stock ? 'Add' : 'Sold Out'"></span>
+                        <div style="flex: 1;"></div>
+
+                        <!-- Price + Buy row -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:14px; border-top:1px solid #f1f5f9;">
+                            <div>
+                                <p style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:#94a3b8; margin-bottom:2px;">Price</p>
+                                <div style="display:flex; align-items:baseline; gap:2px;">
+                                    <span style="font-size:13px; font-weight:700; color:#FFB627;">Rs.</span>
+                                    <span style="font-size:22px; font-weight:900; color:#0f172a; letter-spacing:-0.02em; line-height:1;" x-text="product.price.toLocaleString()"></span>
+                                </div>
+                            </div>
+                            <button @click.stop.prevent="triggerAddToCart(product)" :disabled="!product.in_stock" class="buy-btn-card">
+                                <span x-text="product.in_stock ? 'Buy' : 'Sold Out'"></span>
                             </button>
                         </div>
                     </div>
@@ -216,10 +341,14 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 mb-10 sm:mb-16">
                 <div>
                     <a href="{{ route('home') }}" class="flex items-center gap-2 mb-6">
-                        <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center shadow-lg shadow-mango/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
-                        </div>
-                        <h2 class="text-2xl font-black tracking-tight text-white">{{ setting('store_name', 'Chhito Pasal') }}</h2>
+                        @if(setting('store_logo'))
+                            <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-16 w-auto object-contain brightness-0 invert">
+                        @else
+                            <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center shadow-lg shadow-mango/20">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
+                            </div>
+                            <h2 class="text-2xl font-black tracking-tight text-white">{{ setting('store_name', 'Chhito Pasal') }}</h2>
+                        @endif
                     </a>
                     <p class="text-gray-400 font-medium max-w-sm mb-6 leading-relaxed">Your premium destination for the finest products. Delivering happiness across the country with lightning speed.</p>
                     <div class="flex gap-4">
@@ -399,8 +528,8 @@
             <h3 class="text-2xl font-black text-gray-900 mb-1">Select Options</h3>
             <p class="text-gray-500 mb-6 font-medium text-sm" x-text="variantProduct?.name"></p>
 
-            <!-- Color Selection -->
-            <template x-if="variantProduct?.category?.has_color_variants && variantProduct?.category?.color_options?.length > 0">
+            <!-- Color Selection (product-level) -->
+            <template x-if="variantProduct?.color_options?.length > 0">
                 <div class="mb-6">
                     <label class="block text-sm font-black text-gray-700 mb-3 uppercase tracking-wider">
                         <span class="flex items-center gap-2">
@@ -409,7 +538,7 @@
                         </span>
                     </label>
                     <div class="flex flex-wrap gap-2">
-                        <template x-for="color in variantProduct.category.color_options" :key="color">
+                        <template x-for="color in variantProduct.color_options" :key="color">
                             <button type="button" @click="selectedColor = color" 
                                 :class="selectedColor === color ? 'border-gray-900 bg-gray-900 text-white shadow-lg scale-105' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'" 
                                 class="px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all duration-200 active:scale-95"
@@ -421,8 +550,8 @@
                 </div>
             </template>
 
-            <!-- Size Selection -->
-            <template x-if="variantProduct?.category?.has_size_variants && variantProduct?.category?.size_options?.length > 0">
+            <!-- Size Selection (product-level) -->
+            <template x-if="variantProduct?.size_options?.length > 0">
                 <div class="mb-6">
                     <label class="block text-sm font-black text-gray-700 mb-3 uppercase tracking-wider">
                         <span class="flex items-center gap-2">
@@ -431,7 +560,7 @@
                         </span>
                     </label>
                     <div class="flex flex-wrap gap-2">
-                        <template x-for="size in variantProduct.category.size_options" :key="size">
+                        <template x-for="size in variantProduct.size_options" :key="size">
                             <button type="button" @click="selectedSize = size" 
                                 :class="selectedSize === size ? 'border-gray-900 bg-gray-900 text-white shadow-lg scale-105' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'" 
                                 class="w-14 h-14 rounded-xl border-2 font-black text-sm transition-all duration-200 active:scale-95 flex items-center justify-center"
@@ -683,12 +812,10 @@
                     setTimeout(() => { this.selectedProduct = null; }, 300);
                 },
 
-                // Check if product's category needs variant selection
+                // Check if product needs variant selection (product-level)
                 needsVariants(product) {
-                    const cat = product.category;
-                    if (!cat) return false;
-                    return (cat.has_color_variants && cat.color_options && cat.color_options.length > 0) ||
-                           (cat.has_size_variants && cat.size_options && cat.size_options.length > 0);
+                    return (product.color_options && product.color_options.length > 0) ||
+                           (product.size_options && product.size_options.length > 0);
                 },
 
                 triggerAddToCart(product) {
@@ -714,9 +841,9 @@
                 },
 
                 confirmVariantAddToCart() {
-                    const cat = this.variantProduct.category;
-                    const needsColor = cat.has_color_variants && cat.color_options && cat.color_options.length > 0;
-                    const needsSize = cat.has_size_variants && cat.size_options && cat.size_options.length > 0;
+                    const p = this.variantProduct;
+                    const needsColor = p.color_options && p.color_options.length > 0;
+                    const needsSize = p.size_options && p.size_options.length > 0;
 
                     if ((needsColor && !this.selectedColor) || (needsSize && !this.selectedSize)) {
                         this.variantError = true;

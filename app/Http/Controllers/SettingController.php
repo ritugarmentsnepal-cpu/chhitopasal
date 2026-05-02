@@ -68,7 +68,7 @@ class SettingController extends Controller
                 continue; // SEC-MED-02: Skip any unknown keys
             }
             // SEC-PHASE-04: Auto-encrypt sensitive settings before saving
-            $value = encrypt_setting_value($key, $value);
+            $value = encrypt_setting_value($key, $value ?? '');
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 

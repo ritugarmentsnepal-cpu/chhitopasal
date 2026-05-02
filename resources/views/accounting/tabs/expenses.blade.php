@@ -48,6 +48,11 @@
             </tbody>
         </table>
       </div>
+      @if($data['expenses']->hasPages())
+        <div class="px-6 py-4 border-t border-gray-100">
+            {{ $data['expenses']->appends(['tab' => 'expenses'])->links() }}
+        </div>
+      @endif
     </div>
 
     <!-- Record Expense Modal -->

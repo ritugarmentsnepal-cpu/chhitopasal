@@ -24,11 +24,15 @@ class Product extends Model
         'additional_images',
         'video_path',
         'bundles',
+        'color_options',
+        'size_options',
     ];
 
     protected $casts = [
         'additional_images' => 'array',
         'bundles' => 'array',
+        'color_options' => 'array',
+        'size_options' => 'array',
     ];
 
     /**

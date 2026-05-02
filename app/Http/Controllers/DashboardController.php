@@ -5,17 +5,24 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // PERF-01: Limit to latest 20 per column to prevent page crashes at scale
-        $pendingOrders = Order::with('orderItems.product')->where('status', 'pending')->latest()->take(20)->get();
-        $confirmedOrders = Order::with('orderItems.product')->where('status', 'confirmed')->latest()->take(20)->get();
-        $shippedOrders = Order::with('orderItems.product')->where('status', 'shipped')->latest()->take(20)->get();
+        // PERF-BUG-03: Cache dashboard counts for 60 seconds to reduce DB load
+        $pendingOrders = Cache::remember('dashboard_pending', 60, function () {
+            return Order::with('orderItems.product')->where('status', 'pending')->latest()->take(20)->get();
+        });
+        $confirmedOrders = Cache::remember('dashboard_confirmed', 60, function () {
+            return Order::with('orderItems.product')->where('status', 'confirmed')->latest()->take(20)->get();
+        });
+        $shippedOrders = Cache::remember('dashboard_shipped', 60, function () {
+            return Order::with('orderItems.product')->where('status', 'shipped')->latest()->take(20)->get();
+        });
         
-        $products = Product::all();
+        $products = Product::select('id', 'name', 'price', 'stock', 'image_path')->get();
         
         $lowStockThreshold = (int) setting('low_stock_threshold', 10);
         $lowStockProducts = Product::where('stock', '<', $lowStockThreshold)->get();

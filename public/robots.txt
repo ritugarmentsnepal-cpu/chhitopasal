@@ -21,5 +21,3 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /storage/
 
-# Sitemap
-Sitemap: https://www.chhitopasal.com/sitemap.xml

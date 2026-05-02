@@ -28,6 +28,7 @@ class Order extends Model
         'payment_status',
         'paid_amount',
         'return_verified_at',
+        'remarks',
     ];
 
     public function orderItems()

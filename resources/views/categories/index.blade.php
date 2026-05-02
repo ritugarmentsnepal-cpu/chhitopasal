@@ -25,6 +25,15 @@
                 </div>
             @endif
 
+            @if (session('error'))
+                <div class="mb-6 bg-red-500 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center gap-3 animate-[fadeInUp_0.3s_ease-out]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="font-bold">{{ session('error') }}</span>
+                </div>
+            @endif
+
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 @foreach($categories as $category)
                     <div class="bg-white rounded-3xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 hover:shadow-lg transition-shadow">
@@ -74,7 +83,6 @@
                 @endforeach
             </div>
         </div>
-    </div>
 
     <!-- Add Category Modal -->
     <x-modal name="add-category-modal" focusable>
@@ -223,10 +231,12 @@
             </div>
         </div>
     </div>
+    
+    </div> <!-- Close categoryManager scope -->
 
     <!-- AlpineJS Logic -->
     <script>
-        const __categories = @json($categories);
+        const __categories = @json($categories, JSON_HEX_TAG | JSON_HEX_APOS);
         document.addEventListener('alpine:init', () => {
             Alpine.data('categoryManager', () => ({
                 editModalOpen: false,

@@ -69,7 +69,7 @@ class PathaoManagerController extends Controller
             'party_id' => $pathaoParty->id,
             'type' => 'in',
             'amount' => $request->amount,
-            'reference_type' => 'Pathao Settlement',
+            'reference_type' => \App\SystemAccounts::REF_PATHAO_SETTLEMENT,
             'date' => $request->date,
             'notes' => $request->notes ?: 'Bulk COD Settlement from Pathao'
         ]);

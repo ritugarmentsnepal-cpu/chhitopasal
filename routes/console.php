@@ -9,7 +9,10 @@ Artisan::command('inspire', function () {
 
 use Illuminate\Support\Facades\Schedule;
 
-// AUTO-01: Only sync if auto_sync_pathao is enabled in settings
+// AUTO-01: Sync Pathao statuses if auto_sync_pathao is enabled in settings
 Schedule::command('pathao:sync')->everyFiveMinutes()->when(function () {
     return setting('auto_sync_pathao', false);
 });
+
+// AUTO-02: Prune old activity logs daily (keep 90 days)
+Schedule::command('logs:prune --days=90')->daily();

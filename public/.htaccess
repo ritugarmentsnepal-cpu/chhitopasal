@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # SEC-CRIT-04: Block access to dotfiles (.env, .git, etc.)
+    RewriteRule (^\.|/\.) - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

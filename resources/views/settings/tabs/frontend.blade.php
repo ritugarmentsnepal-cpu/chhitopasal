@@ -22,20 +22,22 @@
                 <label class="block text-sm font-bold text-gray-700 mb-2">Store Logo (Appears on Navbar)</label>
                 @if(setting('store_logo'))
                     <div class="mb-4 bg-gray-100 p-4 rounded-xl inline-block">
-                        <img src="{{ Storage::url(setting('store_logo')) }}" class="h-12 object-contain">
+                        <img src="{{ asset('storage/' . setting('store_logo')) }}" class="h-12 object-contain">
                     </div>
                 @endif
                 <input type="file" name="store_logo" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800" accept="image/*">
+                <p class="mt-2 text-xs text-gray-500 font-medium">Recommended image size: <span class="font-bold">500 x 150 pixels</span> (or similar wide proportion). Max 2MB.</p>
             </div>
 
             <div class="pt-4 border-t border-gray-100">
                 <label class="block text-sm font-bold text-gray-700 mb-2">Favicon</label>
                 @if(setting('store_favicon'))
                     <div class="mb-4 bg-gray-100 p-4 rounded-xl inline-block">
-                        <img src="{{ Storage::url(setting('store_favicon')) }}" class="h-8 w-8 object-contain">
+                        <img src="{{ asset('storage/' . setting('store_favicon')) }}" class="h-8 w-8 object-contain">
                     </div>
                 @endif
                 <input type="file" name="store_favicon" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800" accept="image/*">
+                <p class="mt-2 text-xs text-gray-500 font-medium">Recommended image size: <span class="font-bold">512 x 512 pixels</span> (square). Max 1MB.</p>
             </div>
         </div>
     </div>
@@ -66,10 +68,11 @@
                 <label class="block text-sm font-bold text-gray-700 mb-2">Hero Background Image</label>
                 @if(setting('hero_image'))
                     <div class="mb-4 aspect-video bg-gray-100 rounded-xl overflow-hidden relative">
-                        <img src="{{ Storage::url(setting('hero_image')) }}" class="w-full h-full object-cover">
+                        <img src="{{ asset('storage/' . setting('hero_image')) }}" class="w-full h-full object-cover">
                     </div>
                 @endif
                 <input type="file" name="hero_image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800" accept="image/*">
+                <p class="mt-2 text-xs text-gray-500 font-medium">Recommended image size: <span class="font-bold">1920 x 1080 pixels</span> (16:9 proportion). Max 4MB.</p>
             </div>
         </div>
     </div>

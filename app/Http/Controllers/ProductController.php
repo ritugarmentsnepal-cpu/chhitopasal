@@ -12,7 +12,8 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category')->latest()->get();
+        // PERF-BUG-01: Paginate to prevent memory issues with large catalogs
+        $products = Product::with('category')->latest()->paginate(20);
         $categories = Category::all();
         return view('products.index', compact('products', 'categories'));
     }
@@ -38,6 +39,8 @@ class ProductController extends Controller
             'bundles' => 'nullable|array',
             'bundles.*.qty' => 'required_with:bundles|integer|min:2',
             'bundles.*.price' => 'required_with:bundles|numeric|min:0',
+            'color_options' => 'nullable|string|max:500',
+            'size_options' => 'nullable|string|max:500',
         ]);
 
         $imagePath = $request->file('image')->store('products/thumbnails', 'public');
@@ -67,6 +70,8 @@ class ProductController extends Controller
             'additional_images' => $additionalImages,
             'video_path' => $videoPath,
             'bundles' => $validated['bundles'] ?? null,
+            'color_options' => !empty($validated['color_options']) ? array_map('trim', explode(',', $validated['color_options'])) : null,
+            'size_options' => !empty($validated['size_options']) ? array_map('trim', explode(',', $validated['size_options'])) : null,
         ]);
 
         return redirect()->route('products.index')->with('success', 'Product created successfully.');
@@ -92,6 +97,8 @@ class ProductController extends Controller
             'bundles' => 'nullable|array',
             'bundles.*.qty' => 'required_with:bundles|integer|min:2',
             'bundles.*.price' => 'required_with:bundles|numeric|min:0',
+            'color_options' => 'nullable|string|max:500',
+            'size_options' => 'nullable|string|max:500',
         ]);
 
         $data = [
@@ -103,6 +110,8 @@ class ProductController extends Controller
             'weight_grams' => $validated['weight_grams'],
             'stock' => $validated['stock'],
             'bundles' => $validated['bundles'] ?? null,
+            'color_options' => !empty($validated['color_options']) ? array_map('trim', explode(',', $validated['color_options'])) : null,
+            'size_options' => !empty($validated['size_options']) ? array_map('trim', explode(',', $validated['size_options'])) : null,
         ];
 
         if ($request->hasFile('image')) {

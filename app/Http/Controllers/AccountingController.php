@@ -51,6 +51,7 @@ class AccountingController extends Controller
             $data['parties'] = \App\Models\Party::all();
         } elseif ($tab === 'pos') {
             $data['products'] = \App\Models\Product::where('stock', '>', 0)->get();
+            $data['parties'] = \App\Models\Party::all();
         } elseif ($tab === 'invoices') {
             $data['orders'] = \App\Models\Order::with('orderItems')->latest()->paginate(20);
         } elseif ($tab === 'returns') {
@@ -70,12 +71,12 @@ class AccountingController extends Controller
             $data['purchases'] = \App\Models\Purchase::with('party')->latest()->paginate(20);
             $data['parties'] = \App\Models\Party::whereIn('type', ['supplier'])->get();
         } elseif ($tab === 'expenses') {
-            $data['expenses'] = \App\Models\Expense::with('category')->latest()->get();
+            $data['expenses'] = \App\Models\Expense::with('category')->latest()->paginate(20);
             $data['categories'] = \App\Models\ExpenseCategory::all();
             $data['accounts'] = \App\Models\Account::all();
         } elseif ($tab === 'banking') {
             $data['accounts'] = \App\Models\Account::all();
-            $data['transactions'] = \App\Models\Transaction::with(['account', 'party'])->latest()->get();
+            $data['transactions'] = \App\Models\Transaction::with(['account', 'party'])->latest()->paginate(20);
         } elseif ($tab === 'activity') {
             $data['logs'] = \App\Models\ActivityLog::with('user')->latest()->paginate(50);
         } elseif ($tab === 'inventory') {
@@ -138,9 +139,9 @@ class AccountingController extends Controller
             return redirect()->route('accounting.index', ['tab' => 'banking'])->with('error', 'Access Denied: Only Administrators can run Pathao settlement sync.');
         }
 
-        // FIN-01: Only mark delivered orders as paid.
-        // Revenue transactions are already recorded by OrderService when status changes to 'delivered'.
-        // This sync only updates the payment_status flag — no new financial transactions.
+        // FIN-CRIT-03: Mark delivered Pathao orders as paid AND record financial transactions.
+        // OrderService::recordDeliveryRevenue() already creates the Pathao Clearing receivable
+        // when status transitions to 'delivered'. This sync confirms the payment is received.
         $orders = \App\Models\Order::where('status', 'delivered')
                     ->where('payment_status', 'unpaid')
                     ->whereNotNull('pathao_consignment_id')
@@ -150,9 +151,38 @@ class AccountingController extends Controller
 
         DB::transaction(function () use ($orders, &$syncedCount) {
             foreach ($orders as $order) {
+                // Check if a delivery revenue transaction already exists
+                $hasRevenueTx = \App\Models\Transaction::where('reference_type', \App\SystemAccounts::REF_ORDER_DELIVERED)
+                    ->where('reference_id', $order->id)
+                    ->exists();
+
+                // If no revenue transaction exists yet, record one now
+                if (!$hasRevenueTx) {
+                    $clearingAccount = \App\SystemAccounts::pathaoClearingAccount();
+                    $pathaoParty = \App\SystemAccounts::pathaoParty();
+
+                    if ($clearingAccount && $pathaoParty) {
+                        $dueAmount = $order->total_amount - ($order->paid_amount ?? 0);
+                        if ($dueAmount > 0) {
+                            \App\Models\Transaction::create([
+                                'account_id' => $clearingAccount->id,
+                                'party_id' => $pathaoParty->id,
+                                'type' => 'in',
+                                'amount' => $dueAmount,
+                                'reference_type' => \App\SystemAccounts::REF_ORDER_DELIVERED,
+                                'reference_id' => $order->id,
+                                'date' => now(),
+                                'notes' => "Receivable from Pathao for Order #{$order->id} (sync)",
+                            ]);
+                            $clearingAccount->increment('balance', $dueAmount);
+                            $pathaoParty->increment('current_balance', $dueAmount);
+                        }
+                    }
+                }
+
                 $order->update([
                     'payment_status' => 'paid',
-                    'paid_amount' => $order->total_amount
+                    'paid_amount' => $order->total_amount,
                 ]);
                 $syncedCount++;
             }
@@ -179,7 +209,7 @@ class AccountingController extends Controller
                 'account_id' => $account->id,
                 'type' => 'out',
                 'amount' => $validated['amount'],
-                'reference_type' => 'Purchase',
+                'reference_type' => \App\SystemAccounts::REF_PURCHASE,
                 'reference_id' => $purchase->id,
                 'party_id' => $purchase->party_id,
                 'date' => now(),
@@ -233,6 +263,25 @@ class AccountingController extends Controller
         return redirect()->route('accounting.index', ['tab' => 'parties'])->with('success', 'Party added successfully.');
     }
 
+    public function updateParty(Request $request, \App\Models\Party $party)
+    {
+        $this->requireFinancialAccess();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:customer,supplier,pathao',
+            'phone' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255',
+            'address' => 'nullable|string|max:500',
+            'opening_balance' => 'nullable|numeric',
+            'current_balance' => 'nullable|numeric',
+        ]);
+
+        $party->update($validated);
+
+        return redirect()->route('accounting.index', ['tab' => 'parties'])->with('success', 'Party updated successfully.');
+    }
+
     public function storeTransaction(Request $request)
     {
         $this->requireFinancialAccess();
@@ -245,29 +294,33 @@ class AccountingController extends Controller
             'notes' => 'nullable|string'
         ]);
 
-        DB::transaction(function () use ($validated) {
-            $account = \App\Models\Account::findOrFail($validated['account_id']);
+        try {
+            DB::transaction(function () use ($validated) {
+                $account = \App\Models\Account::findOrFail($validated['account_id']);
 
-            // FIN-02: Guard against negative balance on outgoing transactions
-            if ($validated['type'] === 'out' && $account->balance < $validated['amount']) {
-                throw new \RuntimeException("Insufficient balance in {$account->name}. Available: Rs." . number_format($account->balance, 2) . ", Requested: Rs." . number_format($validated['amount'], 2));
-            }
+                // FIN-02: Guard against negative balance on outgoing transactions
+                if ($validated['type'] === 'out' && $account->balance < $validated['amount']) {
+                    throw new \RuntimeException("Insufficient balance in {$account->name}. Available: Rs." . number_format($account->balance, 2) . ", Requested: Rs." . number_format($validated['amount'], 2));
+                }
 
-            \App\Models\Transaction::create([
-                'account_id' => $account->id,
-                'type' => $validated['type'],
-                'amount' => $validated['amount'],
-                'party_id' => $validated['party_id'] ?? null,
-                'date' => now(),
-                'notes' => $validated['notes']
-            ]);
+                \App\Models\Transaction::create([
+                    'account_id' => $account->id,
+                    'type' => $validated['type'],
+                    'amount' => $validated['amount'],
+                    'party_id' => $validated['party_id'] ?? null,
+                    'date' => now(),
+                    'notes' => $validated['notes']
+                ]);
 
-            if ($validated['type'] === 'in') {
-                $account->increment('balance', $validated['amount']);
-            } else {
-                $account->decrement('balance', $validated['amount']);
-            }
-        });
+                if ($validated['type'] === 'in') {
+                    $account->increment('balance', $validated['amount']);
+                } else {
+                    $account->decrement('balance', $validated['amount']);
+                }
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()->route('accounting.index', ['tab' => 'banking'])->with('error', $e->getMessage());
+        }
 
         return redirect()->route('accounting.index', ['tab' => 'banking'])->with('success', 'Manual transaction recorded successfully.');
     }
@@ -422,7 +475,15 @@ class AccountingController extends Controller
                 ]);
                 $account = \App\Models\Account::find($payment->account_id);
                 if ($account) {
-                    // FIN-03: Decrement but log if it would go negative
+                    // FIN-MED-02: Guard and log if balance would go negative
+                    if ($account->balance < $payment->amount) {
+                        \Illuminate\Support\Facades\Log::warning("Account '{$account->name}' balance going negative during sale return", [
+                            'account_id' => $account->id,
+                            'current_balance' => $account->balance,
+                            'deduction' => $payment->amount,
+                            'order_id' => $order->id,
+                        ]);
+                    }
                     $account->decrement('balance', $payment->amount);
                 }
                 // Also reverse the Pathao party balance if applicable
@@ -547,5 +608,342 @@ class AccountingController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Create a new account (bank, cash, wallet).
+     */
+    public function storeAccount(Request $request)
+    {
+        $this->requireFinancialAccess();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:accounts,name',
+            'type' => 'required|in:cash,bank,mobile_wallet,clearing',
+            'account_number' => 'nullable|string|max:100',
+            'bank_name' => 'nullable|string|max:255',
+            'branch' => 'nullable|string|max:255',
+            'opening_balance' => 'nullable|numeric|min:0',
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            $account = \App\Models\Account::create([
+                'name' => $validated['name'],
+                'type' => $validated['type'],
+                'account_number' => $validated['account_number'] ?? null,
+                'bank_name' => $validated['bank_name'] ?? null,
+                'branch' => $validated['branch'] ?? null,
+                'balance' => $validated['opening_balance'] ?? 0,
+            ]);
+
+            // Record opening balance transaction if > 0
+            if (($validated['opening_balance'] ?? 0) > 0) {
+                \App\Models\Transaction::create([
+                    'account_id' => $account->id,
+                    'type' => 'in',
+                    'amount' => $validated['opening_balance'],
+                    'reference_type' => 'Opening Balance',
+                    'date' => now(),
+                    'notes' => 'Opening balance for ' . $account->name,
+                ]);
+            }
+        });
+
+        return redirect()->route('accounting.index', ['tab' => 'banking'])->with('success', "Account \"{$validated['name']}\" created successfully.");
+    }
+
+    /**
+     * Update an existing account.
+     */
+    public function updateAccount(Request $request, \App\Models\Account $account)
+    {
+        $this->requireFinancialAccess();
+
+        // Protect system accounts from rename
+        if ($account->isProtected() && $request->name !== $account->name) {
+            return redirect()->route('accounting.index', ['tab' => 'banking'])
+                ->with('error', "\"{$account->name}\" is a system account and cannot be renamed.");
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:accounts,name,' . $account->id,
+            'type' => 'required|in:cash,bank,mobile_wallet,clearing',
+            'account_number' => 'nullable|string|max:100',
+            'bank_name' => 'nullable|string|max:255',
+            'branch' => 'nullable|string|max:255',
+        ]);
+
+        $account->update($validated);
+
+        return redirect()->route('accounting.index', ['tab' => 'banking'])->with('success', "Account \"{$account->name}\" updated.");
+    }
+
+    /**
+     * Delete an account (only if zero balance + no transactions).
+     */
+    public function destroyAccount(\App\Models\Account $account)
+    {
+        $this->requireFinancialAccess();
+
+        if ($account->isProtected()) {
+            return redirect()->route('accounting.index', ['tab' => 'banking'])
+                ->with('error', "\"{$account->name}\" is a system account and cannot be deleted.");
+        }
+
+        if ($account->balance != 0) {
+            return redirect()->route('accounting.index', ['tab' => 'banking'])
+                ->with('error', "Cannot delete \"{$account->name}\" — balance is not zero (Rs. " . number_format($account->balance, 2) . ").");
+        }
+
+        if ($account->transactions()->count() > 0) {
+            return redirect()->route('accounting.index', ['tab' => 'banking'])
+                ->with('error', "Cannot delete \"{$account->name}\" — it has existing transactions.");
+        }
+
+        $name = $account->name;
+        $account->delete();
+
+        return redirect()->route('accounting.index', ['tab' => 'banking'])->with('success', "Account \"{$name}\" deleted.");
+    }
+
+    /**
+     * Transfer funds between two accounts.
+     */
+    public function transferFunds(Request $request)
+    {
+        $this->requireFinancialAccess();
+
+        $validated = $request->validate([
+            'from_account_id' => 'required|exists:accounts,id',
+            'to_account_id' => 'required|exists:accounts,id|different:from_account_id',
+            'amount' => 'required|numeric|min:0.01',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            DB::transaction(function () use ($validated) {
+                $from = \App\Models\Account::findOrFail($validated['from_account_id']);
+                $to = \App\Models\Account::findOrFail($validated['to_account_id']);
+
+                if ($from->balance < $validated['amount']) {
+                    throw new \RuntimeException("Insufficient balance in {$from->name}. Available: Rs." . number_format($from->balance, 2));
+                }
+
+                $transferNote = $validated['notes'] ?: "Transfer: {$from->name} → {$to->name}";
+
+                // Out from source
+                \App\Models\Transaction::create([
+                    'account_id' => $from->id,
+                    'type' => 'out',
+                    'amount' => $validated['amount'],
+                    'reference_type' => 'Transfer',
+                    'reference_id' => $to->id,
+                    'date' => now(),
+                    'notes' => $transferNote,
+                ]);
+                $from->decrement('balance', $validated['amount']);
+
+                // In to destination
+                \App\Models\Transaction::create([
+                    'account_id' => $to->id,
+                    'type' => 'in',
+                    'amount' => $validated['amount'],
+                    'reference_type' => 'Transfer',
+                    'reference_id' => $from->id,
+                    'date' => now(),
+                    'notes' => $transferNote,
+                ]);
+                $to->increment('balance', $validated['amount']);
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()->route('accounting.index', ['tab' => 'banking'])->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('accounting.index', ['tab' => 'banking'])->with('success', 'Transfer completed successfully.');
+    }
+
+    /**
+     * Show per-account statement with running balance.
+     */
+    public function accountStatement(Request $request, \App\Models\Account $account)
+    {
+        $this->requireFinancialAccess();
+
+        $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
+        $endDate = $request->query('end_date', now()->toDateString());
+
+        // Opening balance = account balance at start of period
+        $openingBalance = $account->balance;
+
+        // Get all transactions AFTER end date to calculate opening
+        $afterEndDate = \App\Models\Transaction::where('account_id', $account->id)
+            ->where('date', '>', $endDate . ' 23:59:59')
+            ->get();
+        
+        // Get all transactions in period
+        $transactions = \App\Models\Transaction::with('party')
+            ->where('account_id', $account->id)
+            ->whereBetween('date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        // Calculate opening balance by reverse-engineering from current balance
+        $currentBalance = $account->balance;
+        
+        // Reverse transactions after end date
+        foreach ($afterEndDate as $tx) {
+            if ($tx->type === 'in') {
+                $currentBalance -= $tx->amount;
+            } else {
+                $currentBalance += $tx->amount;
+            }
+        }
+        $closingBalance = $currentBalance;
+
+        // Reverse period transactions to get opening
+        foreach ($transactions->reverse() as $tx) {
+            if ($tx->type === 'in') {
+                $currentBalance -= $tx->amount;
+            } else {
+                $currentBalance += $tx->amount;
+            }
+        }
+        $openingBalance = $currentBalance;
+
+        // Calculate running balance for each transaction
+        $runningBalance = $openingBalance;
+        $transactionsWithBalance = [];
+        foreach ($transactions as $tx) {
+            if ($tx->type === 'in') {
+                $runningBalance += $tx->amount;
+            } else {
+                $runningBalance -= $tx->amount;
+            }
+            $tx->running_balance = $runningBalance;
+            $transactionsWithBalance[] = $tx;
+        }
+
+        // Period totals
+        $totalIn = $transactions->where('type', 'in')->sum('amount');
+        $totalOut = $transactions->where('type', 'out')->sum('amount');
+
+        return view('accounting.statement', compact(
+            'account', 'transactionsWithBalance', 'startDate', 'endDate',
+            'openingBalance', 'closingBalance', 'totalIn', 'totalOut'
+        ));
+    }
+
+    /**
+     * Export per-account statement as CSV.
+     */
+    public function exportStatement(Request $request, \App\Models\Account $account)
+    {
+        $this->requireFinancialAccess();
+
+        $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
+        $endDate = $request->query('end_date', now()->toDateString());
+
+        $filename = str_replace(' ', '_', strtolower($account->name)) . "_statement_{$startDate}_to_{$endDate}.csv";
+
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma" => "no-cache",
+        ];
+
+        $callback = function() use ($account, $startDate, $endDate) {
+            $file = fopen('php://output', 'w');
+
+            fputcsv($file, ['Account Statement: ' . $account->name, 'Type: ' . ucfirst($account->type)]);
+            fputcsv($file, ['Period: ' . $startDate . ' to ' . $endDate]);
+            if ($account->bank_name) fputcsv($file, ['Bank: ' . $account->bank_name, 'Branch: ' . ($account->branch ?? '-'), 'A/C: ' . ($account->account_number ?? '-')]);
+            fputcsv($file, []);
+
+            $transactions = \App\Models\Transaction::with('party')
+                ->where('account_id', $account->id)
+                ->whereBetween('date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                ->orderBy('date', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+
+            // Calculate opening balance
+            $afterEndDate = \App\Models\Transaction::where('account_id', $account->id)
+                ->where('date', '>', $endDate . ' 23:59:59')->get();
+            $bal = $account->balance;
+            foreach ($afterEndDate as $tx) {
+                $bal = $tx->type === 'in' ? $bal - $tx->amount : $bal + $tx->amount;
+            }
+            foreach ($transactions->reverse() as $tx) {
+                $bal = $tx->type === 'in' ? $bal - $tx->amount : $bal + $tx->amount;
+            }
+            $openingBalance = $bal;
+
+            fputcsv($file, ['Date', 'Reference', 'Party', 'Notes', 'Debit (In)', 'Credit (Out)', 'Balance']);
+            fputcsv($file, ['', '', '', 'Opening Balance', '', '', $openingBalance]);
+
+            $running = $openingBalance;
+            foreach ($transactions as $tx) {
+                $running = $tx->type === 'in' ? $running + $tx->amount : $running - $tx->amount;
+                fputcsv($file, [
+                    \Carbon\Carbon::parse($tx->date)->format('Y-m-d'),
+                    $tx->reference_type ? $tx->reference_type . ' #' . $tx->reference_id : 'Manual',
+                    $tx->party ? $tx->party->name : '-',
+                    $tx->notes ?? '-',
+                    $tx->type === 'in' ? $tx->amount : '',
+                    $tx->type === 'out' ? $tx->amount : '',
+                    $running,
+                ]);
+            }
+
+            fputcsv($file, ['', '', '', 'Closing Balance', '', '', $running]);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * FIN-MED-03: Reconciliation check — compare account.balance vs SUM(transactions).
+     * Detects silent ledger drift.
+     */
+    public function reconcile()
+    {
+        $this->requireFinancialAccess();
+
+        $accounts = \App\Models\Account::all();
+        $discrepancies = [];
+
+        foreach ($accounts as $account) {
+            $txIn = \App\Models\Transaction::where('account_id', $account->id)
+                ->where('type', 'in')->sum('amount');
+            $txOut = \App\Models\Transaction::where('account_id', $account->id)
+                ->where('type', 'out')->sum('amount');
+            $computedBalance = $txIn - $txOut;
+
+            if (abs($account->balance - $computedBalance) > 0.01) {
+                $discrepancies[] = [
+                    'account' => $account->name,
+                    'stored_balance' => $account->balance,
+                    'computed_balance' => $computedBalance,
+                    'drift' => $account->balance - $computedBalance,
+                ];
+            }
+        }
+
+        if (empty($discrepancies)) {
+            return back()->with('success', '✅ All accounts reconciled — no discrepancies found.');
+        }
+
+        $msg = '⚠️ Discrepancies found: ';
+        foreach ($discrepancies as $d) {
+            $msg .= "{$d['account']}: stored Rs." . number_format($d['stored_balance'], 2) .
+                    " vs computed Rs." . number_format($d['computed_balance'], 2) .
+                    " (drift: Rs." . number_format($d['drift'], 2) . "). ";
+        }
+
+        \Illuminate\Support\Facades\Log::warning('Account reconciliation discrepancies', $discrepancies);
+
+        return back()->with('error', $msg);
     }
 }

@@ -27,6 +27,25 @@
         <div class="grid grid-cols-2 gap-8 mb-10">
             <div class="space-y-4">
                 <h3 class="text-xs font-black text-gray-400 uppercase tracking-wider">Bill To</h3>
+                
+                <!-- Payment Method & Party Selection -->
+                <div class="flex gap-4">
+                    <div class="w-1/3">
+                        <select name="payment_method" x-model="paymentMethod" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango font-bold text-gray-800">
+                            <option value="cash">Cash Sale</option>
+                            <option value="credit">Credit Sale</option>
+                        </select>
+                    </div>
+                    <div class="w-2/3" x-show="paymentMethod === 'credit'" x-cloak>
+                        <select name="party_id" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango font-bold text-gray-800" :required="paymentMethod === 'credit'">
+                            <option value="">Select Party Name...</option>
+                            @foreach($data['parties'] as $party)
+                                <option value="{{ $party->id }}">{{ $party->name }} ({{ ucfirst($party->type) }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
                 <div>
                     <input type="text" name="customer_name" placeholder="Customer Name (e.g. Walk-in Customer)" class="w-full text-lg font-bold rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango" required>
                 </div>
@@ -37,7 +56,10 @@
             <div class="space-y-4 text-right flex flex-col items-end">
                 <h3 class="text-xs font-black text-gray-400 uppercase tracking-wider">Details</h3>
                 <div class="text-sm text-gray-600">Date: {{ now()->format('M d, Y') }}</div>
-                <div class="text-sm text-gray-600 font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">Status: PAID (Cash)</div>
+                <div class="text-sm text-gray-600 font-bold px-3 py-1 rounded-full" 
+                     :class="paymentMethod === 'cash' ? 'text-green-600 bg-green-50' : 'text-orange-600 bg-orange-50'"
+                     x-text="paymentMethod === 'cash' ? 'Status: PAID (Cash)' : 'Status: CREDIT / PARTIAL'">
+                </div>
             </div>
         </div>
 
@@ -67,11 +89,17 @@
                             <td class="py-4 px-2">
                                 <input type="number" x-model.number="item.quantity" :name="'items['+index+'][quantity]'" min="1" class="w-full text-center rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango" required>
                             </td>
-                            <td class="py-4 text-right text-gray-600">
-                                Rs. <span x-text="item.price.toFixed(2)"></span>
+                            <td class="py-4 px-2">
+                                <div class="flex items-center justify-end">
+                                    <span class="text-gray-500 mr-2 text-sm">Rs.</span>
+                                    <input type="number" x-model.number="item.price" :name="'items['+index+'][price]'" step="0.01" min="0" class="w-24 text-right rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango py-1" required>
+                                </div>
                             </td>
-                            <td class="py-4 text-right font-bold text-gray-900">
-                                Rs. <span x-text="(item.price * item.quantity).toFixed(2)"></span>
+                            <td class="py-4 px-2">
+                                <div class="flex items-center justify-end">
+                                    <span class="text-gray-500 mr-2 text-sm font-bold">Rs.</span>
+                                    <input type="number" :value="(item.price * item.quantity).toFixed(2)" @input="item.price = $event.target.value / item.quantity" step="0.01" min="0" class="w-28 text-right font-bold rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango py-1">
+                                </div>
                             </td>
                             <td class="py-4 text-center">
                                 <button type="button" @click="removeItem(index)" class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -88,16 +116,37 @@
             </button>
         </div>
 
-        <!-- Totals -->
+        <!-- Totals & Payment -->
         <div class="flex justify-end mb-8">
+            <!-- Totals Section -->
             <div class="w-1/2">
-                <div class="flex justify-between py-2 border-b border-gray-100">
+                <div class="flex justify-between py-2 border-b border-gray-100 items-center">
                     <span class="font-bold text-gray-500">Subtotal</span>
                     <span class="font-bold text-gray-900">Rs. <span x-text="subtotal.toFixed(2)"></span></span>
                 </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 items-center">
+                    <span class="font-bold text-gray-500">Delivery Charge</span>
+                    <div class="flex items-center w-32 justify-end">
+                        <span class="text-gray-500 mr-2">Rs.</span>
+                        <input type="number" x-model.number="deliveryCharge" name="delivery_charge" class="w-24 text-right rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango py-1" min="0" step="0.01">
+                    </div>
+                </div>
                 <div class="flex justify-between py-4 border-b-4 border-gray-900">
                     <span class="text-xl font-black text-gray-900">Total</span>
-                    <span class="text-xl font-black text-gray-900">Rs. <span x-text="subtotal.toFixed(2)"></span></span>
+                    <span class="text-xl font-black text-gray-900">Rs. <span x-text="total.toFixed(2)"></span></span>
+                </div>
+
+                <!-- Amount Paid and Due Balance -->
+                <div class="flex justify-between py-3 border-b border-gray-100 items-center bg-gray-50 px-4 rounded-xl mt-4">
+                    <span class="font-bold text-gray-700">Amount Paid</span>
+                    <div class="flex items-center w-32 justify-end">
+                        <span class="text-gray-700 mr-2 font-bold">Rs.</span>
+                        <input type="number" name="paid_amount" x-model.number="paidAmount" step="0.01" min="0" class="w-28 text-right font-bold rounded-xl border-gray-200 bg-white focus:ring-mango focus:border-mango py-1">
+                    </div>
+                </div>
+                <div class="flex justify-between py-3 px-4 mt-2 rounded-xl items-center" :class="paymentMethod === 'credit' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'">
+                    <span class="font-bold" x-text="paymentMethod === 'credit' ? 'Due Balance' : 'Change Due (if any)'"></span>
+                    <span class="font-black text-lg">Rs. <span x-text="Math.max(0, total - (parseFloat(paidAmount) || 0)).toFixed(2)"></span></span>
                 </div>
             </div>
         </div>
@@ -115,7 +164,24 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('posInvoice', () => ({
         items: [{ product_id: '', quantity: 1, price: 0 }],
+        deliveryCharge: 0,
+        paymentMethod: 'cash',
+        paidAmount: 0,
         
+        init() {
+            this.$watch('paymentMethod', value => {
+                if (value === 'cash') {
+                    this.paidAmount = this.total;
+                } else {
+                    this.paidAmount = 0;
+                }
+            });
+            this.$watch('total', value => {
+                if (this.paymentMethod === 'cash') {
+                    this.paidAmount = value;
+                }
+            });
+        },
         addItem() {
             this.items.push({ product_id: '', quantity: 1, price: 0 });
         },
@@ -138,6 +204,10 @@ document.addEventListener('alpine:init', () => {
         
         get subtotal() {
             return this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        },
+        
+        get total() {
+            return this.subtotal + (parseFloat(this.deliveryCharge) || 0);
         }
     }));
 });

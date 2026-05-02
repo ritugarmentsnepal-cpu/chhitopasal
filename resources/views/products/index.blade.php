@@ -88,11 +88,16 @@
                     </div>
                 @endforeach
             </div>
+            
+            {{-- PERF-BUG-01: Pagination links --}}
+            <div class="mt-6">
+                {{ $products->links() }}
+            </div>
         </div>
 
         <!-- Add Product Modal -->
         <x-modal name="add-product-modal" focusable>
-            <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="p-8 max-h-[90vh] overflow-y-auto">
+            <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="p-8 max-h-[90vh] overflow-y-auto" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; } submitting = true;">
                 @csrf
                 <div class="mb-8">
                     <h2 class="text-2xl font-black text-gray-900">Add New Product</h2>
@@ -162,6 +167,22 @@
                     <p x-show="bundles.length === 0" class="text-xs text-gray-400 font-medium">No bundles configured. Customers will only be able to buy single pieces.</p>
                 </div>
 
+                <!-- Color & Size Variants (Optional) -->
+                <div class="mb-5 border border-gray-200 rounded-2xl p-5 bg-white">
+                    <h3 class="font-bold text-gray-900 mb-1">Colour & Size Variants <span class="text-xs text-gray-400 font-medium">(Optional)</span></h3>
+                    <p class="text-xs text-gray-400 mb-4">Enter comma-separated values. Leave blank if no variants.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Colour Options</label>
+                            <input name="color_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-wildOrchid focus:ring focus:ring-wildOrchid/20 py-2.5 text-sm transition-colors" placeholder="e.g. Red, Blue, Black" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Size Options</label>
+                            <input name="size_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-wildOrchid focus:ring focus:ring-wildOrchid/20 py-2.5 text-sm transition-colors" placeholder="e.g. S, M, L, XL" />
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Media Uploads -->
                 <div class="space-y-4 mb-8">
                     <h3 class="font-bold text-gray-900 border-b border-gray-100 pb-2">Media Assets</h3>
@@ -187,7 +208,7 @@
 
                 <div class="flex justify-end gap-3 border-t border-gray-100 pt-6">
                     <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
-                    <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 active:scale-95 transition">Save Product</button>
+                    <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800 active:scale-95'" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg transition"><span x-show="!submitting">Save Product</span><span x-show="submitting">Saving...</span></button>
                 </div>
             </form>
         </x-modal>
@@ -272,6 +293,22 @@
                                 <p x-show="formData.bundles.length === 0" class="text-xs text-gray-400 font-medium">No bundles configured.</p>
                             </div>
 
+                            <!-- Color & Size Variants (Optional) - Edit -->
+                            <div class="mb-5 border border-gray-200 rounded-2xl p-5 bg-white">
+                                <h3 class="font-bold text-gray-900 mb-1">Colour & Size Variants <span class="text-xs text-gray-400 font-medium">(Optional)</span></h3>
+                                <p class="text-xs text-gray-400 mb-4">Enter comma-separated values. Leave blank if no variants.</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Colour Options</label>
+                                        <input name="color_options" x-model="formData.color_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-wildOrchid focus:ring focus:ring-wildOrchid/20 py-2.5 text-sm transition-colors" placeholder="e.g. Red, Blue, Black" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Size Options</label>
+                                        <input name="size_options" x-model="formData.size_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-wildOrchid focus:ring focus:ring-wildOrchid/20 py-2.5 text-sm transition-colors" placeholder="e.g. S, M, L, XL" />
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Media Uploads Edit -->
                             <div class="space-y-4">
                                 <h3 class="font-bold text-gray-900 border-b border-gray-100 pb-2">Update Media</h3>
@@ -296,7 +333,7 @@
 
                         <div class="px-8 py-5 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
                             <button type="button" @click="closeEditModal()" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
-                            <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 active:scale-95 transition">Update Product</button>
+                            <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 active:scale-95 transition" onclick="this.disabled=true; this.innerText='Updating...'; this.form.submit();">Update Product</button>
                         </div>
                     </form>
                 </div>
@@ -320,7 +357,9 @@
                     cost_price: '',
                     weight_grams: '',
                     stock: '',
-                    bundles: []
+                    bundles: [],
+                    color_options: '',
+                    size_options: '',
                 },
 
                 openEditModal(product) {
@@ -333,6 +372,8 @@
                     this.formData.weight_grams = product.weight_grams;
                     this.formData.stock = product.stock;
                     this.formData.bundles = product.bundles || [];
+                    this.formData.color_options = (product.color_options || []).join(', ');
+                    this.formData.size_options = (product.size_options || []).join(', ');
                     
                     this.editModalOpen = true;
                 },

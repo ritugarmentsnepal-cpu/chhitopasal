@@ -89,7 +89,7 @@ class PurchaseController extends Controller
 
         DB::transaction(function () use ($purchase) {
             // Reverse all payment transactions
-            $transactions = \App\Models\Transaction::where('reference_type', 'Purchase')
+            $transactions = \App\Models\Transaction::where('reference_type', \App\SystemAccounts::REF_PURCHASE)
                 ->where('reference_id', $purchase->id)->get();
             foreach ($transactions as $tx) {
                 $account = \App\Models\Account::find($tx->account_id);
@@ -107,6 +107,9 @@ class PurchaseController extends Controller
                 }
             }
 
+            // Delete purchase items before soft-deleting the purchase
+            $purchase->items()->delete();
+
             $purchase->delete();
         });
 
@@ -118,11 +121,25 @@ class PurchaseController extends Controller
         $request->validate(['total_amount' => 'required|numeric|min:0']);
         
         $oldAmount = $purchase->total_amount;
-        $purchase->update(['total_amount' => $request->total_amount]);
+        $newAmount = (float) $request->total_amount;
+
+        DB::transaction(function () use ($purchase, $oldAmount, $newAmount) {
+            $purchase->update(['total_amount' => $newAmount]);
+
+            // FIN-CRIT-01: Recalculate payment status based on new total
+            $purchase->refresh();
+            if ($purchase->paid_amount >= $newAmount && $newAmount > 0) {
+                $purchase->update(['payment_status' => 'paid']);
+            } elseif ($purchase->paid_amount > 0) {
+                $purchase->update(['payment_status' => 'partial']);
+            } else {
+                $purchase->update(['payment_status' => 'unpaid']);
+            }
+        });
 
         $purchase->logActivity('updated_amount', [
             'old_amount' => $oldAmount,
-            'new_amount' => $request->total_amount
+            'new_amount' => $newAmount
         ]);
 
         return back()->with('success', 'Purchase amount updated successfully.');

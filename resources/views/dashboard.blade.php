@@ -59,7 +59,7 @@
                     <p class="text-3xl font-black text-green-500">{{ $shippedOrders->count() }}</p>
                 </div>
                 <div class="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 flex flex-col justify-between bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-                    <p class="text-sm font-bold text-gray-400 mb-2">Total Revenue</p>
+                    <p class="text-sm font-bold text-gray-400 mb-2">Pipeline Value</p>
                     <p class="text-3xl font-black text-mango">
                         Rs.{{ number_format($pendingOrders->sum('total_amount') + $confirmedOrders->sum('total_amount') + $shippedOrders->sum('total_amount')) }}
                     </p>

@@ -37,6 +37,9 @@
         <div style="font-size:14px; font-weight:900; line-height:1.2;">{{ $order->customer_name }}</div>
         <div style="font-size:11px; font-weight:700; margin-top:1.5mm;">{{ $order->address }}{{ $order->city ? ', '.$order->city : '' }}</div>
         <div style="font-size:11px; font-weight:700; margin-top:1mm;">Ph: {{ $order->customer_phone }}</div>
+        @if($order->remarks)
+            <div style="font-size:10px; font-weight:700; margin-top:1.5mm; border-top:1px dashed #ccc; padding-top:1mm;">Notes: {{ $order->remarks }}</div>
+        @endif
     </div>
 
     {{-- Barcode --}}

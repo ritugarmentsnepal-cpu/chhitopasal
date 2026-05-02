@@ -55,11 +55,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/accounting/pay-purchase', [\App\Http\Controllers\AccountingController::class, 'payPurchase'])->name('accounting.payPurchase');
     Route::post('/accounting/store-category', [\App\Http\Controllers\AccountingController::class, 'storeCategory'])->name('accounting.storeCategory');
     Route::post('/accounting/store-party', [\App\Http\Controllers\AccountingController::class, 'storeParty'])->name('accounting.storeParty');
+    Route::post('/accounting/update-party/{party}', [\App\Http\Controllers\AccountingController::class, 'updateParty'])->name('accounting.updateParty');
     Route::post('/accounting/store-transaction', [\App\Http\Controllers\AccountingController::class, 'storeTransaction'])->name('accounting.storeTransaction');
     Route::post('/accounting/adjust-stock', [\App\Http\Controllers\AccountingController::class, 'adjustStock'])->name('accounting.adjustStock');
     Route::post('/accounting/sale-return', [\App\Http\Controllers\AccountingController::class, 'saleReturn'])->name('accounting.saleReturn');
     Route::get('/accounting/find-order', [\App\Http\Controllers\AccountingController::class, 'findOrder'])->name('accounting.findOrder');
     Route::get('/accounting/export-report', [\App\Http\Controllers\AccountingController::class, 'exportReport'])->name('accounting.exportReport');
+    Route::post('/accounting/reconcile', [\App\Http\Controllers\AccountingController::class, 'reconcile'])->name('accounting.reconcile');
+
+    // Account Management
+    Route::post('/accounting/accounts', [\App\Http\Controllers\AccountingController::class, 'storeAccount'])->name('accounting.storeAccount');
+    Route::put('/accounting/accounts/{account}', [\App\Http\Controllers\AccountingController::class, 'updateAccount'])->name('accounting.updateAccount');
+    Route::delete('/accounting/accounts/{account}', [\App\Http\Controllers\AccountingController::class, 'destroyAccount'])->name('accounting.destroyAccount');
+    Route::post('/accounting/transfer', [\App\Http\Controllers\AccountingController::class, 'transferFunds'])->name('accounting.transferFunds');
+    Route::get('/accounting/statement/{account}', [\App\Http\Controllers\AccountingController::class, 'accountStatement'])->name('accounting.statement');
+    Route::get('/accounting/statement/{account}/export', [\App\Http\Controllers\AccountingController::class, 'exportStatement'])->name('accounting.exportStatement');
     Route::post('/orders/pos', [OrderController::class, 'storePOS'])->name('orders.pos');
 
     Route::resource('expenses', \App\Http\Controllers\ExpenseController::class)->except(['create', 'show', 'edit']);

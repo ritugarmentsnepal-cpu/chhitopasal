@@ -10,15 +10,35 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
+    @if(setting('store_favicon'))
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . setting('store_favicon')) }}">
+    @else
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    @endif
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+    {{-- Alpine.js is already bundled via app.js — do NOT load the CDN version too --}}
 
     <style>
         [x-cloak] { display: none !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { font-family: 'Outfit', sans-serif; background-color: #FDFFFC; }
+        body { font-family: 'Outfit', sans-serif; background: linear-gradient(180deg, #f8fafc 0%, #FDFFFC 100%); }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation: fadeUp 0.6s ease forwards; }
+        .thumb-active { outline: 2px solid #FFD166; outline-offset: 2px; opacity: 1 !important; }
+        .thumb-inactive { opacity: 0.5; }
+        .thumb-inactive:hover { opacity: 0.85; }
+        @keyframes pricePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
+        .price-block:hover { animation: pricePulse 1.5s ease infinite; }
+        .buy-btn { background: linear-gradient(135deg, #1a1a2e 0%, #2d2b55 100%); transition: all 0.3s ease; }
+        .buy-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(26,26,46,0.3); }
+        .buy-btn:active { transform: scale(0.98); }
+        @media (min-width: 768px) {
+            .pdp-layout { flex-direction: row !important; }
+            .pdp-gallery { width: 55% !important; }
+            .pdp-details { width: 45% !important; }
+        }
     </style>
 </head>
 <body class="antialiased text-gray-900 overflow-x-hidden selection:bg-wildOrchid selection:text-white"
@@ -33,10 +53,14 @@
             </button>
 
             <a href="{{ route('home') }}" class="flex items-center gap-2 group">
-                <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center transform rotate-3 group-hover:rotate-6 transition-transform shadow-lg shadow-mango/40">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
-                </div>
-                <h1 class="text-2xl font-black tracking-tight text-gray-900 hidden sm:block">Chhito <span class="text-wildOrchid">Pasal</span></h1>
+                @if(setting('store_logo'))
+                    <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-16 w-auto object-contain transform group-hover:scale-105 transition-transform">
+                @else
+                    <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center transform rotate-3 group-hover:rotate-6 transition-transform shadow-lg shadow-mango/40">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
+                    </div>
+                    <h1 class="text-2xl font-black tracking-tight text-gray-900 hidden sm:block">{{ setting('store_name', 'Chhito Pasal') }}</h1>
+                @endif
             </a>
 
             <div class="hidden md:flex items-center flex-1 max-w-2xl px-12 gap-8">
@@ -56,99 +80,125 @@
         </div>
     </header>
 
-    <!-- Product Display -->
-    <main class="pt-28 pb-16 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto min-h-[80vh]">
-        <div class="bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col md:flex-row border border-gray-100"
-             x-data="{ 
-                 activeMedia: '{{ asset('storage/' . $product->image_path) }}', 
-                 isVideo: false 
-             }">
-            
-            <!-- Left: Media Gallery -->
-            <div class="w-full md:w-1/2 p-6 sm:p-10 flex flex-col gap-6">
-                <!-- Main Display -->
-                <div class="aspect-square bg-gray-50 rounded-[2rem] overflow-hidden flex items-center justify-center relative border border-gray-100">
+    <!-- Breadcrumb -->
+    <nav style="padding-top: 90px;" class="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+        <div style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#94a3b8;">
+            <a href="{{ route('home') }}" style="color:#64748b; text-decoration:none;">Home</a>
+            <span>›</span>
+            <a href="{{ url('/#shop') }}" style="color:#64748b; text-decoration:none;">Shop</a>
+            <span>›</span>
+            <span style="color:#1a1a2e;">{{ $product->name }}</span>
+        </div>
+    </nav>
+
+    <main class="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 pb-20 min-h-[70vh]">
+        <div class="pdp-layout fade-up" style="display:flex; flex-direction:column; gap:0; border-radius:24px; overflow:hidden; background:#fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.06);"
+             x-data="{ activeMedia: '{{ asset('storage/' . $product->image_path) }}', isVideo: false }">
+
+            <!-- Gallery Side -->
+            <div class="pdp-gallery" style="width:100%; padding:20px; background:#f8fafc;">
+                <!-- Main Image -->
+                <div style="aspect-ratio:1/1; border-radius:16px; overflow:hidden; background:#f1f5f9; position:relative;">
                     <template x-if="!isVideo">
-                        <img :src="activeMedia" class="w-full h-full object-cover" alt="{{ $product->name }}">
+                        <img :src="activeMedia" alt="{{ $product->name }}" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.3s ease;">
                     </template>
                     <template x-if="isVideo">
-                        <video :src="activeMedia" controls autoplay muted class="w-full h-full object-contain bg-black"></video>
+                        <video :src="activeMedia" controls autoplay muted style="width:100%; height:100%; object-fit:contain; background:#000;"></video>
                     </template>
                 </div>
-                
-                <!-- Thumbnails Grid -->
-                <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-                    <!-- Thumbnail: Primary Image -->
-                    <button @click="activeMedia = '{{ asset('storage/' . $product->image_path) }}'; isVideo = false" 
-                            :class="activeMedia === '{{ asset('storage/' . $product->image_path) }}' ? 'ring-4 ring-mango border-transparent' : 'border-gray-200 opacity-70 hover:opacity-100'"
-                            class="w-20 h-20 flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all active:scale-95 bg-gray-50">
-                        <img src="{{ asset('storage/' . $product->image_path) }}" class="w-full h-full object-cover">
+
+                <!-- Thumbnails -->
+                <div class="no-scrollbar" style="display:flex; gap:10px; margin-top:14px; overflow-x:auto; padding-bottom:4px;">
+                    <button @click="activeMedia = '{{ asset('storage/' . $product->image_path) }}'; isVideo = false"
+                            :class="activeMedia === '{{ asset('storage/' . $product->image_path) }}' ? 'thumb-active' : 'thumb-inactive'"
+                            style="width:64px; height:64px; flex-shrink:0; border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; cursor:pointer; transition:all 0.2s;">
+                        <img src="{{ asset('storage/' . $product->image_path) }}" style="width:100%; height:100%; object-fit:cover;">
                     </button>
-                    
-                    <!-- Thumbnails: Additional Images -->
                     @if($product->additional_images)
                         @foreach($product->additional_images as $img)
-                            <button @click="activeMedia = '{{ asset('storage/' . $img) }}'; isVideo = false" 
-                                    :class="activeMedia === '{{ asset('storage/' . $img) }}' ? 'ring-4 ring-mango border-transparent' : 'border-gray-200 opacity-70 hover:opacity-100'"
-                                    class="w-20 h-20 flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all active:scale-95 bg-gray-50">
-                                <img src="{{ asset('storage/' . $img) }}" class="w-full h-full object-cover">
-                            </button>
+                        <button @click="activeMedia = '{{ asset('storage/' . $img) }}'; isVideo = false"
+                                :class="activeMedia === '{{ asset('storage/' . $img) }}' ? 'thumb-active' : 'thumb-inactive'"
+                                style="width:64px; height:64px; flex-shrink:0; border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; cursor:pointer; transition:all 0.2s;">
+                            <img src="{{ asset('storage/' . $img) }}" style="width:100%; height:100%; object-fit:cover;">
+                        </button>
                         @endforeach
                     @endif
-
-                    <!-- Thumbnail: Video -->
                     @if($product->video_path)
-                        <button @click="activeMedia = '{{ asset('storage/' . $product->video_path) }}'; isVideo = true" 
-                                :class="activeMedia === '{{ asset('storage/' . $product->video_path) }}' ? 'ring-4 ring-mango border-transparent' : 'border-gray-200 opacity-70 hover:opacity-100'"
-                                class="w-20 h-20 flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all active:scale-95 bg-gray-900 flex items-center justify-center group relative">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            <span class="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] font-bold px-1 rounded">VIDEO</span>
-                        </button>
+                    <button @click="activeMedia = '{{ asset('storage/' . $product->video_path) }}'; isVideo = true"
+                            :class="activeMedia === '{{ asset('storage/' . $product->video_path) }}' ? 'thumb-active' : 'thumb-inactive'"
+                            style="width:64px; height:64px; flex-shrink:0; border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; cursor:pointer; background:#1a1a2e; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
+                        <svg style="width:28px; height:28px; color:#fff;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </button>
                     @endif
                 </div>
             </div>
-            
-            <!-- Right: Details -->
-            <div class="w-full md:w-1/2 p-8 sm:p-12 flex flex-col border-t md:border-t-0 md:border-l border-gray-100 bg-[#FDFFFC]">
-                <span class="text-sm font-black uppercase tracking-wider text-wildOrchid mb-4">{{ $product->category->name ?? 'Uncategorized' }}</span>
-                <h1 class="text-4xl sm:text-5xl font-black text-gray-900 mb-6 leading-tight">{{ $product->name }}</h1>
-                
-                <!-- Dominant Price Block -->
-                <div class="bg-gray-50 border border-mango/30 rounded-[2rem] p-6 sm:p-8 mb-8 shadow-[0_10px_30px_rgba(255,209,102,0.15)] relative overflow-hidden">
-                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-mango/20 rounded-full blur-3xl"></div>
-                    <p class="text-sm text-gray-500 font-bold uppercase tracking-widest mb-1 relative z-10">Our Price</p>
-                    <div class="flex items-baseline gap-2 relative z-10">
-                        <span class="text-xl md:text-3xl font-bold text-mango">Rs.</span>
-                        <span class="text-6xl md:text-[5rem] lg:text-[6rem] font-black text-gray-900 tracking-tighter leading-none">{{ number_format($product->price) }}</span>
+
+            <!-- Details Side -->
+            <div class="pdp-details" style="width:100%; padding:28px 24px 32px 24px; display:flex; flex-direction:column;">
+                <!-- Category badge -->
+                <span style="display:inline-block; width:fit-content; padding:4px 12px; border-radius:8px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; background:#f0f9ff; color:#0284c7; margin-bottom:14px;">{{ $product->category->name ?? 'Uncategorized' }}</span>
+
+                <!-- Product name -->
+                <h1 style="font-size:clamp(22px,4vw,36px); font-weight:900; color:#0f172a; line-height:1.15; margin-bottom:20px;">{{ $product->name }}</h1>
+
+                <!-- Price block -->
+                <div class="price-block" style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border:1px solid rgba(255,209,102,0.3); border-radius:16px; padding:20px 24px; margin-bottom:20px; position:relative; overflow:hidden;">
+                    <div style="position:absolute; right:-20px; top:-20px; width:80px; height:80px; background:rgba(255,209,102,0.25); border-radius:50%; filter:blur(20px);"></div>
+                    <p style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#92400e; margin-bottom:4px; position:relative; z-index:1;">Our Price</p>
+                    <div style="display:flex; align-items:baseline; gap:6px; position:relative; z-index:1;">
+                        <span style="font-size:18px; font-weight:700; color:#d97706;">Rs.</span>
+                        <span style="font-size:clamp(36px,5vw,48px); font-weight:900; color:#0f172a; letter-spacing:-0.03em; line-height:1;">{{ number_format($product->price) }}</span>
                     </div>
                 </div>
-                
-                <!-- Dominant Buy Button -->
-                <button @click="triggerAddToCart({{ json_encode($product) }})" class="mb-10 w-full bg-mango text-gray-900 font-black text-2xl py-6 px-8 rounded-3xl hover:bg-[#ffdf8c] active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(255,209,102,0.4)] flex items-center justify-center gap-3 transform hover:-translate-y-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                    Buy Now
-                </button>
-                
-                <div class="mb-8">
-                    <h4 class="font-bold text-gray-900 text-lg mb-3">Product Description</h4>
-                    <p class="text-gray-600 font-medium leading-relaxed whitespace-pre-line">{{ $product->description }}</p>
-                </div>
-                
-                <div class="flex items-center gap-4 text-sm font-bold text-gray-600 mb-10">
+
+                <!-- Stock + Weight badges -->
+                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
                     @if($product->in_stock)
-                    <div class="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
-                        <span>In Stock</span>
+                    <div style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:10px; font-size:12px; font-weight:700; background:rgba(236,253,245,0.9); color:#059669; border:1px solid rgba(16,185,129,0.2);">
+                        <span style="width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 6px rgba(16,185,129,0.5); display:inline-block;"></span>
+                        In Stock
                     </div>
                     @else
-                    <div class="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-xl border border-red-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
-                        <span>Out of Stock</span>
+                    <div style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:10px; font-size:12px; font-weight:700; background:rgba(254,242,242,0.9); color:#dc2626; border:1px solid rgba(239,68,68,0.2);">
+                        <span style="width:7px; height:7px; border-radius:50%; background:#ef4444; display:inline-block;"></span>
+                        Out of Stock
                     </div>
                     @endif
-                    <div class="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-xl border border-gray-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM5.94 12.06a1 1 0 010-1.41l4-4a1 1 0 011.41 0l4 4a1 1 0 01-1.41 1.41L11 9.41V15a1 1 0 11-2 0V9.41L6.65 11.76a1 1 0 01-1.41 0z" clip-rule="evenodd" /></svg>
-                        <span>{{ $product->weight_grams }}g per unit</span>
+                    <div style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:10px; font-size:12px; font-weight:700; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;">
+                        <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l3 9a5.002 5.002 0 01-6.001 0M18 7l-3 9m-6-9l6-2m0 0V3" /></svg>
+                        {{ $product->weight_grams }}g
+                    </div>
+                </div>
+
+                <!-- Buy button -->
+                <button @click="triggerAddToCart({{ json_encode($product) }})" class="buy-btn" style="width:100%; padding:16px 24px; border-radius:16px; border:none; color:#fff; font-size:17px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:24px;">
+                    <svg style="width:22px; height:22px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                    Buy Now
+                </button>
+
+                <!-- Description -->
+                <div style="margin-bottom:20px;">
+                    <h4 style="font-size:14px; font-weight:800; color:#0f172a; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Description</h4>
+                    <p style="font-size:14px; font-weight:500; color:#64748b; line-height:1.7; white-space:pre-line;">{{ $product->description }}</p>
+                </div>
+
+                <!-- Trust badges -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:auto; padding-top:20px; border-top:1px solid #f1f5f9;">
+                    <div style="display:flex; align-items:center; gap:8px; padding:10px; border-radius:12px; background:#f8fafc;">
+                        <svg style="width:20px; height:20px; color:#6366f1; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        <span style="font-size:11px; font-weight:700; color:#475569;">Secure Checkout</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; padding:10px; border-radius:12px; background:#f8fafc;">
+                        <svg style="width:20px; height:20px; color:#f59e0b; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        <span style="font-size:11px; font-weight:700; color:#475569;">Fast Delivery</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; padding:10px; border-radius:12px; background:#f8fafc;">
+                        <svg style="width:20px; height:20px; color:#10b981; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                        <span style="font-size:11px; font-weight:700; color:#475569;">Cash on Delivery</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; padding:10px; border-radius:12px; background:#f8fafc;">
+                        <svg style="width:20px; height:20px; color:#ec4899; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                        <span style="font-size:11px; font-weight:700; color:#475569;">Quality Assured</span>
                     </div>
                 </div>
             </div>

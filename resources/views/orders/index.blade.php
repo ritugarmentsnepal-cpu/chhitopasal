@@ -73,7 +73,7 @@
                     Pathao:
                 </span>
                 @php
-                    $pathaoFilters = [
+                    $allPathaoFilters = [
                         '' => ['label' => 'All', 'dot' => 'bg-gray-400'],
                         'awaiting_pickup' => ['label' => 'Awaiting Pickup', 'dot' => 'bg-yellow-400'],
                         'Picked' => ['label' => 'Picked Up', 'dot' => 'bg-blue-400'],
@@ -84,6 +84,28 @@
                         'Return' => ['label' => 'Returned', 'dot' => 'bg-red-500'],
                         'Cancel' => ['label' => 'Cancelled', 'dot' => 'bg-gray-500'],
                     ];
+
+                    $pathaoFilters = ['' => $allPathaoFilters['']];
+                    
+                    if ($status === 'shipped') {
+                        $pathaoFilters += [
+                            'awaiting_pickup' => $allPathaoFilters['awaiting_pickup'],
+                            'Picked' => $allPathaoFilters['Picked'],
+                            'In Transit' => $allPathaoFilters['In Transit'],
+                            'At Hub' => $allPathaoFilters['At Hub'],
+                            'Out for Delivery' => $allPathaoFilters['Out for Delivery']
+                        ];
+                    } elseif ($status === 'delivered') {
+                        $pathaoFilters += ['Delivered' => $allPathaoFilters['Delivered']];
+                    } elseif ($status === 'return_delivered') {
+                        $pathaoFilters += ['Return' => $allPathaoFilters['Return']];
+                    } elseif (in_array($status, ['failed', 'rejected'])) {
+                        $pathaoFilters += [
+                            'Cancel' => $allPathaoFilters['Cancel'],
+                            'Return' => $allPathaoFilters['Return']
+                        ];
+                    }
+
                     $currentPathaoFilter = request('pathao_filter', '');
                 @endphp
                 @foreach($pathaoFilters as $filterKey => $filterData)
@@ -258,9 +280,14 @@
                                         </div>
                                         <ul class="text-xs text-gray-500 space-y-0.5">
                                             @foreach($order->orderItems as $item)
-                                                <li>{{ $item->quantity }}x {{ $item->product->name }}</li>
+                                                <li>{{ $item->quantity }}x {{ $item->product ? $item->product->name : 'Deleted Product' }}</li>
                                             @endforeach
                                         </ul>
+                                        @if($order->remarks)
+                                            <div class="mt-2 text-xs p-2 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-lg whitespace-pre-wrap break-words">
+                                                <strong>Remarks:</strong><br>{{ $order->remarks }}
+                                            </div>
+                                        @endif
                                     </td>
                                     <td class="p-4 align-top text-right w-[320px]">
                                         <div class="flex flex-col gap-2 w-full ml-auto">
@@ -635,6 +662,11 @@
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <div class="mt-4 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                                    <label class="block text-sm font-bold text-yellow-800 mb-1">Internal Remarks</label>
+                                    <textarea name="remarks" x-model="editFormData.remarks" rows="2" class="w-full rounded-xl border-yellow-300 bg-white py-2 focus:ring-yellow-500 placeholder-yellow-400 text-sm" placeholder="Add any special notes or remarks here..."></textarea>
+                                </div>
                             </div>
 
                         <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
@@ -963,7 +995,8 @@
                     pathao_zone_id: '',
                     status: '',
                     items: [],
-                    delivery_charge: 0
+                    delivery_charge: 0,
+                    remarks: ''
                 },
                 editZones: [],
 
@@ -1050,6 +1083,7 @@
                     this.editFormData.pathao_zone_id = order.pathao_zone_id || '';
                     this.editFormData.status = order.status || '';
                     this.editFormData.delivery_charge = parseFloat(order.delivery_charge || 0);
+                    this.editFormData.remarks = order.remarks || '';
                     
                     if(this.editFormData.pathao_city_id) {
                         this.fetchEditZones();

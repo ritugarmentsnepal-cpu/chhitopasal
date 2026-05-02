@@ -48,7 +48,7 @@ class ExpenseController extends Controller
                 'account_id' => $account->id,
                 'type' => 'out',
                 'amount' => $validated['amount'],
-                'reference_type' => 'Expense',
+                'reference_type' => \App\SystemAccounts::REF_EXPENSE,
                 'reference_id' => $expense->id,
                 'date' => $validated['date'],
                 'notes' => 'Expense: ' . ($validated['description'] ?: 'General Expense')
@@ -82,7 +82,7 @@ class ExpenseController extends Controller
 
             if ($oldAmount != $newAmount) {
                 // FIN-05: Handle ALL linked transactions, not just the first
-                $transactions = \App\Models\Transaction::where('reference_type', 'Expense')
+                $transactions = \App\Models\Transaction::where('reference_type', \App\SystemAccounts::REF_EXPENSE)
                     ->where('reference_id', $expense->id)->get();
                 foreach ($transactions as $tx) {
                     $account = \App\Models\Account::find($tx->account_id);
@@ -106,7 +106,7 @@ class ExpenseController extends Controller
 
         DB::transaction(function () use ($expense) {
             // FIN-05: Handle ALL linked transactions
-            $transactions = \App\Models\Transaction::where('reference_type', 'Expense')
+            $transactions = \App\Models\Transaction::where('reference_type', \App\SystemAccounts::REF_EXPENSE)
                 ->where('reference_id', $expense->id)->get();
             foreach ($transactions as $tx) {
                 $account = \App\Models\Account::find($tx->account_id);

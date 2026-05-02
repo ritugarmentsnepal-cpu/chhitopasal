@@ -1,5 +1,48 @@
 <div class="space-y-8">
-    <h3 class="text-2xl font-black text-gray-900">Financial Overview</h3>
+    <div class="flex justify-between items-center">
+        <h3 class="text-2xl font-black text-gray-900">Financial Overview</h3>
+        
+        <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" @click.away="open = false" class="bg-mango text-gray-900 px-6 py-3 rounded-xl font-black shadow-sm hover:bg-yellow-400 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Quick Entry
+            </button>
+            <div x-show="open" x-transition x-cloak class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                <div class="p-2 space-y-1">
+                    <a href="?tab=pos" class="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl font-bold text-gray-700 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        POS Invoice
+                    </a>
+                    <button @click="$dispatch('open-modal', 'quick-expense-modal'); open = false" class="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl font-bold text-gray-700 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        Record Expense
+                    </button>
+                    <button @click="$dispatch('open-modal', 'quick-transaction-modal'); open = false" class="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl font-bold text-gray-700 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                        </div>
+                        Manual Transaction
+                    </button>
+                    <a href="?tab=purchases" class="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl font-bold text-gray-700 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        </div>
+                        Record Purchase
+                    </a>
+                    <a href="?tab=parties" class="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl font-bold text-gray-700 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        Add Party
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Top Line Metrics -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -73,25 +116,8 @@
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="mt-8" x-data>
-        <h4 class="text-xl font-black text-gray-900 mb-4">Quick Actions</h4>
-        <div class="flex flex-wrap gap-4">
-            <button @click="$dispatch('open-modal', 'quick-expense-modal')" class="bg-white border border-gray-200 px-6 py-4 rounded-2xl font-bold text-gray-700 shadow-sm hover:border-mango hover:text-mango transition-colors flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                Record Expense
-            </button>
-            <button @click="$dispatch('open-modal', 'quick-transaction-modal')" class="bg-white border border-gray-200 px-6 py-4 rounded-2xl font-bold text-gray-700 shadow-sm hover:border-blue-500 hover:text-blue-500 transition-colors flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                </div>
-                Manual Transaction
-            </button>
-        </div>
-
-        <!-- Modals -->
+    <!-- Modals (Triggered via Quick Entry) -->
+    <div x-data>
         <x-modal name="quick-expense-modal" :show="false" maxWidth="2xl">
             <div class="p-8">
                 <h2 class="text-2xl font-black text-gray-900 mb-6">Record Quick Expense</h2>

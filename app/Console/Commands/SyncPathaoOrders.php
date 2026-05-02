@@ -28,60 +28,59 @@ class SyncPathaoOrders extends Command
     {
         $this->info('Starting Pathao status sync...');
 
-        // NEW-INT-01: Also sync 'delivered' orders to catch late Pathao returns
-        $orders = Order::with('orderItems.product')
-                       ->whereIn('status', ['shipped', 'delivered'])
-                       ->whereNotNull('pathao_consignment_id')
-                       ->get();
-
         $count = 0;
         $errors = 0;
 
-        foreach ($orders as $order) {
-            try {
-                $status = $pathao->getOrderStatus($order->pathao_consignment_id);
+        // PERF-BUG-04: Use chunk() to avoid loading all shipped orders into memory
+        Order::with('orderItems.product')
+            ->whereIn('status', ['shipped', 'delivered'])
+            ->whereNotNull('pathao_consignment_id')
+            ->chunk(50, function ($orders) use ($pathao, $orderService, &$count, &$errors) {
+                foreach ($orders as $order) {
+                    try {
+                        $status = $pathao->getOrderStatus($order->pathao_consignment_id);
 
-                if (!$status) {
-                    $errors++;
-                    continue;
+                        if (!$status) {
+                            $errors++;
+                            continue;
+                        }
+
+                        // Always save the raw Pathao status for display
+                        $order->update([
+                            'pathao_status' => $status,
+                            'pathao_status_updated_at' => now(),
+                        ]);
+
+                        $normalizedStatus = strtolower($status);
+                        $newLocalStatus = null;
+
+                        // Map Pathao's status strings to our local database statuses
+                        if (in_array($normalizedStatus, ['delivered', 'successful'])) {
+                            $newLocalStatus = 'delivered';
+                        } elseif (in_array($normalizedStatus, ['returned', 'return'])) {
+                            $newLocalStatus = 'return_delivered';
+                        } elseif (in_array($normalizedStatus, ['cancelled', 'cancel', 'pickup cancel', 'pickup cancelled'])) {
+                            $newLocalStatus = 'rejected';
+                        }
+
+                        if ($newLocalStatus && $newLocalStatus !== $order->status) {
+                            DB::transaction(function () use ($order, $newLocalStatus, $orderService) {
+                                $orderService->transitionStatus($order, $newLocalStatus);
+                            });
+
+                            $this->info("Updated Order #{$order->id} from {$order->status} to {$newLocalStatus}.");
+                            $count++;
+                        }
+
+                    } catch (\Exception $e) {
+                        Log::error("Pathao Sync Error for Order #{$order->id}: " . $e->getMessage());
+                        $errors++;
+                    }
+
+                    // INT-01: Rate limit API calls — 200ms delay between requests
+                    usleep(200000);
                 }
-
-                // Always save the raw Pathao status for display
-                $order->update([
-                    'pathao_status' => $status,
-                    'pathao_status_updated_at' => now(),
-                ]);
-
-                $normalizedStatus = strtolower($status);
-                $newLocalStatus = null;
-
-                // Map Pathao's status strings to our local database statuses
-                if (in_array($normalizedStatus, ['delivered', 'successful'])) {
-                    $newLocalStatus = 'delivered';
-                } elseif (in_array($normalizedStatus, ['returned', 'return'])) {
-                    $newLocalStatus = 'return_delivered';
-                } elseif (in_array($normalizedStatus, ['cancelled', 'cancel', 'pickup cancel', 'pickup cancelled'])) {
-                    $newLocalStatus = 'rejected';
-                }
-
-                if ($newLocalStatus && $newLocalStatus !== $order->status) {
-                    // INT-01: Use OrderService directly — no HTTP controller dependency
-                    DB::transaction(function () use ($order, $newLocalStatus, $orderService) {
-                        $orderService->transitionStatus($order, $newLocalStatus);
-                    });
-
-                    $this->info("Updated Order #{$order->id} from shipped to {$newLocalStatus}.");
-                    $count++;
-                }
-
-            } catch (\Exception $e) {
-                Log::error("Pathao Sync Error for Order #{$order->id}: " . $e->getMessage());
-                $errors++;
-            }
-
-            // INT-01: Rate limit API calls — 200ms delay between requests
-            usleep(200000);
-        }
+            });
 
         $this->info("Sync completed. Updated {$count} orders. Encountered {$errors} errors.");
     }

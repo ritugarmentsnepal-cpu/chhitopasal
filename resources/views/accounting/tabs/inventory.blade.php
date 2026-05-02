@@ -14,7 +14,7 @@
         this.quantity = 1;
         this.reason = '';
         this.adjustmentType = 'add';
-        this.adjustModal = true;
+        this.$dispatch('open-modal', 'adjust-stock-modal');
     }
 }">
     <div class="flex justify-between items-center">
@@ -134,7 +134,7 @@
 
     <!-- Adjust Stock Modal -->
     <x-modal name="adjust-stock-modal" :show="false" maxWidth="md">
-        <div class="p-8" x-show="adjustModal" @click.away="adjustModal = false">
+        <div class="p-8">
             <h2 class="text-2xl font-black text-gray-900 mb-6">Adjust Stock</h2>
             <form action="{{ route('accounting.adjustStock') }}" method="POST">
                 @csrf
@@ -198,7 +198,7 @@
                 </div>
 
                 <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
-                    <button type="button" @click="adjustModal = false" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
+                    <button type="button" @click="$dispatch('close-modal', 'adjust-stock-modal')" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
                     <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition shadow-lg">Confirm Adjustment</button>
                 </div>
             </form>

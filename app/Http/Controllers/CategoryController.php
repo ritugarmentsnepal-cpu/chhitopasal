@@ -16,6 +16,10 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user()->role !== 'admin') {
+            return redirect()->route('categories.index')->with('error', 'Access Denied: Only Administrators can create categories.');
+        }
+
         $request->validate(['name' => 'required|string|max:255']);
 
         $colorOptions = null;
@@ -80,7 +84,15 @@ class CategoryController extends Controller
             return redirect()->route('categories.index')->with('error', 'Access Denied: Only Administrators can delete categories.');
         }
 
-        $category->delete();
+        try {
+            \Log::info('Attempting to delete category: ' . $category->id);
+            \App\Models\Product::where('category_id', $category->id)->update(['category_id' => null]);
+            $category->delete();
+            \Log::info('Category deleted successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to delete category: ' . $e->getMessage());
+            return back()->with('error', 'Cannot delete category: ' . $e->getMessage());
+        }
         return back()->with('success', 'Category deleted.');
     }
 }

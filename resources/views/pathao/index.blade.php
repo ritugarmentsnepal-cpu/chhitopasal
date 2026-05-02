@@ -12,6 +12,23 @@
         </div>
     </x-slot>
 
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+
     <div class="py-8 bg-[#F8FAFC] min-h-screen" x-data="{ activeTab: 'dashboard' }">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             
@@ -67,36 +84,99 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                    <h3 class="text-lg font-black text-gray-900 mb-4">Location Finder</h3>
-                    <p class="text-sm text-gray-500 mb-6">Use this tool to find valid Pathao Cities, Zones, and Areas for your shipping forms.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" x-data="locationFinder()">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">City</label>
-                            <select x-model="cityId" @change="fetchZones()" class="w-full rounded-xl border-gray-200 focus:ring-mango">
-                                <option value="">Select City</option>
-                                <template x-for="city in cities" :key="city.city_id">
-                                    <option :value="city.city_id" x-text="city.city_name"></option>
-                                </template>
-                            </select>
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-0 overflow-hidden" x-data="locationFinder()">
+                    <!-- Header -->
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-black text-gray-900">Our Coverage Areas</h3>
+                            <a href="#" class="text-red-600 text-sm font-bold hover:underline">Click to View Details</a>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Zone</label>
-                            <select x-model="zoneId" @change="fetchAreas()" class="w-full rounded-xl border-gray-200 focus:ring-mango" :disabled="!zones.length">
-                                <option value="">Select Zone</option>
-                                <template x-for="zone in zones" :key="zone.zone_id">
-                                    <option :value="zone.zone_id" x-text="zone.zone_name"></option>
-                                </template>
-                            </select>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <h4 class="text-lg font-bold text-gray-800">Districts with Our Presence</h4>
+                            <div class="relative w-full md:w-64">
+                                <input type="text" x-model="citySearch" placeholder="Search District" class="w-full rounded-lg border-gray-200 py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500 placeholder-gray-400 font-medium">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Area</label>
-                            <select x-model="areaId" class="w-full rounded-xl border-gray-200 focus:ring-mango" :disabled="!areas.length">
-                                <option value="">Select Area</option>
-                                <template x-for="area in areas" :key="area.area_id">
-                                    <option :value="area.area_id" x-text="area.area_name"></option>
-                                </template>
-                            </select>
+                    </div>
+
+                    <!-- Grid of Cities -->
+                    <div class="p-6 bg-[#fcfcfc] min-h-[400px]">
+                        <div x-show="loadingCities" class="flex justify-center items-center py-12 text-gray-400">
+                            <svg class="animate-spin h-8 w-8 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <template x-for="city in filteredCities" :key="city.city_id">
+                                <div @click="openCityModal(city)" class="bg-white p-5 rounded-lg border border-gray-200 hover:border-red-300 hover:shadow-md cursor-pointer transition flex flex-col justify-between h-[100px]">
+                                    <h5 class="font-medium text-gray-800 text-[16px] mb-2" x-text="city.city_name"></h5>
+                                    <div class="text-xs text-gray-500 font-medium flex gap-3">
+                                        <span>Click to explore zones</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <div x-show="!loadingCities && filteredCities.length === 0" class="text-center py-12 text-gray-500">
+                            No districts found matching your search.
+                        </div>
+                    </div>
+
+                    <!-- Zones Modal -->
+                    <div x-show="showModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
+                        <div @click.outside="closeModal()" class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden" x-transition>
+                            <!-- Modal Header -->
+                            <div class="flex justify-between items-center p-5 border-b border-gray-100 shrink-0">
+                                <h3 class="font-bold text-lg text-gray-900" x-text="selectedCity ? `${selectedCity.city_name} - Zones` : 'Zones'"></h3>
+                                <button @click="closeModal()" class="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-lg p-1 transition">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Search & List -->
+                            <div class="p-5 flex-1 flex flex-col min-h-0 bg-white overflow-hidden">
+                                <div class="mb-5 relative shrink-0">
+                                    <input type="text" x-model="zoneSearch" placeholder="Search zone or area" class="w-full rounded-lg border-gray-200 py-2.5 text-sm focus:ring-red-500 focus:border-red-500 placeholder-gray-400">
+                                </div>
+
+                                <div class="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar border border-gray-200 rounded-lg bg-white">
+                                    <div x-show="loadingZones" class="flex justify-center py-8">
+                                        <svg class="animate-spin h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    </div>
+
+                                    <!-- Accordion Items -->
+                                    <div class="bg-white" x-show="!loadingZones">
+                                        <template x-for="zone in filteredZones" :key="zone.zone_id">
+                                            <div class="border-b border-gray-100 last:border-0">
+                                                <button @click="toggleZone(zone)" class="w-full flex justify-between items-center p-4 hover:bg-gray-50 transition text-left">
+                                                    <span class="font-medium text-[15px]" :class="expandedZoneId === zone.zone_id ? 'text-red-500' : 'text-gray-900'" x-text="zone.zone_name"></span>
+                                                    <div class="flex items-center gap-3">
+                                                        <span class="text-sm font-bold" :class="expandedZoneId === zone.zone_id ? 'text-red-500' : 'text-gray-500'" x-show="zone.areasLoaded" x-text="`${zone.areas.length} Areas`"></span>
+                                                        <svg class="w-5 h-5 transition-transform" :class="expandedZoneId === zone.zone_id ? 'text-red-500 rotate-180' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                    </div>
+                                                </button>
+                                                
+                                                <!-- Expanded Content (Areas) -->
+                                                <div x-show="expandedZoneId === zone.zone_id" x-collapse class="bg-[#fcfcfc] border-t border-gray-100 p-4">
+                                                    <div x-show="zone.loadingAreas" class="flex justify-center py-4">
+                                                        <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                    </div>
+                                                    
+                                                    <ul x-show="!zone.loadingAreas && zone.areas" class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4">
+                                                        <template x-for="area in zone.areas" :key="area.area_id">
+                                                            <li class="text-sm text-gray-600 flex items-center gap-2 bg-white border border-gray-100 rounded p-2">
+                                                                <div class="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></div>
+                                                                <span x-text="area.area_name" class="truncate"></span>
+                                                            </li>
+                                                        </template>
+                                                        <li x-show="zone.areas && zone.areas.length === 0" class="text-sm text-gray-500 col-span-2 py-2">No areas found.</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <div x-show="filteredZones.length === 0" class="p-4 text-center text-gray-500 text-sm">
+                                            No zones or areas match your search.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -273,31 +353,98 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('locationFinder', () => ({
                 cities: [],
+                citySearch: '',
+                loadingCities: true,
+                
+                showModal: false,
+                selectedCity: null,
                 zones: [],
-                areas: [],
-                cityId: '',
-                zoneId: '',
-                areaId: '',
+                zoneSearch: '',
+                loadingZones: false,
+                expandedZoneId: null,
 
                 async init() {
-                    const res = await fetch('{{ url("api/pathao/cities") }}');
-                    this.cities = await res.json();
+                    try {
+                        const res = await fetch('{{ url("api/pathao/cities") }}');
+                        this.cities = await res.json();
+                    } catch (e) {
+                        console.error('Failed to load cities');
+                    } finally {
+                        this.loadingCities = false;
+                    }
                 },
-                async fetchZones() {
+
+                get filteredCities() {
+                    if (!this.citySearch) return this.cities;
+                    const s = this.citySearch.toLowerCase();
+                    return this.cities.filter(c => c.city_name.toLowerCase().includes(s));
+                },
+
+                get filteredZones() {
+                    if (!this.zoneSearch) return this.zones;
+                    const s = this.zoneSearch.toLowerCase();
+                    
+                    return this.zones.filter(z => {
+                        if (z.zone_name.toLowerCase().includes(s)) return true;
+                        if (z.areasLoaded && z.areas) {
+                            return z.areas.some(a => a.area_name.toLowerCase().includes(s));
+                        }
+                        return false;
+                    });
+                },
+
+                async openCityModal(city) {
+                    this.selectedCity = city;
+                    this.showModal = true;
+                    this.zoneSearch = '';
+                    this.expandedZoneId = null;
                     this.zones = [];
-                    this.areas = [];
-                    this.zoneId = '';
-                    this.areaId = '';
-                    if(!this.cityId) return;
-                    const res = await fetch('{{ url("api/pathao/zones") }}/' + this.cityId);
-                    this.zones = await res.json();
+                    this.loadingZones = true;
+
+                    try {
+                        const res = await fetch('{{ url("api/pathao/zones") }}/' + city.city_id);
+                        const data = await res.json();
+                        this.zones = data.map(z => ({
+                            ...z,
+                            areas: [],
+                            loadingAreas: false,
+                            areasLoaded: false
+                        }));
+                    } catch (e) {
+                        console.error('Failed to load zones');
+                    } finally {
+                        this.loadingZones = false;
+                    }
                 },
-                async fetchAreas() {
-                    this.areas = [];
-                    this.areaId = '';
-                    if(!this.zoneId) return;
-                    const res = await fetch('{{ url("api/pathao/areas") }}/' + this.zoneId);
-                    this.areas = await res.json();
+
+                closeModal() {
+                    this.showModal = false;
+                    setTimeout(() => {
+                        this.selectedCity = null;
+                        this.zones = [];
+                    }, 300); // Wait for transition
+                },
+
+                async toggleZone(zone) {
+                    if (this.expandedZoneId === zone.zone_id) {
+                        this.expandedZoneId = null;
+                        return;
+                    }
+                    
+                    this.expandedZoneId = zone.zone_id;
+                    
+                    if (!zone.areasLoaded) {
+                        zone.loadingAreas = true;
+                        try {
+                            const res = await fetch('{{ url("api/pathao/areas") }}/' + zone.zone_id);
+                            zone.areas = await res.json();
+                            zone.areasLoaded = true;
+                        } catch (e) {
+                            console.error('Failed to load areas');
+                        } finally {
+                            zone.loadingAreas = false;
+                        }
+                    }
                 }
             }));
         });
