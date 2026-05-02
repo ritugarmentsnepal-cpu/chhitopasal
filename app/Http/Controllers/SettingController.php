@@ -48,7 +48,7 @@ class SettingController extends Controller
             'default_cash_account', 'invoice_terms', 'invoice_footer',
             // Integrations (Pathao)
             'pathao_client_id', 'pathao_client_secret', 'pathao_username',
-            'pathao_password', 'pathao_store_id',
+            'pathao_password', 'pathao_store_id', 'pathao_base_url',
             // Automation
             'auto_sync_pathao', 'pathao_sync_interval',
         ];
@@ -81,6 +81,10 @@ class SettingController extends Controller
     public function testPathao(Request $request)
     {
         try {
+            // Clear caches before testing to prevent false negatives from stale failed requests
+            \Illuminate\Support\Facades\Cache::forget('pathao_cities');
+            \Illuminate\Support\Facades\Cache::forget('pathao_access_token');
+            
             $pathao = new \App\Services\PathaoService();
             // Just fetching cities is enough to verify token works
             $cities = $pathao->getCities();

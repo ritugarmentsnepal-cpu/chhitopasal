@@ -19,7 +19,7 @@ class PathaoService
 
     public function __construct()
     {
-        $this->baseUrl = config('services.pathao.base_url');
+        $this->baseUrl = setting('pathao_base_url', config('services.pathao.base_url'));
         $this->clientId = setting('pathao_client_id', config('services.pathao.client_id'));
         $this->clientSecret = setting('pathao_client_secret', config('services.pathao.client_secret'));
         $this->username = setting('pathao_username', config('services.pathao.username'));
@@ -162,54 +162,76 @@ class PathaoService
 
     public function getCities()
     {
-        return Cache::remember('pathao_cities', 86400, function () {
-            try {
-                $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/countries/1/city-list");
-                
-                if ($response->successful()) {
-                    return $response->json('data.data') ?? [];
-                }
-            } catch (Exception $e) {
-                Log::error("Failed to fetch Pathao cities: " . $e->getMessage());
-            }
+        $cities = Cache::get('pathao_cities');
+        if (!empty($cities)) {
+            return $cities;
+        }
 
-            // INT-03: Return empty array instead of mock data in production
-            return [];
-        });
+        try {
+            $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/countries/1/city-list");
+            
+            if ($response->successful()) {
+                $data = $response->json('data.data') ?? [];
+                if (!empty($data)) {
+                    Cache::put('pathao_cities', $data, 86400);
+                }
+                return $data;
+            }
+        } catch (Exception $e) {
+            Log::error("Failed to fetch Pathao cities: " . $e->getMessage());
+        }
+
+        return [];
     }
 
     public function getZones($cityId)
     {
-        return Cache::remember("pathao_zones_{$cityId}", 86400, function () use ($cityId) {
-            try {
-                $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/cities/{$cityId}/zone-list");
-                
-                if ($response->successful()) {
-                    return $response->json('data.data') ?? [];
-                }
-            } catch (Exception $e) {
-                Log::error("Failed to fetch Pathao zones for city {$cityId}: " . $e->getMessage());
-            }
+        $cacheKey = "pathao_zones_{$cityId}";
+        $zones = Cache::get($cacheKey);
+        if (!empty($zones)) {
+            return $zones;
+        }
 
-            return [];
-        });
+        try {
+            $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/cities/{$cityId}/zone-list");
+            
+            if ($response->successful()) {
+                $data = $response->json('data.data') ?? [];
+                if (!empty($data)) {
+                    Cache::put($cacheKey, $data, 86400);
+                }
+                return $data;
+            }
+        } catch (Exception $e) {
+            Log::error("Failed to fetch Pathao zones for city {$cityId}: " . $e->getMessage());
+        }
+
+        return [];
     }
 
     public function getAreas($zoneId)
     {
-        return Cache::remember("pathao_areas_{$zoneId}", 86400, function () use ($zoneId) {
-            try {
-                $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/zones/{$zoneId}/area-list");
-                
-                if ($response->successful()) {
-                    return $response->json('data.data') ?? [];
-                }
-            } catch (Exception $e) {
-                Log::error("Failed to fetch Pathao areas for zone {$zoneId}: " . $e->getMessage());
-            }
+        $cacheKey = "pathao_areas_{$zoneId}";
+        $areas = Cache::get($cacheKey);
+        if (!empty($areas)) {
+            return $areas;
+        }
 
-            return [];
-        });
+        try {
+            $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/zones/{$zoneId}/area-list");
+            
+            if ($response->successful()) {
+                $data = $response->json('data.data') ?? [];
+                if (!empty($data)) {
+                    Cache::put($cacheKey, $data, 86400);
+                }
+                return $data;
+            }
+        } catch (Exception $e) {
+            Log::error("Failed to fetch Pathao areas for zone {$zoneId}: " . $e->getMessage());
+        }
+
+        return [];
     }
 
     public function getOrderStatus($consignmentId)

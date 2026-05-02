@@ -9,6 +9,11 @@
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Base URL</label>
+                    <input name="pathao_base_url" type="text" value="{{ setting('pathao_base_url', config('services.pathao.base_url')) }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold" placeholder="https://api-hermes.pathao.com" />
+                    <p class="text-xs text-gray-500 mt-2">Use <strong>https://api-hermes.pathao.com</strong> for production in Nepal, or <strong>https://courier-api-sandbox.pathao.com</strong> for sandbox.</p>
+                </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Client ID</label>
                     <input name="pathao_client_id" type="text" value="{{ setting('pathao_client_id') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold" />
