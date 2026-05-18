@@ -62,4 +62,43 @@
             </button>
         </form>
     </div>
+
+    {{-- Analytics Section --}}
+    <form method="POST" action="{{ route('settings.store') }}" class="mt-8">
+        @csrf
+        <input type="hidden" name="redirect_tab" value="integrations">
+        
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-gray-900">Microsoft Clarity</h3>
+                    <p class="text-sm text-gray-500 font-medium">Heatmaps, session recordings & analytics</p>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Clarity Project ID</label>
+                <input name="microsoft_clarity_id" type="text" value="{{ setting('microsoft_clarity_id') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold font-mono tracking-wider" placeholder="e.g. abc123xyz" />
+                <p class="text-xs text-gray-500 mt-2">
+                    Get your Project ID from <a href="https://clarity.microsoft.com" target="_blank" class="text-blue-600 font-bold hover:underline">clarity.microsoft.com</a> → New Project → copy the ID. Leave empty to disable tracking.
+                </p>
+            </div>
+
+            @if(setting('microsoft_clarity_id'))
+                <div class="bg-green-50 text-green-700 px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mb-6 border border-green-100">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    Clarity is active — Project ID: <code class="bg-green-100 px-2 py-0.5 rounded font-mono">{{ setting('microsoft_clarity_id') }}</code>
+                </div>
+            @endif
+
+            <div class="flex items-center justify-end pt-6 border-t border-gray-100">
+                <button type="submit" class="bg-mango text-gray-900 font-black py-3 px-8 rounded-xl shadow-sm hover:bg-yellow-400 transition-colors">
+                    Save Analytics Settings
+                </button>
+            </div>
+        </div>
+    </form>
 </div>

@@ -25,124 +25,66 @@
     {{-- Alpine.js is already bundled via app.js — do NOT load the CDN version too --}}
 
     <style>
-        [x-cloak] { display: none !important; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { font-family: 'Outfit', sans-serif; background-color: #FDFFFC; }
-        
-        @keyframes staggeredFadeUp {
-            from { opacity: 0; transform: translateY(30px) scale(0.97); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-staggered {
-            animation: staggeredFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-
-        /* Product card shimmer sweep on hover */
-        .card-shimmer::after {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%; width: 60%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-            transition: none;
-            z-index: 5;
-            pointer-events: none;
-        }
-        .group:hover .card-shimmer::after {
-            animation: shimmerSweep 0.8s ease forwards;
-        }
-        @keyframes shimmerSweep {
-            to { left: 130%; }
-        }
-
-        /* Floating action buttons slide up */
-        .card-actions {
-            opacity: 0;
-            transform: translateY(12px);
-            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .group:hover .card-actions {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Cart button pulse on hover */
-        @keyframes cartPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 209, 102, 0.5); }
-            50% { box-shadow: 0 0 0 8px rgba(255, 209, 102, 0); }
-        }
-        .cart-btn-pulse:hover {
-            animation: cartPulse 1s ease infinite;
-        }
-
-        /* Price tag float */
-        @keyframes priceFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-2px); }
-        }
-        .group:hover .price-float {
-            animation: priceFloat 2s ease-in-out infinite;
-        }
-        .buy-btn-card {
-            border-radius: 12px !important;
-            border: none !important;
-            padding: 10px 22px !important;
-            background: linear-gradient(135deg, #1a1a2e 0%, #2d2b55 100%) !important;
-            color: #fff !important;
-            font-weight: 800 !important;
-            font-size: 14px !important;
-            letter-spacing: 0.04em !important;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-            box-shadow: 0 4px 14px rgba(26, 26, 46, 0.25);
-        }
-        .buy-btn-card:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 24px rgba(26, 26, 46, 0.35) !important;
-        }
-        .buy-btn-card:active {
-            transform: scale(0.96) !important;
-        }
-        .buy-btn-card:disabled {
-            background: #e2e8f0 !important;
-            color: #94a3b8 !important;
-            cursor: not-allowed !important;
-            box-shadow: none !important;
-            transform: none !important;
+        /* Desktop-only hover effects */
+        @media (min-width: 768px) {
+            .card-shimmer::after {
+                content: '';
+                position: absolute;
+                top: 0; left: -100%; width: 60%; height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+                z-index: 5;
+                pointer-events: none;
+            }
+            .group:hover .card-shimmer::after {
+                animation: shimmerSweep 0.8s ease forwards;
+            }
+            @keyframes shimmerSweep { to { left: 130%; } }
+            .card-actions-desktop {
+                opacity: 0;
+                transform: translateY(12px);
+                transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .group:hover .card-actions-desktop {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
+
+    {{-- Microsoft Clarity Analytics --}}
+    @if(setting('microsoft_clarity_id'))
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","{{ setting('microsoft_clarity_id') }}");
+    </script>
+    @endif
 </head>
 <body class="antialiased text-gray-900 overflow-x-hidden selection:bg-wildOrchid selection:text-white"
       x-data="shopData()">
 
-    <!-- 1. Header (Search, Menu, Cart) -->
-    <header class="fixed top-0 left-0 right-0 z-40 transition-all duration-300" :class="scrolled ? 'bg-white/80 backdrop-blur-xl shadow-sm py-3' : 'bg-transparent py-5'">
-        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            
-            <!-- Mobile Menu Toggle -->
-            <button @click="mobileMenuOpen = true" class="md:hidden p-2 -ml-2 text-gray-900 active:scale-95 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
-            </button>
+    <!-- 1. Header — compact mobile (52px), full desktop -->
+    <header class="cp-header fixed top-0 left-0 right-0 z-40" :class="scrolled && 'scrolled'">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-full">
 
             <!-- Brand -->
-            <a href="{{ route('home') }}" class="flex items-center gap-2 group">
+            <a href="{{ route('home') }}" class="flex items-center gap-2 group flex-shrink-0 min-w-0">
                 @if(setting('store_logo'))
-                    <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-16 w-auto object-contain transform group-hover:scale-105 transition-transform">
-                @else
-                    <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center transform rotate-3 group-hover:rotate-6 transition-transform shadow-lg shadow-mango/40">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
-                    </div>
-                    <h1 class="text-2xl font-black tracking-tight text-gray-900 hidden sm:block">{{ setting('store_name', 'Chhito Pasal') }}</h1>
+                    <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-8 md:h-9 w-auto object-contain max-w-[120px] md:max-w-[140px] mix-blend-multiply">
                 @endif
+                @php
+                    $brandName = setting('store_name', 'Chhito Pasal');
+                    $brandParts = explode(' ', $brandName, 2);
+                @endphp
+                <span class="text-[15px] md:text-lg font-black tracking-tight leading-none">
+                    <span class="text-mango">{{ $brandParts[0] }}</span><span class="text-ink">{{ isset($brandParts[1]) ? ' '.$brandParts[1] : '' }}</span>
+                </span>
             </a>
 
             <!-- Desktop Nav & Search -->
             <div class="hidden md:flex items-center flex-1 max-w-2xl px-12 gap-8">
-                <nav class="flex gap-6 font-bold text-gray-600">
-                    <a href="#" class="hover:text-gray-900 transition-colors">Home</a>
-                    <a href="#shop" class="hover:text-gray-900 transition-colors">Shop</a>
-                    <a href="#about" class="hover:text-gray-900 transition-colors">About Us</a>
+                <nav class="flex gap-6 font-bold text-txt-secondary">
+                    <a href="#" class="hover:text-ink transition-colors">Home</a>
+                    <a href="#shop" class="hover:text-ink transition-colors">Shop</a>
+                    <a href="#about" class="hover:text-ink transition-colors">About Us</a>
                 </nav>
                 <div class="flex-1 relative group">
                     <input type="text" x-model="searchQuery" placeholder="Search products..." class="w-full bg-gray-100/80 border-transparent rounded-full py-2.5 pl-12 pr-4 focus:bg-white focus:ring-2 focus:ring-mango focus:border-transparent transition-all shadow-inner font-medium placeholder-gray-400">
@@ -151,89 +93,80 @@
             </div>
 
             <!-- Right Actions -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+                <!-- Mobile Search Toggle -->
+                <button @click="mobileSearchOpen = !mobileSearchOpen" class="md:hidden p-2 rounded-xl text-txt-secondary active:scale-95 transition-transform hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </button>
                 <!-- Desktop Cart Button -->
-                <button @click="toggleCart()" class="relative bg-gray-900 text-white p-3 rounded-xl hover:bg-gray-800 transition active:scale-95 shadow-lg hidden md:flex items-center gap-2 group">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                <button @click="toggleCart()" class="relative bg-ink text-white p-3 rounded-xl hover:bg-ink-light transition active:scale-95 shadow-btn hidden md:flex items-center gap-2 group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                     <span class="font-bold">Cart</span>
                     <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" x-transition class="absolute -top-2 -right-2 bg-wildOrchid text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-sm"></span>
                 </button>
-                <!-- Mobile Cart Button -->
-                <button @click="toggleCart()" class="relative bg-gray-900 text-white p-2.5 rounded-xl hover:bg-gray-800 transition active:scale-95 shadow-lg md:hidden">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                    <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" x-transition class="absolute -top-1.5 -right-1.5 bg-wildOrchid text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm"></span>
-                </button>
+            </div>
+        </div>
 
+        <!-- Mobile Expandable Search Bar -->
+        <div x-show="mobileSearchOpen" x-collapse class="md:hidden border-t border-divider bg-white px-4 py-2">
+            <div class="relative">
+                <input type="text" x-model="searchQuery" placeholder="Search products..." class="w-full bg-softPearl border-border rounded-xl py-2.5 pl-10 pr-4 focus:ring-2 focus:ring-mango focus:border-transparent font-medium text-sm placeholder-txt-tertiary" x-ref="mobileSearch" @keydown.escape="mobileSearchOpen = false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-3 text-txt-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
         </div>
     </header>
 
-    <!-- Mobile Slide-out Menu -->
-    <div x-show="mobileMenuOpen" x-cloak class="fixed inset-0 z-50 md:hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
-        <div x-show="mobileMenuOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="mobileMenuOpen = false"></div>
-        <div x-show="mobileMenuOpen" x-transition:enter="transform transition ease-in-out duration-300 sm:duration-500" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transform transition ease-in-out duration-300 sm:duration-500" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="fixed inset-y-0 left-0 w-4/5 max-w-sm bg-white shadow-2xl flex flex-col p-6">
-            <div class="flex items-center justify-between mb-8">
-                <a href="{{ route('home') }}" class="flex items-center gap-2">
-                    @if(setting('store_logo'))
-                        <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-12 w-auto object-contain">
-                    @else
-                        <div class="w-8 h-8 bg-mango rounded-lg flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
-                        </div>
-                    @endif
-                    <span class="text-xl font-black text-gray-900">Menu</span>
-                </a>
-                <button @click="mobileMenuOpen = false" class="text-gray-400 hover:text-gray-900"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-            </div>
-            
-            <div class="relative mb-8">
-                <input type="text" x-model="searchQuery" placeholder="Search..." class="w-full bg-gray-100 border-transparent rounded-xl py-3 pl-10 pr-4 focus:border-mango focus:ring-mango font-bold text-gray-900">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            </div>
-
-            <nav class="flex flex-col gap-6 text-lg font-black text-gray-900">
-                <a href="#" @click="mobileMenuOpen = false" class="hover:text-wildOrchid transition">Home</a>
-                <a href="#shop" @click="mobileMenuOpen = false" class="hover:text-wildOrchid transition">Shop</a>
-                <a href="#about" @click="mobileMenuOpen = false" class="hover:text-wildOrchid transition">About Us</a>
-
-            </nav>
-        </div>
-    </div>
-
     <!-- 2. Hero Section -->
-    <section style="padding-top: 120px;" class="pb-10 sm:pb-16 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
-        <div class="bg-gray-900 rounded-2xl sm:rounded-[3rem] overflow-hidden relative shadow-2xl flex flex-col md:flex-row items-center min-h-[280px] sm:min-h-0">
-            <div class="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/90 to-transparent z-10 hidden md:block"></div>
-            <div class="absolute inset-0 bg-gradient-to-b from-gray-900 via-gray-900/80 to-gray-900 z-10 md:hidden"></div>
+    <section class="pt-[56px] md:pt-[80px] pb-3 sm:pb-8 px-3 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
+        <!-- Mobile Hero: Clean gradient, no photo noise -->
+        <div class="md:hidden rounded-2xl overflow-hidden relative" style="background: linear-gradient(135deg, #0A0F1E 0%, #1a1040 50%, #0A0F1E 100%);">
+            <!-- Decorative mango glow -->
+            <div class="absolute top-0 right-0 w-40 h-40 rounded-full opacity-30" style="background: radial-gradient(circle, #FFB627 0%, transparent 70%); filter: blur(30px);"></div>
+            <div class="absolute bottom-0 left-0 w-32 h-32 rounded-full opacity-15" style="background: radial-gradient(circle, #FF3366 0%, transparent 70%); filter: blur(25px);"></div>
             
-            <!-- Hero Image Background -->
-            @if(setting('hero_image'))
-                <img src="{{ asset('storage/' . setting('hero_image')) }}" class="absolute inset-0 w-full h-full object-cover opacity-50 md:opacity-100" alt="Hero">
-            @else
-                <img src="https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=2074&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-50 md:opacity-100" alt="Hero">
-            @endif
+            <div class="relative z-10 px-5 py-6">
+                <span class="inline-flex items-center gap-1.5 py-1 px-3 rounded-full bg-mango/20 text-mango font-bold text-[11px] uppercase tracking-wider mb-3 border border-mango/30">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
+                    Flash Sale
+                </span>
+                <h2 class="text-[22px] font-black text-white leading-[1.15] mb-2">{!! nl2br(e(setting('hero_title', 'Upgrade your lifestyle.'))) !!}</h2>
+                <p class="text-gray-400 text-[13px] font-medium mb-4 leading-relaxed line-clamp-2">{{ setting('hero_subtitle', 'Discover the best tech, fashion, and home accessories delivered straight to your door.') }}</p>
+                <a href="#shop" class="inline-flex items-center justify-center bg-mango text-ink font-black px-5 py-2.5 rounded-full active:scale-95 transition shadow-lg shadow-mango/25 text-sm group">
+                    {{ setting('hero_cta', 'Shop Now') }}
+                    <svg class="w-4 h-4 ml-1.5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </a>
+            </div>
+        </div>
 
-            <div class="relative z-20 p-6 sm:p-16 md:p-24 md:w-2/3 lg:w-1/2">
-                <span class="inline-block py-1.5 px-4 rounded-full bg-mango text-gray-900 font-black text-xs uppercase tracking-widest mb-6">Flash Sale ⚡️</span>
-                <h2 class="text-3xl sm:text-5xl md:text-6xl font-black text-white leading-[1.1] mb-4 sm:mb-6">{!! nl2br(e(setting('hero_title', 'Upgrade your lifestyle.'))) !!}</h2>
-                <p class="text-gray-300 text-sm sm:text-lg md:text-xl font-medium mb-6 sm:mb-10 max-w-lg">{{ setting('hero_subtitle', 'Discover the best tech, fashion, and home accessories delivered straight to your door. No hassle, just shopping.') }}</p>
-                <a href="#shop" class="inline-flex items-center justify-center bg-white text-gray-900 font-black px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-gray-100 active:scale-95 transition shadow-[0_0_40px_rgba(255,255,255,0.3)] group text-sm sm:text-base">
+        <!-- Desktop Hero: Full photo banner -->
+        <div class="hidden md:flex bg-ink rounded-[2rem] overflow-hidden relative shadow-xl flex-row items-center min-h-[360px]">
+            <div class="absolute inset-0 bg-gradient-to-r from-ink via-ink/90 to-transparent z-10"></div>
+            @if(setting('hero_image'))
+                <img src="{{ asset('storage/' . setting('hero_image')) }}" class="absolute inset-0 w-full h-full object-cover" alt="Hero">
+            @else
+                <img src="https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=2074&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover" alt="Hero" loading="lazy">
+            @endif
+            <div class="relative z-20 p-16 md:p-24 md:w-2/3 lg:w-1/2">
+                <span class="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-mango text-ink font-black text-xs uppercase tracking-widest mb-6">⚡ Flash Sale</span>
+                <h2 class="text-5xl md:text-6xl font-black text-white leading-[1.1] mb-6">{!! nl2br(e(setting('hero_title', 'Upgrade your lifestyle.'))) !!}</h2>
+                <p class="text-gray-300 text-lg md:text-xl font-medium mb-10 max-w-lg">{{ setting('hero_subtitle', 'Discover the best tech, fashion, and home accessories delivered straight to your door. No hassle, just shopping.') }}</p>
+                <a href="#shop" class="inline-flex items-center justify-center bg-mango text-ink font-black px-8 py-4 rounded-full hover:bg-amber-400 active:scale-95 transition shadow-xl shadow-mango/30 group text-base">
                     {{ setting('hero_cta', 'Shop Collection') }}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                    <svg class="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                 </a>
             </div>
         </div>
     </section>
 
     <!-- 3. Category Pills -->
-    <section id="shop" class="sticky top-[60px] md:top-[88px] z-30 bg-[#FDFFFC]/90 backdrop-blur-md py-3 md:py-4">
+    <section id="shop" class="sticky top-[52px] md:top-[72px] z-30 bg-softPearl/95 backdrop-blur-lg py-2.5 md:py-4">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2">
-                <button @click="activeCategory = 'all'" :class="activeCategory === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'" class="px-4 md:px-6 py-2 md:py-2.5 rounded-full font-bold whitespace-nowrap border transition-all active:scale-95 text-sm md:text-base">
+            <div class="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-1">
+                <button @click="activeCategory = 'all'" :class="activeCategory === 'all' ? 'bg-ink text-white shadow-lg' : 'bg-white text-txt-secondary border-border hover:border-gray-300 hover:bg-gray-50'" class="cp-pill px-4 md:px-6 py-2.5 md:py-2.5 text-[13px] md:text-base border active:scale-95">
                     All Products
                 </button>
                 @foreach($categories as $category)
-                    <button @click="activeCategory = '{{ $category->slug }}'" :class="activeCategory === '{{ $category->slug }}' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'" class="px-4 md:px-6 py-2 md:py-2.5 rounded-full font-bold whitespace-nowrap border transition-all active:scale-95 text-sm md:text-base">
+                    <button @click="activeCategory = '{{ $category->slug }}'" :class="activeCategory === '{{ $category->slug }}' ? 'bg-ink text-white shadow-lg' : 'bg-white text-txt-secondary border-border hover:border-gray-300 hover:bg-gray-50'" class="cp-pill px-4 md:px-6 py-2.5 md:py-2.5 text-[13px] md:text-base border active:scale-95">
                         {{ $category->name }}
                     </button>
                 @endforeach
@@ -242,91 +175,71 @@
     </section>
 
     <!-- 4. Product Grid -->
-    <main class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+    <main class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 cp-main-content pt-4 md:pt-6">
         
         <!-- Empty State -->
-        <div x-show="filteredProducts.length === 0" x-cloak class="text-center py-20">
-            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        <div x-show="filteredProducts.length === 0" x-cloak class="text-center py-16">
+            <div class="w-20 h-20 bg-divider rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-txt-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
-            <h3 class="text-2xl font-black text-gray-900 mb-2">No products found</h3>
-            <p class="text-gray-500 font-medium">Try adjusting your search or category filter.</p>
-            <button @click="searchQuery = ''; activeCategory = 'all'" class="mt-6 text-wildOrchid font-bold hover:underline">Clear all filters</button>
+            <h3 class="text-xl font-black text-ink mb-1">No products found</h3>
+            <p class="text-txt-secondary font-medium text-sm">Try adjusting your search or filter.</p>
+            <button @click="searchQuery = ''; activeCategory = 'all'" class="mt-4 text-wildOrchid font-bold text-sm hover:underline">Clear all filters</button>
         </div>
 
-        <div class="grid gap-5 md:gap-7" style="grid-template-columns: repeat(auto-fill, minmax(240px, 280px));">
+        <!-- Product Grid: 2-col mobile, auto-fill desktop -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 stagger-grid">
             <template x-for="(product, index) in filteredProducts" :key="product.id">
-                <article class="group relative bg-white overflow-hidden flex flex-col animate-staggered cursor-pointer"
-                         :style="`animation-delay: ${index * 0.07}s`"
-                         style="border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.04); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); max-width: 320px;"
-                         @mouseenter="$el.style.boxShadow='0 16px 48px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08)'; $el.style.transform='translateY(-5px)'"
-                         @mouseleave="$el.style.boxShadow='0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.04)'; $el.style.transform='translateY(0)'">
+                <article class="cp-card group relative flex flex-col cursor-pointer"
+                         @click="window.location.href = '{{ url('product') }}/' + product.slug">
                     
                     <!-- Image Container -->
-                    <div class="relative overflow-hidden card-shimmer" style="aspect-ratio: 4/5;">
+                    <div class="relative overflow-hidden card-shimmer aspect-[3/4] md:aspect-[4/5] bg-divider">
                         <img :src="'{{ asset('storage') }}/' + product.image_path" :alt="product.name" 
-                             class="w-full h-full object-cover" 
-                             style="transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);"
-                             @mouseenter="$el.style.transform='scale(1.08)'"
-                             @mouseleave="$el.style.transform='scale(1)'"
+                             class="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-105"
                              loading="lazy">
                         
-                        <!-- Gradient overlay on hover -->
-                        <div class="absolute inset-0 group-hover:opacity-100" 
-                             style="background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.08) 40%, transparent 70%); opacity: 0; transition: opacity 0.35s ease; z-index: 4; pointer-events: none;"></div>
-
-                        <!-- Top-left: Category pill -->
-                        <div class="absolute" style="top: 12px; left: 12px; z-index: 10;">
-                            <span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255,255,255,0.92); color: #1a1a2e; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
-                                  x-text="product.category?.name || 'Shop'"></span>
-                        </div>
-
-                        <!-- Top-right: Stock indicator -->
-                        <div class="absolute" style="top: 12px; right: 12px; z-index: 10;">
-                            <div style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
-                                 :style="product.in_stock 
-                                    ? 'background: rgba(236,253,245,0.92); color: #059669; border: 1px solid rgba(16,185,129,0.3);' 
-                                    : 'background: rgba(254,242,242,0.92); color: #dc2626; border: 1px solid rgba(239,68,68,0.3);'">
-                                <span style="width: 6px; height: 6px; border-radius: 50%; display: inline-block;" 
-                                      :style="product.in_stock ? 'background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,0.6);' : 'background: #ef4444;'"></span>
+                        <!-- Stock badge: dot-only on mobile, text on desktop -->
+                        <div class="absolute top-2 right-2 md:top-3 md:right-3 z-10">
+                            <!-- Mobile: dot only -->
+                            <span class="md:hidden w-2.5 h-2.5 rounded-full block border border-white"
+                                  :class="product.in_stock ? 'bg-success shadow-[0_0_6px_rgba(0,196,140,0.6)]' : 'bg-wildOrchid'"></span>
+                            <!-- Desktop: pill -->
+                            <div class="hidden md:inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold backdrop-blur-md"
+                                 :class="product.in_stock ? 'bg-success-soft/90 text-success border border-success/20' : 'bg-red-50/90 text-wildOrchid border border-wildOrchid/20'">
+                                <span class="w-1.5 h-1.5 rounded-full" :class="product.in_stock ? 'bg-success' : 'bg-wildOrchid'"></span>
                                 <span x-text="product.in_stock ? 'In Stock' : 'Sold Out'"></span>
                             </div>
                         </div>
 
-                        <!-- Hover action buttons -->
-                        <div class="card-actions absolute flex gap-2" style="bottom: 14px; left: 14px; right: 14px; z-index: 10;">
-                            <button @click.stop="openQuickView(product)" 
-                                    class="flex-1 flex items-center justify-center gap-2"
-                                    style="padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.93); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #1a1a2e; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.2s ease;">
-                                <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        <!-- Desktop-only hover action buttons -->
+                        <div class="card-actions-desktop absolute hidden md:flex gap-2 bottom-3 left-3 right-3 z-10">
+                            <button @click.stop="if(window.innerWidth < 768) { window.location.href = '{{ url('product') }}/' + product.slug; return; } openQuickView(product)" 
+                                    class="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold bg-white/93 backdrop-blur-xl text-ink border border-white/50 shadow-lg transition hover:bg-white">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                 Quick View
                             </button>
-                            <a :href="'{{ url('product') }}/' + product.slug" @click.stop
-                               class="flex items-center justify-center"
-                               style="padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; background: #1a1a2e; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.2s ease;">
-                                <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                            </a>
                         </div>
                     </div>
                     
                     <!-- Product Info -->
-                    <div style="padding: 16px 18px 18px 18px; display: flex; flex-direction: column; flex: 1;">
+                    <div class="p-3 md:p-4 flex flex-col flex-1">
                         <!-- Product Name -->
-                        <h3 style="font-weight: 700; font-size: 15px; color: #1e293b; line-height: 1.35; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: color 0.2s;" x-text="product.name"></h3>
+                        <h3 class="font-bold text-[13px] md:text-[15px] text-ink leading-snug mb-2 line-clamp-1 md:line-clamp-2" x-text="product.name"></h3>
                         
-                        <div style="flex: 1;"></div>
+                        <div class="flex-1"></div>
 
                         <!-- Price + Buy row -->
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:14px; border-top:1px solid #f1f5f9;">
+                        <div class="flex items-center justify-between mt-auto pt-2 md:pt-3 border-t border-divider">
                             <div>
-                                <p style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:#94a3b8; margin-bottom:2px;">Price</p>
-                                <div style="display:flex; align-items:baseline; gap:2px;">
-                                    <span style="font-size:13px; font-weight:700; color:#FFB627;">Rs.</span>
-                                    <span style="font-size:22px; font-weight:900; color:#0f172a; letter-spacing:-0.02em; line-height:1;" x-text="product.price.toLocaleString()"></span>
+                                <div class="flex items-baseline gap-0.5">
+                                    <span class="text-[11px] md:text-[13px] font-bold text-mango">Rs.</span>
+                                    <span class="text-base md:text-xl font-black text-ink tracking-tight" x-text="product.price.toLocaleString()"></span>
                                 </div>
                             </div>
-                            <button @click.stop.prevent="triggerAddToCart(product)" :disabled="!product.in_stock" class="buy-btn-card">
-                                <span x-text="product.in_stock ? 'Buy' : 'Sold Out'"></span>
+                            <button @click.stop.prevent="triggerAddToCart(product)" :disabled="!product.in_stock" 
+                                    class="cp-btn-buy rounded-lg md:rounded-xl text-[11px] md:text-sm py-2 px-3 md:py-2.5 md:px-5">
+                                <span x-text="product.in_stock ? 'Buy' : 'Sold'"></span>
                             </button>
                         </div>
                     </div>
@@ -336,19 +249,20 @@
     </main>
 
     <!-- 5. Footer -->
-    <footer id="about" class="bg-gray-900 text-white pb-8 rounded-t-[2rem] sm:rounded-t-[3rem] mt-10" style="padding-top: 5rem;">
+    <footer id="about" class="bg-ink text-white pb-24 md:pb-8 rounded-t-xl sm:rounded-t-[2rem] mt-6 md:mt-10 pt-10 sm:pt-20">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 mb-10 sm:mb-16">
                 <div>
-                    <a href="{{ route('home') }}" class="flex items-center gap-2 mb-6">
+                    <a href="{{ route('home') }}" class="flex items-center gap-2.5 mb-6">
                         @if(setting('store_logo'))
-                            <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-16 w-auto object-contain brightness-0 invert">
-                        @else
-                            <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center shadow-lg shadow-mango/20">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
-                            </div>
-                            <h2 class="text-2xl font-black tracking-tight text-white">{{ setting('store_name', 'Chhito Pasal') }}</h2>
+                            <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-9 w-auto object-contain brightness-0 invert max-w-[120px]">
                         @endif
+                        @php
+                            $footerBrandParts = explode(' ', setting('store_name', 'Chhito Pasal'), 2);
+                        @endphp
+                        <span class="text-lg font-black tracking-tight leading-none">
+                            <span class="text-mango">{{ $footerBrandParts[0] }}</span><span class="text-white">{{ isset($footerBrandParts[1]) ? ' '.$footerBrandParts[1] : '' }}</span>
+                        </span>
                     </a>
                     <p class="text-gray-400 font-medium max-w-sm mb-6 leading-relaxed">Your premium destination for the finest products. Delivering happiness across the country with lightning speed.</p>
                     <div class="flex gap-4">
@@ -580,40 +494,55 @@
         </div>
     </div>
 
-    <!-- The Checkout Slide-out Drawer / Cart Sidebar -->
-    <!-- Retaining the existing Sidebar/Drawer logic from Phase 1, just refactoring variable usage -->
-    
-    <!-- Mobile Floating Tray -->
-    <div x-show="totalCartQuantity > 0" x-transition.scale.origin.bottom.right class="fixed bottom-6 right-6 z-40 md:hidden cursor-pointer active:scale-90 transition-transform" @click="toggleCart()">
-        <div class="relative bg-mango w-16 h-16 rounded-full shadow-2xl flex items-center justify-center border-4 border-[#FDFFFC] animate-bounce">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-            <span x-text="totalCartQuantity" class="absolute -top-1 -right-1 bg-wildOrchid text-white text-xs font-black px-2 py-0.5 rounded-full shadow-md border-2 border-white"></span>
+    <!-- Bottom Navigation Bar (Mobile only) -->
+    <nav class="cp-bottom-nav fixed bottom-0 left-0 right-0 z-40 md:hidden">
+        <div class="flex items-center justify-around h-[60px]">
+            <a href="{{ route('home') }}" class="flex flex-col items-center gap-0.5 text-mango">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+                <span class="text-[10px] font-bold">Home</span>
+            </a>
+            <a href="#shop" class="flex flex-col items-center gap-0.5 text-txt-secondary">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <span class="text-[10px] font-bold">Shop</span>
+            </a>
+            <button @click="mobileSearchOpen = !mobileSearchOpen; $nextTick(() => { if(mobileSearchOpen) $refs.mobileSearch?.focus() })" class="flex flex-col items-center gap-0.5 text-txt-secondary">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <span class="text-[10px] font-bold">Search</span>
+            </button>
+            <button @click="toggleCart()" class="flex flex-col items-center gap-0.5 text-txt-secondary relative">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                <span class="text-[10px] font-bold">Cart</span>
+                <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 right-1 bg-wildOrchid text-white text-[8px] font-black min-w-[16px] h-[16px] rounded-full flex items-center justify-center"></span>
+            </button>
         </div>
-    </div>
+    </nav>
 
     <!-- The Cart Modal Overlay -->
     <div x-show="cartOpen" x-cloak class="fixed inset-0 z-50" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
         <!-- Backdrop -->
-        <div x-show="cartOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="cartOpen = false"></div>
+        <div x-show="cartOpen" x-transition.opacity class="fixed inset-0 bg-ink/60 backdrop-blur-sm transition-opacity" @click="cartOpen = false"></div>
 
-        <!-- The Drawer (Mobile: Slide Up, Desktop: Slide Left) -->
+        <!-- The Drawer (Mobile: Full-screen slide up, Desktop: Side drawer) -->
         <div x-show="cartOpen" 
-             x-transition:enter="transform transition ease-out duration-300 sm:duration-400" 
+             x-transition:enter="transform transition ease-out duration-300" 
              x-transition:enter-start="translate-y-full md:translate-y-0 md:translate-x-full" 
              x-transition:enter-end="translate-y-0 md:translate-x-0" 
-             x-transition:leave="transform transition ease-in duration-300 sm:duration-400" 
+             x-transition:leave="transform transition ease-in duration-300" 
              x-transition:leave-start="translate-y-0 md:translate-x-0" 
              x-transition:leave-end="translate-y-full md:translate-y-0 md:translate-x-full" 
-             class="fixed bottom-0 md:top-0 right-0 w-full md:w-[450px] h-[85vh] md:h-screen bg-white rounded-t-[2rem] md:rounded-none md:rounded-l-[2rem] shadow-2xl flex flex-col">
+             class="cp-sheet fixed bottom-0 md:top-0 right-0 w-full md:w-[450px] h-[95vh] md:h-screen rounded-t-[20px] md:rounded-none md:rounded-l-[20px] flex flex-col">
             
+            <!-- Grab handle (mobile) -->
+            <div class="cp-grab-handle md:hidden"></div>
+
             <!-- Header -->
-            <div class="px-6 py-6 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur rounded-t-[2rem] md:rounded-none md:rounded-tl-[2rem]">
-                <h2 class="text-2xl font-black text-gray-900 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-mango" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+            <div class="px-5 py-4 md:px-6 md:py-6 border-b border-divider flex items-center justify-between">
+                <h2 class="text-xl md:text-2xl font-black text-ink flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6 text-mango" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                     Your Cart
                 </h2>
-                <button @click="cartOpen = false" class="text-gray-400 hover:text-gray-900 bg-gray-50 p-2 rounded-full transition-colors active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                <button @click="cartOpen = false" class="text-txt-tertiary hover:text-ink bg-divider p-2 rounded-full transition-colors active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
 
@@ -631,10 +560,10 @@
                 </template>
 
                 <template x-for="(item, index) in cart" :key="index">
-                    <div class="flex gap-4 mb-4 bg-white p-4 rounded-3xl shadow-sm border border-gray-100 items-center">
-                        <img :src="'{{ asset('storage') }}/' + item.image_path" :alt="item.name" class="w-20 h-20 object-cover rounded-2xl bg-gray-50">
-                        <div class="flex-1">
-                            <h3 class="font-black text-gray-900 text-base leading-tight mb-1" x-text="item.name"></h3>
+                    <div class="flex gap-3 mb-3 bg-white p-3 rounded-2xl shadow-sm border border-divider items-center">
+                        <img :src="'{{ asset('storage') }}/' + item.image_path" :alt="item.name" class="w-14 h-14 md:w-20 md:h-20 object-cover rounded-xl bg-divider flex-shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-black text-gray-900 text-sm md:text-base leading-tight mb-1 line-clamp-2" x-text="item.name"></h3>
                             <!-- Variant badges -->
                             <div x-show="item.selectedColor || item.selectedSize" class="flex gap-1.5 mb-1.5 flex-wrap">
                                 <span x-show="item.selectedColor" class="bg-purple-50 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-md border border-purple-100" x-text="item.selectedColor"></span>
@@ -673,31 +602,34 @@
                 </div>
 
                 <!-- Order Form (Only shows if cart has items) -->
-                <div x-show="cart.length > 0" class="mt-8 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                    <h3 class="font-black text-lg text-gray-900 mb-4 flex items-center gap-2">
+                <div x-show="cart.length > 0" class="mt-6 bg-white p-5 md:p-6 rounded-2xl border border-divider shadow-sm">
+                    <h3 class="font-black text-base md:text-lg text-ink mb-4 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-wildOrchid" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                         Delivery Details
                     </h3>
                     <div class="space-y-4">
-                        <div>
-                            <input type="text" x-model="customer.name" placeholder="Full Name" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango focus:border-mango font-medium py-3">
+                        <div class="cp-input-group">
+                            <input type="text" x-model="customer.name" placeholder=" " id="cust-name" class="peer">
+                            <label for="cust-name">Full Name</label>
                         </div>
-                        <div>
-                            <input type="tel" x-model="customer.phone" placeholder="Phone Number" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango focus:border-mango font-medium py-3">
+                        <div class="cp-input-group">
+                            <input type="tel" x-model="customer.phone" placeholder=" " id="cust-phone" class="peer">
+                            <label for="cust-phone">Phone Number</label>
                         </div>
-                        <div>
-                            <textarea x-model="customer.address" placeholder="Full Delivery Address" rows="2" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango focus:border-mango font-medium py-3 resize-none"></textarea>
+                        <div class="cp-input-group">
+                            <textarea x-model="customer.address" placeholder=" " id="cust-address" rows="2" class="peer resize-none"></textarea>
+                            <label for="cust-address">Full Delivery Address</label>
                         </div>
                         
-                        <div class="pt-2">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Delivery Location</label>
-                            <select x-model="customer.delivery_location" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango focus:border-mango font-bold py-3 text-gray-900 cursor-pointer">
+                        <div class="pt-1">
+                            <label class="block text-[10px] font-bold text-txt-tertiary mb-1.5 uppercase tracking-wider">Delivery Location</label>
+                            <select x-model="customer.delivery_location" class="w-full bg-softPearl border-border rounded-xl focus:ring-2 focus:ring-mango focus:border-transparent font-bold py-3 text-ink cursor-pointer text-sm">
                                 <option value="inside">Inside Kathmandu Valley (+ Rs. {{ setting('delivery_charge_inside', 50) }})</option>
                                 <option value="outside">Outside Kathmandu Valley (+ Rs. {{ setting('delivery_charge_outside', 100) }})</option>
                             </select>
                         </div>
 
-                        <p x-show="formError" x-text="formError" class="text-red-500 text-sm font-bold bg-red-50 p-3 rounded-xl border border-red-100"></p>
+                        <p x-show="formError" x-text="formError" class="text-wildOrchid text-sm font-bold bg-red-50 p-3 rounded-xl border border-wildOrchid/20"></p>
                     </div>
                 </div>
             </div>
@@ -744,6 +676,7 @@
                 cart: [],
                 cartOpen: false,
                 mobileMenuOpen: false,
+                mobileSearchOpen: false,
                 scrolled: false,
                 searchQuery: '',
                 activeCategory: 'all',

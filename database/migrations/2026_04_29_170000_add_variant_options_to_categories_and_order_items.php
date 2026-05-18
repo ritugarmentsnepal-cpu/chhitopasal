@@ -9,15 +9,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('categories', function (Blueprint $table) {
-            $table->boolean('has_color_variants')->default(false)->after('slug');
-            $table->boolean('has_size_variants')->default(false)->after('has_color_variants');
-            $table->json('color_options')->nullable()->after('has_size_variants');
-            $table->json('size_options')->nullable()->after('color_options');
+            if (!Schema::hasColumn('categories', 'has_color_variants')) {
+                $table->boolean('has_color_variants')->default(false)->after('slug');
+            }
+            if (!Schema::hasColumn('categories', 'has_size_variants')) {
+                $table->boolean('has_size_variants')->default(false)->after('has_color_variants');
+            }
+            if (!Schema::hasColumn('categories', 'color_options')) {
+                $table->json('color_options')->nullable()->after('has_size_variants');
+            }
+            if (!Schema::hasColumn('categories', 'size_options')) {
+                $table->json('size_options')->nullable()->after('color_options');
+            }
         });
 
         Schema::table('order_items', function (Blueprint $table) {
-            $table->string('color')->nullable()->after('cost_at_purchase');
-            $table->string('size')->nullable()->after('color');
+            if (!Schema::hasColumn('order_items', 'color')) {
+                $table->string('color')->nullable()->after('cost_at_purchase');
+            }
+            if (!Schema::hasColumn('order_items', 'size')) {
+                $table->string('size')->nullable()->after('color');
+            }
         });
     }
 

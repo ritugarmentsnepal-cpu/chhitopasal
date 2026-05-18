@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $product->name }} | {{ config('app.name', 'Chhito Pasal') }}</title>
 
@@ -23,182 +23,188 @@
         [x-cloak] { display: none !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { font-family: 'Outfit', sans-serif; background: linear-gradient(180deg, #f8fafc 0%, #FDFFFC 100%); }
         @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         .fade-up { animation: fadeUp 0.6s ease forwards; }
-        .thumb-active { outline: 2px solid #FFD166; outline-offset: 2px; opacity: 1 !important; }
+        .thumb-active { outline: 2px solid #FFB627; outline-offset: 2px; opacity: 1 !important; }
         .thumb-inactive { opacity: 0.5; }
         .thumb-inactive:hover { opacity: 0.85; }
-        @keyframes pricePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
-        .price-block:hover { animation: pricePulse 1.5s ease infinite; }
-        .buy-btn { background: linear-gradient(135deg, #1a1a2e 0%, #2d2b55 100%); transition: all 0.3s ease; }
-        .buy-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(26,26,46,0.3); }
-        .buy-btn:active { transform: scale(0.98); }
         @media (min-width: 768px) {
             .pdp-layout { flex-direction: row !important; }
             .pdp-gallery { width: 55% !important; }
             .pdp-details { width: 45% !important; }
         }
     </style>
+
+    {{-- Microsoft Clarity Analytics --}}
+    @if(setting('microsoft_clarity_id'))
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","{{ setting('microsoft_clarity_id') }}");
+    </script>
+    @endif
 </head>
 <body class="antialiased text-gray-900 overflow-x-hidden selection:bg-wildOrchid selection:text-white"
       x-data="shopData()">
 
-    <!-- Header (Search, Menu, Cart) -->
-    <header class="fixed top-0 left-0 right-0 z-40 transition-all duration-300 bg-white/80 backdrop-blur-xl shadow-sm py-3">
-        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+    <!-- Header -->
+    <header class="cp-header fixed top-0 left-0 right-0 z-40">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-full">
             
-            <button @click="mobileMenuOpen = true" class="md:hidden p-2 -ml-2 text-gray-900 active:scale-95 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
-            </button>
-
-            <a href="{{ route('home') }}" class="flex items-center gap-2 group">
+            <a href="{{ route('home') }}" class="flex items-center gap-2 group flex-shrink-0 min-w-0">
                 @if(setting('store_logo'))
-                    <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-16 w-auto object-contain transform group-hover:scale-105 transition-transform">
-                @else
-                    <div class="w-10 h-10 bg-mango rounded-xl flex items-center justify-center transform rotate-3 group-hover:rotate-6 transition-transform shadow-lg shadow-mango/40">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" /></svg>
-                    </div>
-                    <h1 class="text-2xl font-black tracking-tight text-gray-900 hidden sm:block">{{ setting('store_name', 'Chhito Pasal') }}</h1>
+                    <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-8 md:h-9 w-auto object-contain max-w-[120px] md:max-w-[140px] mix-blend-multiply">
                 @endif
+                @php
+                    $brandName = setting('store_name', 'Chhito Pasal');
+                    $brandParts = explode(' ', $brandName, 2);
+                @endphp
+                <span class="text-[15px] md:text-lg font-black tracking-tight leading-none">
+                    <span class="text-mango">{{ $brandParts[0] }}</span><span class="text-ink">{{ isset($brandParts[1]) ? ' '.$brandParts[1] : '' }}</span>
+                </span>
             </a>
 
             <div class="hidden md:flex items-center flex-1 max-w-2xl px-12 gap-8">
-                <nav class="flex gap-6 font-bold text-gray-600">
-                    <a href="{{ route('home') }}" class="hover:text-gray-900 transition-colors">Home</a>
-                    <a href="{{ url('/#shop') }}" class="hover:text-gray-900 transition-colors">Shop</a>
+                <nav class="flex gap-6 font-bold text-txt-secondary">
+                    <a href="{{ route('home') }}" class="hover:text-ink transition-colors">Home</a>
+                    <a href="{{ url('/#shop') }}" class="hover:text-ink transition-colors">Shop</a>
                 </nav>
             </div>
 
-            <div class="flex items-center gap-3">
-                <button @click="toggleCart()" class="relative bg-gray-900 text-white p-3 rounded-xl hover:bg-gray-800 transition active:scale-95 shadow-lg hidden md:flex items-center gap-2 group">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('home') }}" class="md:hidden p-2 rounded-xl text-txt-secondary active:scale-95 transition-transform hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                </a>
+                <button @click="toggleCart()" class="relative bg-ink text-white p-3 rounded-xl hover:bg-ink-light transition active:scale-95 shadow-btn hidden md:flex items-center gap-2 group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                     <span class="font-bold">Cart</span>
                     <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" x-transition class="absolute -top-2 -right-2 bg-wildOrchid text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-sm"></span>
+                </button>
+                <button @click="toggleCart()" class="relative p-2 rounded-xl text-txt-secondary active:scale-95 transition-transform hover:bg-gray-100 md:hidden">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" x-transition class="absolute -top-0.5 -right-0.5 bg-wildOrchid text-white text-[9px] font-black min-w-[18px] h-[18px] rounded-full flex items-center justify-center border-[1.5px] border-white"></span>
                 </button>
             </div>
         </div>
     </header>
 
     <!-- Breadcrumb -->
-    <nav style="padding-top: 90px;" class="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 mb-6">
-        <div style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#94a3b8;">
-            <a href="{{ route('home') }}" style="color:#64748b; text-decoration:none;">Home</a>
+    <nav class="pt-[60px] md:pt-[90px] max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 mb-4 md:mb-6">
+        <div class="flex items-center gap-1.5 text-[12px] md:text-[13px] font-semibold text-txt-tertiary">
+            <a href="{{ route('home') }}" class="text-txt-secondary hover:text-ink transition-colors">Home</a>
             <span>›</span>
-            <a href="{{ url('/#shop') }}" style="color:#64748b; text-decoration:none;">Shop</a>
+            <a href="{{ url('/#shop') }}" class="text-txt-secondary hover:text-ink transition-colors">Shop</a>
             <span>›</span>
-            <span style="color:#1a1a2e;">{{ $product->name }}</span>
+            <span class="text-ink truncate max-w-[200px]">{{ $product->name }}</span>
         </div>
     </nav>
 
-    <main class="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 pb-20 min-h-[70vh]">
-        <div class="pdp-layout fade-up" style="display:flex; flex-direction:column; gap:0; border-radius:24px; overflow:hidden; background:#fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.06);"
+    <main class="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 pb-24 md:pb-20 min-h-[60vh]">
+        <div class="pdp-layout fade-up flex flex-col rounded-[16px] md:rounded-[24px] overflow-hidden bg-white shadow-card"
              x-data="{ activeMedia: '{{ asset('storage/' . $product->image_path) }}', isVideo: false }">
 
             <!-- Gallery Side -->
-            <div class="pdp-gallery" style="width:100%; padding:20px; background:#f8fafc;">
+            <div class="pdp-gallery w-full p-3 md:p-5 bg-softPearl">
                 <!-- Main Image -->
-                <div style="aspect-ratio:1/1; border-radius:16px; overflow:hidden; background:#f1f5f9; position:relative;">
+                <div class="aspect-[3/4] md:aspect-square rounded-xl overflow-hidden bg-divider relative">
                     <template x-if="!isVideo">
-                        <img :src="activeMedia" alt="{{ $product->name }}" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.3s ease;">
+                        <img :src="activeMedia" alt="{{ $product->name }}" class="w-full h-full object-cover transition-opacity duration-300">
                     </template>
                     <template x-if="isVideo">
-                        <video :src="activeMedia" controls autoplay muted style="width:100%; height:100%; object-fit:contain; background:#000;"></video>
+                        <video :src="activeMedia" controls autoplay muted class="w-full h-full object-contain bg-black"></video>
                     </template>
                 </div>
 
                 <!-- Thumbnails -->
-                <div class="no-scrollbar" style="display:flex; gap:10px; margin-top:14px; overflow-x:auto; padding-bottom:4px;">
+                <div class="flex gap-2.5 mt-3 overflow-x-auto no-scrollbar pb-1">
                     <button @click="activeMedia = '{{ asset('storage/' . $product->image_path) }}'; isVideo = false"
                             :class="activeMedia === '{{ asset('storage/' . $product->image_path) }}' ? 'thumb-active' : 'thumb-inactive'"
-                            style="width:64px; height:64px; flex-shrink:0; border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; cursor:pointer; transition:all 0.2s;">
-                        <img src="{{ asset('storage/' . $product->image_path) }}" style="width:100%; height:100%; object-fit:cover;">
+                            class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0 rounded-xl overflow-hidden border-2 border-border cursor-pointer transition-all active:scale-95 bg-white">
+                        <img src="{{ asset('storage/' . $product->image_path) }}" class="w-full h-full object-cover">
                     </button>
                     @if($product->additional_images)
                         @foreach($product->additional_images as $img)
                         <button @click="activeMedia = '{{ asset('storage/' . $img) }}'; isVideo = false"
                                 :class="activeMedia === '{{ asset('storage/' . $img) }}' ? 'thumb-active' : 'thumb-inactive'"
-                                style="width:64px; height:64px; flex-shrink:0; border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; cursor:pointer; transition:all 0.2s;">
-                            <img src="{{ asset('storage/' . $img) }}" style="width:100%; height:100%; object-fit:cover;">
+                                class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0 rounded-xl overflow-hidden border-2 border-border cursor-pointer transition-all active:scale-95 bg-white">
+                            <img src="{{ asset('storage/' . $img) }}" class="w-full h-full object-cover">
                         </button>
                         @endforeach
                     @endif
                     @if($product->video_path)
                     <button @click="activeMedia = '{{ asset('storage/' . $product->video_path) }}'; isVideo = true"
                             :class="activeMedia === '{{ asset('storage/' . $product->video_path) }}' ? 'thumb-active' : 'thumb-inactive'"
-                            style="width:64px; height:64px; flex-shrink:0; border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; cursor:pointer; background:#1a1a2e; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
-                        <svg style="width:28px; height:28px; color:#fff;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0 rounded-xl overflow-hidden border-2 border-border cursor-pointer bg-ink flex items-center justify-center transition-all active:scale-95">
+                        <svg class="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </button>
                     @endif
                 </div>
             </div>
 
             <!-- Details Side -->
-            <div class="pdp-details" style="width:100%; padding:28px 24px 32px 24px; display:flex; flex-direction:column;">
+            <div class="pdp-details w-full px-4 py-5 md:p-7 flex flex-col">
                 <!-- Category badge -->
-                <span style="display:inline-block; width:fit-content; padding:4px 12px; border-radius:8px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; background:#f0f9ff; color:#0284c7; margin-bottom:14px;">{{ $product->category->name ?? 'Uncategorized' }}</span>
+                <span class="inline-block w-fit px-3 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-sky-50 text-sky-600 mb-3">{{ $product->category->name ?? 'Uncategorized' }}</span>
 
                 <!-- Product name -->
-                <h1 style="font-size:clamp(22px,4vw,36px); font-weight:900; color:#0f172a; line-height:1.15; margin-bottom:20px;">{{ $product->name }}</h1>
+                <h1 class="text-[22px] md:text-4xl font-black text-ink leading-tight mb-4">{{ $product->name }}</h1>
 
                 <!-- Price block -->
-                <div class="price-block" style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border:1px solid rgba(255,209,102,0.3); border-radius:16px; padding:20px 24px; margin-bottom:20px; position:relative; overflow:hidden;">
-                    <div style="position:absolute; right:-20px; top:-20px; width:80px; height:80px; background:rgba(255,209,102,0.25); border-radius:50%; filter:blur(20px);"></div>
-                    <p style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#92400e; margin-bottom:4px; position:relative; z-index:1;">Our Price</p>
-                    <div style="display:flex; align-items:baseline; gap:6px; position:relative; z-index:1;">
-                        <span style="font-size:18px; font-weight:700; color:#d97706;">Rs.</span>
-                        <span style="font-size:clamp(36px,5vw,48px); font-weight:900; color:#0f172a; letter-spacing:-0.03em; line-height:1;">{{ number_format($product->price) }}</span>
+                <div class="bg-gradient-to-br from-amber-50 to-amber-100/60 border border-mango/25 rounded-2xl p-4 md:p-5 mb-4 relative overflow-hidden">
+                    <div class="absolute -right-5 -top-5 w-20 h-20 bg-mango/20 rounded-full blur-2xl"></div>
+                    <p class="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-amber-700 mb-1 relative z-10">Our Price</p>
+                    <div class="flex items-baseline gap-1.5 relative z-10">
+                        <span class="text-base md:text-lg font-bold text-amber-600">Rs.</span>
+                        <span class="text-3xl md:text-5xl font-black text-ink tracking-tighter leading-none">{{ number_format($product->price) }}</span>
                     </div>
                 </div>
 
                 <!-- Stock + Weight badges -->
-                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
+                <div class="flex flex-wrap gap-2 mb-4">
                     @if($product->in_stock)
-                    <div style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:10px; font-size:12px; font-weight:700; background:rgba(236,253,245,0.9); color:#059669; border:1px solid rgba(16,185,129,0.2);">
-                        <span style="width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 6px rgba(16,185,129,0.5); display:inline-block;"></span>
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-success-soft text-success border border-success/15">
+                        <span class="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_6px_rgba(0,196,140,0.5)]"></span>
                         In Stock
                     </div>
                     @else
-                    <div style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:10px; font-size:12px; font-weight:700; background:rgba(254,242,242,0.9); color:#dc2626; border:1px solid rgba(239,68,68,0.2);">
-                        <span style="width:7px; height:7px; border-radius:50%; background:#ef4444; display:inline-block;"></span>
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-wildOrchid border border-wildOrchid/15">
+                        <span class="w-1.5 h-1.5 rounded-full bg-wildOrchid"></span>
                         Out of Stock
                     </div>
                     @endif
-                    <div style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:10px; font-size:12px; font-weight:700; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;">
-                        <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l3 9a5.002 5.002 0 01-6.001 0M18 7l-3 9m-6-9l6-2m0 0V3" /></svg>
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-divider text-txt-secondary border border-border">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l3 9a5.002 5.002 0 01-6.001 0M18 7l-3 9m-6-9l6-2m0 0V3" /></svg>
                         {{ $product->weight_grams }}g
                     </div>
                 </div>
 
-                <!-- Buy button -->
-                <button @click="triggerAddToCart({{ json_encode($product) }})" class="buy-btn" style="width:100%; padding:16px 24px; border-radius:16px; border:none; color:#fff; font-size:17px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:24px;">
-                    <svg style="width:22px; height:22px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                <!-- Buy button (hidden on mobile — shown as sticky bar instead) -->
+                <button @click="triggerAddToCart({{ json_encode($product) }})" class="cp-btn-buy hidden md:flex w-full py-4 px-6 rounded-2xl text-base items-center justify-center gap-3 mb-5">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                     Buy Now
                 </button>
 
                 <!-- Description -->
-                <div style="margin-bottom:20px;">
-                    <h4 style="font-size:14px; font-weight:800; color:#0f172a; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Description</h4>
-                    <p style="font-size:14px; font-weight:500; color:#64748b; line-height:1.7; white-space:pre-line;">{{ $product->description }}</p>
+                <div class="mb-4">
+                    <h4 class="text-xs md:text-sm font-black text-ink mb-2 uppercase tracking-wider">Description</h4>
+                    <p class="text-sm font-medium text-txt-secondary leading-relaxed whitespace-pre-line">{{ $product->description }}</p>
                 </div>
 
-                <!-- Trust badges -->
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:auto; padding-top:20px; border-top:1px solid #f1f5f9;">
-                    <div style="display:flex; align-items:center; gap:8px; padding:10px; border-radius:12px; background:#f8fafc;">
-                        <svg style="width:20px; height:20px; color:#6366f1; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                        <span style="font-size:11px; font-weight:700; color:#475569;">Secure Checkout</span>
+                <!-- Trust badges: horizontal scroll on mobile, 2x2 grid on desktop -->
+                <div class="flex md:grid md:grid-cols-2 gap-2 overflow-x-auto no-scrollbar mt-auto pt-4 border-t border-divider">
+                    <div class="cp-trust-badge">
+                        <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        Secure
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px; padding:10px; border-radius:12px; background:#f8fafc;">
-                        <svg style="width:20px; height:20px; color:#f59e0b; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        <span style="font-size:11px; font-weight:700; color:#475569;">Fast Delivery</span>
+                    <div class="cp-trust-badge">
+                        <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        Fast Delivery
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px; padding:10px; border-radius:12px; background:#f8fafc;">
-                        <svg style="width:20px; height:20px; color:#10b981; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-                        <span style="font-size:11px; font-weight:700; color:#475569;">Cash on Delivery</span>
+                    <div class="cp-trust-badge">
+                        <svg class="w-4 h-4 text-success flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                        COD
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px; padding:10px; border-radius:12px; background:#f8fafc;">
-                        <svg style="width:20px; height:20px; color:#ec4899; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-                        <span style="font-size:11px; font-weight:700; color:#475569;">Quality Assured</span>
+                    <div class="cp-trust-badge">
+                        <svg class="w-4 h-4 text-pink-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                        Quality
                     </div>
                 </div>
             </div>
@@ -206,19 +212,47 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white pt-20 pb-10 mt-10">
-        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 font-medium text-sm">
+    <footer class="bg-ink text-white pt-12 pb-8 md:pt-20 md:pb-10 mt-6 md:mt-10">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 text-center text-txt-secondary font-medium text-sm">
             <p>&copy; {{ date('Y') }} {{ setting('store_name', 'Chhito Pasal') }}. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Mobile Floating Cart -->
-    <div x-show="totalCartQuantity > 0" x-transition.scale.origin.bottom.right class="fixed bottom-6 right-6 z-40 md:hidden cursor-pointer active:scale-90 transition-transform" @click="toggleCart()">
-        <div class="relative bg-mango w-16 h-16 rounded-full shadow-2xl flex items-center justify-center border-4 border-[#FDFFFC] animate-bounce">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-            <span x-text="totalCartQuantity" class="absolute -top-1 -right-1 bg-wildOrchid text-white text-xs font-black px-2 py-0.5 rounded-full shadow-md border-2 border-white"></span>
+    <!-- Mobile Sticky Buy Bar -->
+    <div class="md:hidden fixed bottom-[60px] left-0 right-0 z-30 bg-white/95 backdrop-blur-lg border-t border-divider px-4 py-3 safe-bottom" style="box-shadow: 0 -2px 12px rgba(0,0,0,0.06);">
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <p class="text-[10px] font-bold text-txt-tertiary uppercase tracking-wider">Price</p>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-sm font-bold text-mango">Rs.</span>
+                    <span class="text-xl font-black text-ink tracking-tight">{{ number_format($product->price) }}</span>
+                </div>
+            </div>
+            <button @click="triggerAddToCart({{ json_encode($product) }})" class="cp-btn-buy flex-1 max-w-[200px] py-3.5 px-6 rounded-xl text-sm flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                Buy Now
+            </button>
         </div>
     </div>
+
+    <!-- Bottom Navigation Bar (Mobile only) -->
+    <nav class="cp-bottom-nav fixed bottom-0 left-0 right-0 z-40 md:hidden">
+        <div class="flex items-center justify-around h-[60px]">
+            <a href="{{ route('home') }}" class="flex flex-col items-center gap-0.5 text-txt-secondary">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <span class="text-[10px] font-bold">Home</span>
+            </a>
+            <a href="{{ url('/#shop') }}" class="flex flex-col items-center gap-0.5 text-txt-secondary">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <span class="text-[10px] font-bold">Shop</span>
+            </a>
+            <button @click="toggleCart()" class="flex flex-col items-center gap-0.5 text-txt-secondary relative">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                <span class="text-[10px] font-bold">Cart</span>
+                <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 right-1 bg-wildOrchid text-white text-[8px] font-black min-w-[16px] h-[16px] rounded-full flex items-center justify-center"></span>
+            </button>
+        </div>
+    </nav>
 
     <!-- Bundle Selection Modal -->
     <div x-show="bundleSelectionOpen" x-cloak class="fixed inset-0 flex items-center justify-center p-4" style="z-index: 100;">
