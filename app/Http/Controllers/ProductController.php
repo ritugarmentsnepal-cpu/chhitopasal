@@ -35,7 +35,7 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'image' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:2048', // Thumbnail
             'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
-            'video' => 'nullable|mimes:mp4,webm,mov|max:10240', // Max 10MB video
+            'video' => 'nullable|mimes:mp4,webm,mov', // Max 10MB video
             'bundles' => 'nullable|array',
             'bundles.*.qty' => 'required_with:bundles|integer|min:2',
             'bundles.*.price' => 'required_with:bundles|numeric|min:0',
@@ -93,7 +93,7 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
             'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
-            'video' => 'nullable|mimes:mp4,webm,mov|max:10240',
+            'video' => 'nullable|mimes:mp4,webm,mov',
             'bundles' => 'nullable|array',
             'bundles.*.qty' => 'required_with:bundles|integer|min:2',
             'bundles.*.price' => 'required_with:bundles|numeric|min:0',
