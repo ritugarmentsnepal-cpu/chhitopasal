@@ -87,6 +87,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Staff / Users
         Route::resource('users', \App\Http\Controllers\UserController::class)->except(['create', 'show', 'edit']);
 
+        // Analytics
+        Route::get('/admin/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
+
         // Admin Utilities — SEC-09: Changed from GET to POST to prevent CSRF via link/image tags
         Route::post('/admin/clear-cache', function () {
             \Illuminate\Support\Facades\Artisan::call('cache:clear');

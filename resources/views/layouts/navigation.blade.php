@@ -65,6 +65,10 @@
                     @endif
 
                     @if(auth()->user()->role === 'admin')
+                        <a href="{{ route('analytics.index') }}" class="px-3 h-full flex items-center font-bold text-sm transition-all border-b-2 whitespace-nowrap {{ request()->routeIs('analytics.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
+                            Analytics
+                        </a>
+
                         <a href="{{ route('users.index') }}" class="px-3 h-full flex items-center font-bold text-sm transition-all border-b-2 whitespace-nowrap {{ request()->routeIs('users.*') ? 'border-mango text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200' }}">
                             Staff
                         </a>
@@ -191,6 +195,9 @@
                 </div>
             @endif
             @if(auth()->user()->role === 'admin')
+                <x-responsive-nav-link :href="route('analytics.index')" :active="request()->routeIs('analytics.*')" class="font-bold">
+                    {{ __('Analytics') }}
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" class="font-bold">
                     {{ __('Staff') }}
                 </x-responsive-nav-link>
