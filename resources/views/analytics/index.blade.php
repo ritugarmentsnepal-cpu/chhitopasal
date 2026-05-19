@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
+<x-app-layout>
 <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
     {{-- ── PAGE HEADER ────────────────────────────────────────────────────── --}}
@@ -358,4 +356,4 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
-@endsection
+</x-app-layout>
