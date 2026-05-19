@@ -8,6 +8,17 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/product/{slug}', [HomeController::class, 'show'])->name('product.show');
 Route::post('/checkout', [\App\Http\Controllers\OrderController::class, 'storeWeb'])->middleware('throttle:5,1')->name('checkout.web');
 
+// ONE-TIME MIGRATION RUNNER — REMOVE AFTER USE
+Route::get('/run-migrate-xk9q2', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return response('<pre style="font-family:monospace;padding:20px;">✅ Migration complete!<br><br>' . htmlspecialchars($output) . '</pre>');
+    } catch (\Exception $e) {
+        return response('<pre style="color:red;padding:20px;">❌ Error: ' . $e->getMessage() . '</pre>', 500);
+    }
+});
+
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
 
