@@ -57,6 +57,20 @@
         (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","{{ setting('microsoft_clarity_id') }}");
     </script>
     @endif
+
+    {{-- Facebook Pixel --}}
+    @if(setting('facebook_pixel_id'))
+    <script>
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+        n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+        (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '{{ setting("facebook_pixel_id") }}');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ setting('facebook_pixel_id') }}&ev=PageView&noscript=1"/></noscript>
+    @endif
 </head>
 <body class="antialiased text-gray-900 overflow-x-hidden selection:bg-wildOrchid selection:text-white"
       x-data="shopData()">
@@ -813,6 +827,17 @@
                     }
                     this.bundleSelectionOpen = false;
                     this.cartOpen = true;
+
+                    // Facebook Pixel: AddToCart
+                    if (typeof fbq !== 'undefined') {
+                        fbq('track', 'AddToCart', {
+                            content_name: product.name,
+                            content_ids: [String(product.id)],
+                            content_type: 'product',
+                            value: unitPrice * qty,
+                            currency: 'NPR'
+                        });
+                    }
                 },
 
                 updateQuantity(index, delta) {
@@ -827,6 +852,14 @@
                 toggleCart() {
                     if (this.cart.length > 0) {
                         this.cartOpen = !this.cartOpen;
+                        // Facebook Pixel: InitiateCheckout
+                        if (this.cartOpen && typeof fbq !== 'undefined') {
+                            fbq('track', 'InitiateCheckout', {
+                                value: this.itemsTotal,
+                                currency: 'NPR',
+                                num_items: this.totalCartQuantity
+                            });
+                        }
                     } else {
                         alert("Your cart is empty. Add some products first!");
                     }
@@ -883,6 +916,19 @@
                         });
 
                         if (response.ok) {
+                            // Facebook Pixel: Purchase
+                            if (typeof fbq !== 'undefined') {
+                                fbq('track', 'Purchase', {
+                                    value: this.cartTotal,
+                                    currency: 'NPR',
+                                    content_type: 'product',
+                                    contents: this.cart.map(item => ({
+                                        id: String(item.id),
+                                        quantity: item.quantity
+                                    }))
+                                });
+                            }
+
                             this.cartOpen = false;
                             this.showCelebration = true;
                             
