@@ -491,6 +491,22 @@
 
                 init() {
                     this.$watch('cart', val => localStorage.setItem('cart', JSON.stringify(val)));
+                    this.trackEvent('page_view', { url: window.location.href });
+                },
+
+                trackEvent(eventType, data = {}) {
+                    fetch('{{ url("track-event") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            event_type: eventType,
+                            ...data
+                        })
+                    }).catch(e => console.error('Tracking error', e));
                 },
 
                 needsVariants(product) {
@@ -561,6 +577,7 @@
                             currency: 'NPR'
                         });
                     }
+                    this.trackEvent('add_to_cart', { product_id: product.id, category_id: product.category_id });
                 },
 
                 updateQuantity(index, delta) {
@@ -582,6 +599,9 @@
                                 currency: 'NPR',
                                 num_items: this.totalCartQuantity
                             });
+                        }
+                        if (this.cartOpen) {
+                            this.trackEvent('initiate_checkout', { url: window.location.href });
                         }
                     }
                     else alert("Your cart is empty.");
@@ -647,6 +667,7 @@
                                     }))
                                 });
                             }
+                            this.trackEvent('purchase', { url: window.location.href });
 
                             this.cartOpen = false;
                             this.showCelebration = true;

@@ -325,6 +325,7 @@ class OrderController extends Controller
                 'total_amount' => $totalAmount + $deliveryCharge,
                 'status' => 'pending',
                 'source' => 'web',
+                'session_id' => request()->cookie('visitor_session_id'),
             ]);
 
             $order->orderItems()->createMany($orderItemsData);

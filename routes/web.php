@@ -126,3 +126,6 @@ Route::middleware('auth')->group(function () {
 
 
 require __DIR__.'/auth.php';
+
+// Storefront Analytics Tracking
+Route::post('/track-event', [\App\Http\Controllers\TrackEventController::class, 'store'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])->name('track.event');

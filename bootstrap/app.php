@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // SEC-10: Add security headers to all web responses
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\TrackVisitorSession::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
