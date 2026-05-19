@@ -50,7 +50,7 @@ class SettingController extends Controller
             'pathao_client_id', 'pathao_client_secret', 'pathao_username',
             'pathao_password', 'pathao_store_id', 'pathao_base_url',
             // Integrations (Analytics)
-            'microsoft_clarity_id', 'facebook_pixel_id',
+            'google_tag_manager_id', 'facebook_pixel_id',
             // Automation
             'auto_sync_pathao', 'pathao_sync_interval',
         ];

@@ -71,26 +71,26 @@
         <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
             <div class="flex items-center gap-3 mb-6">
                 <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c6.627 0 12 5.373 12 12s-5.373 12-12 12S0 18.627 0 12 5.373 0 12 0zm5.176 16.483c-1.125 1.543-2.923 2.502-4.945 2.502-2.736 0-5.068-1.785-5.836-4.258h10.97c.058-.458.093-.93.093-1.41 0-3.83-3.116-6.946-6.946-6.946-3.83 0-6.946 3.116-6.946 6.946 0 3.83 3.116 6.946 6.946 6.946 2.378 0 4.474-1.2 5.626-3.003l-1.962-1.277zM10.457 7.747c1.37-.508 2.924-.31 4.12.518 1.157.798 1.83 2.072 1.83 3.468H7.556c0-1.786.964-3.376 2.52-4.073l.38-.163v.25z"/></svg>
                 </div>
                 <div>
-                    <h3 class="text-xl font-black text-gray-900">Microsoft Clarity</h3>
-                    <p class="text-sm text-gray-500 font-medium">Heatmaps, session recordings & analytics</p>
+                    <h3 class="text-xl font-black text-gray-900">Google Tag Manager</h3>
+                    <p class="text-sm text-gray-500 font-medium">Manage all your marketing and analytics tags centrally</p>
                 </div>
             </div>
             
             <div class="mb-6">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Clarity Project ID</label>
-                <input name="microsoft_clarity_id" type="text" value="{{ setting('microsoft_clarity_id') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold font-mono tracking-wider" placeholder="e.g. abc123xyz" />
+                <label class="block text-sm font-bold text-gray-700 mb-2">GTM Container ID</label>
+                <input name="google_tag_manager_id" type="text" value="{{ setting('google_tag_manager_id') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold font-mono tracking-wider" placeholder="e.g. GTM-XXXXXXX" />
                 <p class="text-xs text-gray-500 mt-2">
-                    Get your Project ID from <a href="https://clarity.microsoft.com" target="_blank" class="text-blue-600 font-bold hover:underline">clarity.microsoft.com</a> → New Project → copy the ID. Leave empty to disable tracking.
+                    Get your Container ID from <a href="https://tagmanager.google.com" target="_blank" class="text-blue-600 font-bold hover:underline">tagmanager.google.com</a>. Leave empty to disable GTM.
                 </p>
             </div>
 
-            @if(setting('microsoft_clarity_id'))
+            @if(setting('google_tag_manager_id'))
                 <div class="bg-green-50 text-green-700 px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mb-6 border border-green-100">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                    Clarity is active — Project ID: <code class="bg-green-100 px-2 py-0.5 rounded font-mono">{{ setting('microsoft_clarity_id') }}</code>
+                    Google Tag Manager is active — Container ID: <code class="bg-green-100 px-2 py-0.5 rounded font-mono">{{ setting('google_tag_manager_id') }}</code>
                 </div>
             @endif
 
