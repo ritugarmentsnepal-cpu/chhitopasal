@@ -12,7 +12,7 @@ class AccountingController extends Controller
      */
     private function requireFinancialAccess()
     {
-        if (in_array(auth()->user()->role, ['operational_staff'])) {
+        if (!auth()->user()->hasPermission('accounting')) {
             abort(403, 'Access Denied: You do not have permission to perform this action.');
         }
     }
@@ -135,8 +135,8 @@ class AccountingController extends Controller
 
     public function syncPathao()
     {
-        if (auth()->user()->role !== 'admin') {
-            return redirect()->route('accounting.index', ['tab' => 'banking'])->with('error', 'Access Denied: Only Administrators can run Pathao settlement sync.');
+        if (!auth()->user()->hasPermission('accounting')) {
+            return redirect()->route('accounting.index', ['tab' => 'banking'])->with('error', 'Access Denied: You do not have permission to run Pathao settlement sync.');
         }
 
         // FIN-CRIT-03: Mark delivered Pathao orders as paid AND record financial transactions.
@@ -198,7 +198,7 @@ class AccountingController extends Controller
             'purchase_id' => 'required|exists:purchases,id',
             'amount' => 'required|numeric|min:0.01',
             'account_id' => 'required|exists:accounts,id',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string|max:2000'
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -291,7 +291,7 @@ class AccountingController extends Controller
             'type' => 'required|in:in,out',
             'amount' => 'required|numeric|min:0.01',
             'party_id' => 'nullable|exists:parties,id',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string|max:2000'
         ]);
 
         try {
@@ -334,7 +334,7 @@ class AccountingController extends Controller
             'type' => 'required|in:add,deduct',
             'quantity' => 'required|integer|min:1',
             'reason' => 'required|string',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string|max:2000'
         ]);
 
         $product = \App\Models\Product::findOrFail($validated['product_id']);
@@ -528,10 +528,14 @@ class AccountingController extends Controller
         $endDate = $request->query('end_date', now()->toDateString());
         $reportType = $request->query('report_type', 'pl');
 
-        $filename = "{$reportType}_report_{$startDate}_to_{$endDate}.csv";
+        // LOW-03: Sanitize filename components to prevent header injection
+        $safeName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $reportType);
+        $safeStart = preg_replace('/[^0-9\-]/', '', $startDate);
+        $safeEnd = preg_replace('/[^0-9\-]/', '', $endDate);
+        $filename = "{$safeName}_report_{$safeStart}_to_{$safeEnd}.csv";
         $headers = [
             "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$filename",
+            "Content-Disposition" => "attachment; filename=\"{$filename}\"",
             "Pragma"              => "no-cache",
             "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
             "Expires"             => "0"

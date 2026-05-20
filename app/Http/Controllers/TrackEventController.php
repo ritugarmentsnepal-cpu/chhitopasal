@@ -12,6 +12,16 @@ class TrackEventController extends Controller
     public function store(Request $request)
     {
         try {
+            // MED-04: Validate Origin header to prevent cross-site abuse on CSRF-exempt endpoint
+            $origin = $request->header('Origin') ?? $request->header('Referer');
+            if ($origin) {
+                $allowedHost = parse_url(config('app.url'), PHP_URL_HOST);
+                $requestHost = parse_url($origin, PHP_URL_HOST);
+                if ($allowedHost && $requestHost && $requestHost !== $allowedHost) {
+                    return response()->json(['status' => 'ignored'], 403);
+                }
+            }
+
             $sessionId = $request->cookie('visitor_session_id');
             if (!$sessionId) {
                 return response()->json(['status' => 'ignored']);

@@ -1,20 +1,44 @@
-<div x-data="userManager()">
+<div>
     <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
             <h3 class="text-xl font-black text-gray-900 flex items-center gap-2">
                 Staff Roles & Access Control
             </h3>
-            <a href="{{ route('users.index') }}" class="bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold py-2 px-4 rounded-xl text-sm transition">
-                Manage Staff Members &rarr;
+            <a href="{{ route('users.index') }}" class="bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold py-2 px-4 rounded-xl text-sm transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                Manage Staff & Permissions &rarr;
             </a>
         </div>
-        <button x-on:click.prevent="$dispatch('open-modal', 'add-user-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 transition duration-150 active:scale-95 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-            <span class="hidden sm:inline">Add Staff</span>
-        </button>
     </div>
 
-    <!-- Users Grid -->
+    <!-- Role Presets Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        @php
+            $roleColors = [
+                'admin' => ['bg' => 'bg-purple-50', 'border' => 'border-purple-100', 'badge' => 'bg-purple-100 text-purple-700', 'icon' => 'text-purple-500'],
+                'manager' => ['bg' => 'bg-blue-50', 'border' => 'border-blue-100', 'badge' => 'bg-blue-100 text-blue-700', 'icon' => 'text-blue-500'],
+                'operational_staff' => ['bg' => 'bg-amber-50', 'border' => 'border-amber-100', 'badge' => 'bg-amber-100 text-amber-700', 'icon' => 'text-amber-500'],
+                'accountant' => ['bg' => 'bg-green-50', 'border' => 'border-green-100', 'badge' => 'bg-green-100 text-green-700', 'icon' => 'text-green-500'],
+            ];
+            $roleLabels = ['admin' => 'Admin', 'manager' => 'Manager', 'operational_staff' => 'Op Staff', 'accountant' => 'Accountant'];
+        @endphp
+        @foreach(\App\Models\User::ROLE_PRESETS as $role => $perms)
+            @php $colors = $roleColors[$role]; @endphp
+            <div class="{{ $colors['bg'] }} {{ $colors['border'] }} border rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="{{ $colors['badge'] }} text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">{{ $roleLabels[$role] }}</span>
+                    <span class="text-xs font-bold text-gray-400">{{ count($perms) }} permissions</span>
+                </div>
+                <div class="flex flex-wrap gap-1">
+                    @foreach($perms as $perm)
+                        <span class="bg-white/60 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-md border border-gray-100/50">{{ \App\Models\User::PERMISSIONS[$perm] ?? $perm }}</span>
+                    @endforeach
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <!-- Staff List -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         @foreach($users as $user)
             <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col hover:shadow-lg transition-shadow">
@@ -36,146 +60,20 @@
                 </div>
                 
                 <h3 class="font-black text-xl text-gray-900 mb-1">{{ $user->name }}</h3>
-                <p class="text-gray-500 font-medium text-sm mb-4">{{ $user->email }}</p>
+                <p class="text-gray-500 font-medium text-sm mb-3">{{ $user->email }}</p>
+
+                <!-- Permission count -->
+                <p class="text-xs font-bold text-gray-400 mb-3">{{ count($user->permissions ?? []) }} permissions enabled</p>
                 
                 <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
-                    @if($user->role === 'admin')
-                        <span class="bg-purple-100 text-purple-700 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Admin</span>
-                    @elseif($user->role === 'manager')
-                        <span class="bg-blue-100 text-blue-700 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Manager</span>
-                    @elseif($user->role === 'accountant')
-                        <span class="bg-green-100 text-green-700 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Accountant</span>
-                    @else
-                        <span class="bg-gray-100 text-gray-700 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Op Staff</span>
-                    @endif
-                    <button @click="openEditModal({{ $user }})" class="text-wildOrchid font-bold text-sm hover:text-gray-900 transition-colors ml-auto">Edit Details</button>
+                    @php
+                        $badgeClass = $roleColors[$user->role]['badge'] ?? 'bg-rose-100 text-rose-700';
+                        $label = $roleLabels[$user->role] ?? str_replace('_', ' ', $user->role);
+                    @endphp
+                    <span class="{{ $badgeClass }} text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">{{ $label }}</span>
+                    <a href="{{ route('users.index') }}" class="text-wildOrchid font-bold text-sm hover:text-gray-900 transition-colors ml-auto">Edit Permissions &rarr;</a>
                 </div>
             </div>
         @endforeach
     </div>
-
-    <!-- Add User Modal -->
-    <x-modal name="add-user-modal" focusable>
-        <form method="POST" action="{{ route('users.store') }}" class="p-8">
-            @csrf
-            <input type="hidden" name="redirect_tab" value="staff">
-            <h2 class="text-2xl font-black text-gray-900 mb-6">Add New Staff Member</h2>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
-                    <input type="text" name="name" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
-                </div>
-                <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
-                    <input type="email" name="email" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
-                </div>
-                <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Role</label>
-                    <select name="role" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
-                        <option value="operational_staff">Operational Staff (Orders/Products)</option>
-                        <option value="accountant">Accountant (Financials Only)</option>
-                        <option value="manager">Manager (No Delete/Edit System Settings)</option>
-                        <option value="admin">Admin (Full Access)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Password</label>
-                    <input type="password" name="password" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
-                </div>
-                <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Confirm Password</label>
-                    <input type="password" name="password_confirmation" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-8">
-                <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
-                <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">Create Staff</button>
-            </div>
-        </form>
-    </x-modal>
-
-    <!-- Edit User Modal -->
-    <div x-show="editModalOpen" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div x-show="editModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="closeEditModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div x-show="editModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full p-8">
-                
-                <form :action="`{{ url('users') }}/${editingUser?.id}`" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="redirect_tab" value="staff">
-                    
-                    <h2 class="text-2xl font-black text-gray-900 mb-6">Edit Staff Member</h2>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
-                            <input type="text" name="name" x-model="formData.name" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
-                            <input type="email" name="email" x-model="formData.email" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Role</label>
-                            <select name="role" x-model="formData.role" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
-                                <option value="operational_staff">Operational Staff (Orders/Products)</option>
-                                <option value="accountant">Accountant (Financials Only)</option>
-                                <option value="manager">Manager (No Delete/Edit System Settings)</option>
-                                <option value="admin">Admin (Full Access)</option>
-                            </select>
-                        </div>
-                        <div class="pt-4 border-t border-gray-100">
-                            <p class="text-xs font-bold text-gray-400 mb-4">Leave passwords blank to keep current password.</p>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">New Password</label>
-                            <input type="password" name="password" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors mb-4">
-                            
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Confirm New Password</label>
-                            <input type="password" name="password_confirmation" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors">
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end gap-3 mt-8">
-                        <button type="button" @click="closeEditModal()" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
-                        <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">Save Changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('userManager', () => ({
-            editModalOpen: false,
-            editingUser: null,
-            formData: {
-                name: '',
-                email: '',
-                role: 'staff'
-            },
-
-            openEditModal(user) {
-                this.editingUser = user;
-                this.formData.name = user.name;
-                this.formData.email = user.email;
-                this.formData.role = user.role;
-                this.editModalOpen = true;
-            },
-
-            closeEditModal() {
-                this.editModalOpen = false;
-                setTimeout(() => {
-                    this.editingUser = null;
-                    this.formData.name = '';
-                    this.formData.email = '';
-                }, 300);
-            }
-        }));
-    });
-</script>

@@ -377,7 +377,7 @@
         <!-- Smart Confirmation Popup Removed, logic merged into Edit Popup -->
 
         <!-- Bulk Upload Spreadsheet Modal -->
-        <div x-show="bulkModalOpen" x-cloak @mouseup.window="endDragFill()" class="fixed inset-0 z-50 overflow-auto" aria-labelledby="bulk-modal" role="dialog" aria-modal="true">
+        <div x-show="bulkModalOpen" x-cloak @mouseup.window="endDragFill(); endDragSelect()" class="fixed inset-0 z-50 overflow-auto" aria-labelledby="bulk-modal" role="dialog" aria-modal="true">
             <div class="flex items-start justify-center min-h-screen p-2 sm:p-4">
                 <div x-show="bulkModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity" @click="closeBulkModal()"></div>
 
@@ -390,7 +390,7 @@
                                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg>
                                 Bulk Order Entry
                             </h3>
-                            <p class="text-xs text-gray-500 mt-0.5">Fill in customer details like a spreadsheet. All fields are editable.</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Fill in customer details like a spreadsheet. <span class="text-gray-400">Drag, Shift+Click, or ⌘/Ctrl+Click to select multiple cells.</span></p>
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">
@@ -420,41 +420,36 @@
                                 <template x-for="(row, idx) in bulkRows" :key="idx">
                                     <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors group" :class="row._error ? 'bg-red-50' : ''">
                                         <td class="px-2 py-1 text-center text-xs font-bold text-gray-400 border-r border-gray-100 bg-gray-50" x-text="idx + 1"></td>
-                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group" @mousedown="cellMouseDown($event, idx, 0)" @mouseenter="cellMouseEnterSelect(idx, 0)" :class="isCellSelected(idx, 0) ? 'bg-blue-100/60 ring-1 ring-inset ring-blue-400' : ''">
                                             <input type="text" x-model="row.customer_name" :data-row="idx" :data-col="0" @focus="activeCell = { row: idx, col: 0 }" @keydown.enter.prevent="moveFocusDown(idx, 0)" @paste="handlePaste($event, idx, 0)" @mouseenter="updateDragFill(idx, 0)" placeholder="Full Name" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 0 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
                                             <div x-show="activeCell.row === idx && activeCell.col === 0" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 0, 'customer_name')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group" @mousedown="cellMouseDown($event, idx, 1)" @mouseenter="cellMouseEnterSelect(idx, 1)" :class="isCellSelected(idx, 1) ? 'bg-blue-100/60 ring-1 ring-inset ring-blue-400' : ''">
                                             <input type="text" x-model="row.customer_phone" :data-row="idx" :data-col="1" @focus="activeCell = { row: idx, col: 1 }" @keydown.enter.prevent="moveFocusDown(idx, 1)" @paste="handlePaste($event, idx, 1)" @mouseenter="updateDragFill(idx, 1)" placeholder="98XXXXXXXX" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 1 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
                                             <div x-show="activeCell.row === idx && activeCell.col === 1" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 1, 'customer_phone')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group" @mousedown="cellMouseDown($event, idx, 2)" @mouseenter="cellMouseEnterSelect(idx, 2)" :class="isCellSelected(idx, 2) ? 'bg-blue-100/60 ring-1 ring-inset ring-blue-400' : ''">
                                             <input type="text" x-model="row.address" :data-row="idx" :data-col="2" @focus="activeCell = { row: idx, col: 2 }" @keydown.enter.prevent="moveFocusDown(idx, 2)" @paste="handlePaste($event, idx, 2)" @mouseenter="updateDragFill(idx, 2)" placeholder="Street address" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 2 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
                                             <div x-show="activeCell.row === idx && activeCell.col === 2" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 2, 'address')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group" @mousedown="cellMouseDown($event, idx, 3)" @mouseenter="cellMouseEnterSelect(idx, 3)" :class="isCellSelected(idx, 3) ? 'bg-blue-100/60 ring-1 ring-inset ring-blue-400' : ''">
                                             <input type="text" x-model="row.city" :data-row="idx" :data-col="3" @focus="activeCell = { row: idx, col: 3 }" @keydown.enter.prevent="moveFocusDown(idx, 3)" @paste="handlePaste($event, idx, 3)" @mouseenter="updateDragFill(idx, 3)" placeholder="City" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 3 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
                                             <div x-show="activeCell.row === idx && activeCell.col === 3" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 3, 'city')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group" @mousedown="cellMouseDown($event, idx, 4)" @mouseenter="cellMouseEnterSelect(idx, 4)" :class="isCellSelected(idx, 4) ? 'bg-blue-100/60 ring-1 ring-inset ring-blue-400' : ''">
                                             <select x-model="row.product_selection" :data-row="idx" :data-col="4" @focus="activeCell = { row: idx, col: 4 }" @keydown.enter.prevent="moveFocusDown(idx, 4)" @change="onBulkProductChange(idx)" @paste="handlePaste($event, idx, 4)" @mouseenter="updateDragFill(idx, 4)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-1 py-1.5 text-sm font-medium transition cursor-pointer" :class="(isDraggingFill && dragFillStart?.col === 4 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
                                                 <option value="">-- Select Product --</option>
                                                 @foreach($products as $product)
                                                     <option value="{{ $product->id }}:1:{{ $product->price }}">{{ $product->name }} (Rs.{{ number_format($product->price) }})</option>
-                                                    @if($product->bundles)
-                                                        @foreach($product->bundles as $bundle)
-                                                            <option value="{{ $product->id }}:{{ $bundle['qty'] }}:{{ $bundle['price'] }}">{{ $product->name }} ({{ $bundle['qty'] }}-Pack — Rs.{{ number_format($bundle['price']) }})</option>
-                                                        @endforeach
-                                                    @endif
                                                 @endforeach
                                             </select>
                                             <div x-show="activeCell.row === idx && activeCell.col === 4" class="absolute bottom-2 right-4 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 4, 'product_selection')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group" @mousedown="cellMouseDown($event, idx, 5)" @mouseenter="cellMouseEnterSelect(idx, 5)" :class="isCellSelected(idx, 5) ? 'bg-blue-100/60 ring-1 ring-inset ring-blue-400' : ''">
                                             <input type="number" x-model.number="row.quantity" :data-row="idx" :data-col="5" @focus="activeCell = { row: idx, col: 5 }" @keydown.enter.prevent="moveFocusDown(idx, 5)" min="1" @input="onBulkQtyChange(idx)" @paste="handlePaste($event, idx, 5)" @mouseenter="updateDragFill(idx, 5)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 5 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
                                             <div x-show="activeCell.row === idx && activeCell.col === 5" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 5, 'quantity')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group" @mousedown="cellMouseDown($event, idx, 6)" @mouseenter="cellMouseEnterSelect(idx, 6)" :class="isCellSelected(idx, 6) ? 'bg-blue-100/60 ring-1 ring-inset ring-blue-400' : ''">
                                             <input type="number" x-model.number="row.amount" :data-row="idx" :data-col="6" @focus="activeCell = { row: idx, col: 6 }" @keydown.enter.prevent="moveFocusDown(idx, 6)" step="0.01" min="0" @paste="handlePaste($event, idx, 6)" @mouseenter="updateDragFill(idx, 6)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 6 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
                                             <div x-show="activeCell.row === idx && activeCell.col === 6" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 6, 'amount')"></div>
                                         </td>
@@ -467,6 +462,50 @@
                                 </template>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Multi-cell Selection Action Bar -->
+                    <div x-show="selectionActionBar && selectedCells.length > 1" x-cloak
+                         x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2"
+                         class="sticky bottom-0 z-20 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 border-t border-blue-500 flex items-center justify-between gap-3 shadow-lg">
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-1.5 text-white/90 text-xs font-bold">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                                <span x-text="getSelectionSummary()"></span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <!-- Clear selected cells -->
+                            <button type="button" @click="clearSelectedCells()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-bold rounded-lg transition active:scale-95 backdrop-blur-sm border border-white/20">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                Clear
+                            </button>
+                            <!-- Copy selected cells -->
+                            <button type="button" @click="copySelectedCells()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-bold rounded-lg transition active:scale-95 backdrop-blur-sm border border-white/20">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                Copy
+                            </button>
+                            <!-- Fill down from first cell -->
+                            <button type="button" @click="fillSelectedFromFirst()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-bold rounded-lg transition active:scale-95 backdrop-blur-sm border border-white/20">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                                Fill Down
+                            </button>
+                            <!-- Deselect -->
+                            <button type="button" @click="clearCellSelection()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white/70 text-xs font-bold rounded-lg transition active:scale-95 border border-white/10">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                Deselect
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Toast Notification -->
+                    <div x-show="_toastVisible" x-cloak
+                         x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4"
+                         class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-gray-900 text-white text-sm font-bold rounded-xl shadow-xl flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        <span x-text="_toastMsg"></span>
                     </div>
 
                     <!-- Footer -->
@@ -1020,6 +1059,14 @@
                 dragFillStart: null,
                 dragFillEndRow: null,
 
+                // Multi-cell selection state
+                selectedCells: [],           // Array of {row, col} objects
+                selectionAnchor: null,       // Starting cell for shift-click range
+                isDragSelecting: false,      // Whether user is drag-selecting
+                dragSelectStart: null,       // Start cell of drag selection
+                selectionActionBar: false,   // Show floating action bar
+                _colFields: ['customer_name', 'customer_phone', 'address', 'city', 'product_selection', 'quantity', 'amount'],
+
                 async init() {
                     // Pre-fetch cities when dashboard loads
                     try {
@@ -1030,6 +1077,28 @@
                     }
                     // Listen for bulk modal open event from header button
                     window.addEventListener('open-bulk-modal', () => this.openBulkModal());
+
+                    // Keyboard shortcuts for multi-cell selection in bulk modal
+                    document.addEventListener('keydown', (e) => {
+                        if (!this.bulkModalOpen || this.selectedCells.length === 0) return;
+                        const active = document.activeElement;
+                        const isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
+
+                        // Delete/Backspace: clear selected cells (only when not actively typing)
+                        if ((e.key === 'Delete' || e.key === 'Backspace') && !isTyping) {
+                            e.preventDefault();
+                            this.clearSelectedCells();
+                        }
+                        // Ctrl/Cmd + C: copy selected cells
+                        if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !isTyping) {
+                            e.preventDefault();
+                            this.copySelectedCells();
+                        }
+                        // Escape: clear selection
+                        if (e.key === 'Escape') {
+                            this.clearCellSelection();
+                        }
+                    });
                 },
 
                 selectAll() {
@@ -1253,6 +1322,7 @@
 
                 closeBulkModal() {
                     this.bulkModalOpen = false;
+                    this.clearCellSelection();
                 },
 
                 addBulkRow() {
@@ -1344,6 +1414,185 @@
                     }
                     this.dragFillStart = null;
                     this.dragFillEndRow = null;
+                },
+
+                // === Multi-cell Selection Methods ===
+                isCellSelected(row, col) {
+                    return this.selectedCells.some(c => c.row === row && c.col === col);
+                },
+
+                cellMouseDown(e, row, col) {
+                    // Don't interfere with drag-fill handle
+                    if (this.isDraggingFill) return;
+                    // Don't start selection if clicking inside an input/select that's already focused
+                    const target = e.target;
+                    if (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA') {
+                        // If already focused on this cell, let native behavior work
+                        if (this.activeCell.row === row && this.activeCell.col === col && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+                            return;
+                        }
+                    }
+
+                    if (e.shiftKey && this.selectionAnchor) {
+                        // Shift+click: extend selection from anchor to current cell
+                        e.preventDefault();
+                        this.selectRange(this.selectionAnchor.row, this.selectionAnchor.col, row, col);
+                    } else if (e.ctrlKey || e.metaKey) {
+                        // Ctrl/Cmd+click: toggle individual cell
+                        e.preventDefault();
+                        this.toggleCellSelection(row, col);
+                    } else {
+                        // Normal click: start fresh selection + begin drag
+                        this.selectedCells = [{ row, col }];
+                        this.selectionAnchor = { row, col };
+                        this.isDragSelecting = true;
+                        this.dragSelectStart = { row, col };
+                    }
+                    this.selectionActionBar = this.selectedCells.length > 1;
+                },
+
+                cellMouseEnterSelect(row, col) {
+                    if (!this.isDragSelecting || !this.dragSelectStart) return;
+                    this.selectRange(this.dragSelectStart.row, this.dragSelectStart.col, row, col);
+                },
+
+                endDragSelect() {
+                    if (this.isDragSelecting) {
+                        this.isDragSelecting = false;
+                        this.selectionActionBar = this.selectedCells.length > 1;
+                    }
+                },
+
+                selectRange(r1, c1, r2, c2) {
+                    const minR = Math.min(r1, r2), maxR = Math.max(r1, r2);
+                    const minC = Math.min(c1, c2), maxC = Math.max(c1, c2);
+                    this.selectedCells = [];
+                    for (let r = minR; r <= maxR; r++) {
+                        for (let c = minC; c <= maxC; c++) {
+                            this.selectedCells.push({ row: r, col: c });
+                        }
+                    }
+                    this.selectionActionBar = this.selectedCells.length > 1;
+                },
+
+                toggleCellSelection(row, col) {
+                    const idx = this.selectedCells.findIndex(c => c.row === row && c.col === col);
+                    if (idx >= 0) {
+                        this.selectedCells.splice(idx, 1);
+                    } else {
+                        this.selectedCells.push({ row, col });
+                        this.selectionAnchor = { row, col };
+                    }
+                    this.selectionActionBar = this.selectedCells.length > 1;
+                },
+
+                clearCellSelection() {
+                    this.selectedCells = [];
+                    this.selectionAnchor = null;
+                    this.selectionActionBar = false;
+                },
+
+                clearSelectedCells() {
+                    this.selectedCells.forEach(({ row, col }) => {
+                        const field = this._colFields[col];
+                        if (!field) return;
+                        if (field === 'quantity') {
+                            this.bulkRows[row][field] = 1;
+                        } else if (field === 'amount') {
+                            this.bulkRows[row][field] = 0;
+                        } else if (field === 'product_selection') {
+                            this.bulkRows[row][field] = '';
+                            this.bulkRows[row].product_id = '';
+                            this.bulkRows[row].unit_price = 0;
+                            this.bulkRows[row].amount = 0;
+                        } else {
+                            this.bulkRows[row][field] = '';
+                        }
+                    });
+                },
+
+                copySelectedCells() {
+                    if (this.selectedCells.length === 0) return;
+                    // Determine bounding box
+                    const rows = this.selectedCells.map(c => c.row);
+                    const cols = this.selectedCells.map(c => c.col);
+                    const minR = Math.min(...rows), maxR = Math.max(...rows);
+                    const minC = Math.min(...cols), maxC = Math.max(...cols);
+
+                    let tsv = '';
+                    for (let r = minR; r <= maxR; r++) {
+                        let rowParts = [];
+                        for (let c = minC; c <= maxC; c++) {
+                            const field = this._colFields[c];
+                            rowParts.push(field ? (this.bulkRows[r][field] ?? '') : '');
+                        }
+                        tsv += rowParts.join('\t') + '\n';
+                    }
+                    navigator.clipboard.writeText(tsv.trim()).then(() => {
+                        this._showToast('Copied ' + this.selectedCells.length + ' cells');
+                    });
+                },
+
+                fillSelectedCells(value) {
+                    this.selectedCells.forEach(({ row, col }) => {
+                        const field = this._colFields[col];
+                        if (!field) return;
+                        if (field === 'quantity') {
+                            this.bulkRows[row][field] = parseInt(value) || 1;
+                            this.onBulkQtyChange(row);
+                        } else if (field === 'amount') {
+                            this.bulkRows[row][field] = parseFloat(value) || 0;
+                        } else if (field === 'product_selection') {
+                            this.bulkRows[row][field] = value;
+                            this.onBulkProductChange(row);
+                        } else {
+                            this.bulkRows[row][field] = value;
+                        }
+                    });
+                },
+
+                fillSelectedFromFirst() {
+                    if (this.selectedCells.length < 2) return;
+                    const first = this.selectedCells[0];
+                    const field = this._colFields[first.col];
+                    if (!field) return;
+                    const value = this.bulkRows[first.row][field];
+                    // Only fill cells in the same column
+                    this.selectedCells.forEach(({ row, col }) => {
+                        if (row === first.row && col === first.col) return;
+                        if (col !== first.col) return; // only same column
+                        const f = this._colFields[col];
+                        if (!f) return;
+                        if (f === 'quantity') {
+                            this.bulkRows[row][f] = parseInt(value) || 1;
+                            this.onBulkQtyChange(row);
+                        } else if (f === 'amount') {
+                            this.bulkRows[row][f] = parseFloat(value) || 0;
+                        } else if (f === 'product_selection') {
+                            this.bulkRows[row][f] = value;
+                            this.onBulkProductChange(row);
+                        } else {
+                            this.bulkRows[row][f] = value;
+                        }
+                    });
+                    this._showToast('Filled ' + (this.selectedCells.length - 1) + ' cells');
+                },
+
+                getSelectionSummary() {
+                    if (this.selectedCells.length === 0) return '';
+                    const rows = new Set(this.selectedCells.map(c => c.row));
+                    const cols = new Set(this.selectedCells.map(c => c.col));
+                    if (rows.size === 1) return this.selectedCells.length + ' cells in row ' + ([...rows][0] + 1);
+                    if (cols.size === 1) return this.selectedCells.length + ' cells in column';
+                    return this.selectedCells.length + ' cells (' + rows.size + ' rows × ' + cols.size + ' cols)';
+                },
+
+                _toastMsg: '',
+                _toastVisible: false,
+                _showToast(msg) {
+                    this._toastMsg = msg;
+                    this._toastVisible = true;
+                    setTimeout(() => { this._toastVisible = false; }, 1800);
                 },
 
                 parseTSV(text) {

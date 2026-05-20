@@ -29,6 +29,7 @@ class Order extends Model
         'paid_amount',
         'return_verified_at',
         'remarks',
+        'session_id',
     ];
 
     public function orderItems()

@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureIsAdmin::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
 
         // SEC-10: Add security headers to all web responses

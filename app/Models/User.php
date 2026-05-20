@@ -13,6 +13,55 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    // All available permission keys
+    const PERMISSIONS = [
+        'dashboard'          => 'Dashboard',
+        'analytics'          => 'Analytics',
+        'orders'             => 'Orders',
+        'orders.delete'      => 'Delete Orders',
+        'orders.bulk_upload'  => 'Bulk Upload Orders',
+        'products'           => 'Products',
+        'categories'         => 'Categories',
+        'customers'          => 'Customers CRM',
+        'pathao'             => 'Pathao Manager',
+        'accounting'         => 'Accounting',
+        'purchases'          => 'Purchases',
+        'expenses'           => 'Expenses',
+        'pos'                => 'Point of Sale',
+        'settings'           => 'System Settings',
+        'users'              => 'Staff Management',
+    ];
+
+    // Permission groups for UI display
+    const PERMISSION_GROUPS = [
+        'Overview' => ['dashboard', 'analytics'],
+        'E-Commerce' => ['orders', 'orders.delete', 'orders.bulk_upload', 'products', 'categories', 'customers'],
+        'Fulfillment' => ['pathao'],
+        'Finance' => ['accounting', 'purchases', 'expenses', 'pos'],
+        'Administration' => ['settings', 'users'],
+    ];
+
+    // Default permissions per role preset
+    const ROLE_PRESETS = [
+        'admin' => [
+            'dashboard', 'analytics', 'orders', 'orders.delete', 'orders.bulk_upload',
+            'products', 'categories', 'customers', 'pathao', 'accounting',
+            'purchases', 'expenses', 'pos', 'settings', 'users',
+        ],
+        'manager' => [
+            'dashboard', 'orders', 'orders.delete', 'orders.bulk_upload',
+            'products', 'categories', 'customers', 'pathao', 'accounting',
+            'purchases', 'expenses', 'pos',
+        ],
+        'operational_staff' => [
+            'dashboard', 'orders', 'orders.bulk_upload',
+            'products', 'categories', 'customers', 'pathao', 'pos',
+        ],
+        'accountant' => [
+            'dashboard', 'accounting', 'purchases', 'expenses',
+        ],
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -23,6 +72,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'permissions',
     ];
 
     /**
@@ -45,6 +95,29 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'permissions' => 'array',
         ];
+    }
+
+    /**
+     * Check if user has a specific permission.
+     */
+    public function hasPermission(string $key): bool
+    {
+        // Admin role always has all permissions as a safeguard
+        if ($this->role === 'admin') {
+            return true;
+        }
+
+        $perms = $this->permissions ?? [];
+        return in_array($key, $perms);
+    }
+
+    /**
+     * Get default permissions for a given role.
+     */
+    public static function getDefaultPermissions(string $role): array
+    {
+        return self::ROLE_PRESETS[$role] ?? self::ROLE_PRESETS['operational_staff'];
     }
 }

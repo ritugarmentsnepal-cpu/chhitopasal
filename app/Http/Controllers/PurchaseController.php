@@ -14,7 +14,7 @@ class PurchaseController extends Controller
 
     public function store(Request $request)
     {
-        if (in_array(auth()->user()->role, ['operational_staff'])) {
+        if (!auth()->user()->hasPermission('purchases')) {
             return redirect()->route('dashboard')->with('error', 'Access Denied.');
         }
 
@@ -23,7 +23,7 @@ class PurchaseController extends Controller
             'party_id' => 'nullable|exists:parties,id',
             'reference_no' => 'nullable|string',
             'date' => 'required|date',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:2000',
             'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
@@ -83,8 +83,8 @@ class PurchaseController extends Controller
 
     public function destroy(\App\Models\Purchase $purchase)
     {
-        if (auth()->user()->role !== 'admin') {
-            return redirect()->route('purchases.index')->with('error', 'Access Denied: Only Administrators can delete purchases.');
+        if (!auth()->user()->hasPermission('purchases')) {
+            return redirect()->route('purchases.index')->with('error', 'Access Denied: You do not have permission to delete purchases.');
         }
 
         DB::transaction(function () use ($purchase) {

@@ -29,7 +29,7 @@
                     <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('dashboard') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                     <span x-show="!sidebarCollapsed" x-transition.opacity>Dashboard</span>
                 </a>
-                @if(auth()->user()->role === 'admin')
+                @if(auth()->user()->hasPermission('analytics'))
                     <a href="{{ route('analytics.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('analytics.*') ? 'bg-mango/10 text-mango shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Analytics">
                         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('analytics.*') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                         <span x-show="!sidebarCollapsed" x-transition.opacity>Analytics</span>
@@ -38,11 +38,12 @@
             </div>
         </div>
 
-        @if(in_array(auth()->user()->role, ['admin', 'manager', 'operational_staff']))
+        @if(auth()->user()->hasPermission('orders') || auth()->user()->hasPermission('products') || auth()->user()->hasPermission('categories') || auth()->user()->hasPermission('customers'))
             <!-- E-Commerce Section -->
             <div>
                 <div x-show="!sidebarCollapsed" class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 px-3">E-Commerce</div>
                 <div class="space-y-1">
+                    @if(auth()->user()->hasPermission('orders'))
                     <a href="{{ route('orders.index') }}" class="flex items-center justify-between py-2.5 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('orders.*') ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg shadow-gray-900/20' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Orders">
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('orders.*') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
@@ -52,21 +53,29 @@
                             <span x-show="!sidebarCollapsed" class="bg-mango text-gray-900 py-0.5 px-2 rounded-full text-[10px] font-black">{{ $pendingOrdersCount }}</span>
                         @endif
                     </a>
+                    @endif
+                    @if(auth()->user()->hasPermission('products'))
                     <a href="{{ route('products.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('products.*') ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg shadow-gray-900/20' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Products">
                         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('products.*') ? 'text-white' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                         <span x-show="!sidebarCollapsed" x-transition.opacity>Products</span>
                     </a>
+                    @endif
+                    @if(auth()->user()->hasPermission('categories'))
                     <a href="{{ route('categories.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('categories.*') ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg shadow-gray-900/20' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Categories">
                         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('categories.*') ? 'text-white' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                         <span x-show="!sidebarCollapsed" x-transition.opacity>Categories</span>
                     </a>
+                    @endif
+                    @if(auth()->user()->hasPermission('customers'))
                     <a href="{{ route('customers.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('customers.*') ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg shadow-gray-900/20' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Customers">
                         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('customers.*') ? 'text-white' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         <span x-show="!sidebarCollapsed" x-transition.opacity>Customers</span>
                     </a>
+                    @endif
                 </div>
             </div>
 
+            @if(auth()->user()->hasPermission('pathao'))
             <!-- Fulfillment Section -->
             <div>
                 <div x-show="!sidebarCollapsed" class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 px-3">Fulfillment</div>
@@ -77,9 +86,10 @@
                     </a>
                 </div>
             </div>
+            @endif
         @endif
 
-        @if(in_array(auth()->user()->role, ['admin', 'manager', 'accountant']))
+        @if(auth()->user()->hasPermission('accounting') || auth()->user()->hasPermission('purchases') || auth()->user()->hasPermission('expenses'))
             <!-- Finance Section -->
             <div x-data="{ open: {{ request()->routeIs('accounting.*') || request()->routeIs('purchases.*') || request()->routeIs('expenses.*') ? 'true' : 'false' }} }">
                 <template x-if="!sidebarCollapsed">
@@ -95,23 +105,29 @@
                     <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 text-center">💰</div>
                 </template>
                 <div x-show="open || sidebarCollapsed" x-collapse class="space-y-1" :class="sidebarCollapsed ? '' : 'pl-11 pr-3 pt-2'">
+                    @if(auth()->user()->hasPermission('accounting'))
                     <a href="{{ route('accounting.index') }}" class="block py-2 text-sm font-bold transition-colors {{ request()->routeIs('accounting.*') ? 'text-mango' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'text-center text-[10px]' : ''" title="Accounting">
                         <span x-show="!sidebarCollapsed">Overview</span>
                         <svg x-show="sidebarCollapsed" class="w-5 h-5 mx-auto {{ request()->routeIs('accounting.*') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                     </a>
+                    @endif
+                    @if(auth()->user()->hasPermission('purchases'))
                     <a href="{{ route('purchases.index') }}" class="block py-2 text-sm font-bold transition-colors {{ request()->routeIs('purchases.*') ? 'text-mango' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'text-center' : ''" title="Purchases">
                         <span x-show="!sidebarCollapsed">Purchases</span>
-                        <svg x-show="sidebarCollapsed" class="w-5 h-5 mx-auto {{ request()->routeIs('purchases.*') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        <svg x-show="sidebarCollapsed" class="w-5 h-5 mx-auto {{ request()->routeIs('purchases.*') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     </a>
+                    @endif
+                    @if(auth()->user()->hasPermission('expenses'))
                     <a href="{{ route('expenses.index') }}" class="block py-2 text-sm font-bold transition-colors {{ request()->routeIs('expenses.*') ? 'text-mango' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'text-center' : ''" title="Expenses">
                         <span x-show="!sidebarCollapsed">Expenses</span>
                         <svg x-show="sidebarCollapsed" class="w-5 h-5 mx-auto {{ request()->routeIs('expenses.*') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </a>
+                    @endif
                 </div>
             </div>
         @endif
 
-        @if(auth()->user()->role === 'admin')
+        @if(auth()->user()->hasPermission('settings') || auth()->user()->hasPermission('users'))
             <!-- Administration -->
             <div x-data="{ open: {{ request()->routeIs('settings.*') || request()->routeIs('users.*') ? 'true' : 'false' }} }">
                 <template x-if="!sidebarCollapsed">
@@ -127,14 +143,18 @@
                     <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 text-center">⚙️</div>
                 </template>
                 <div x-show="open || sidebarCollapsed" x-collapse class="space-y-1" :class="sidebarCollapsed ? '' : 'pl-11 pr-3 pt-2'">
+                    @if(auth()->user()->hasPermission('settings'))
                     <a href="{{ route('settings.index', ['tab' => 'frontend']) }}" class="block py-2 text-sm font-bold transition-colors {{ request()->routeIs('settings.*') ? 'text-mango' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'text-center' : ''" title="Settings">
                         <span x-show="!sidebarCollapsed">General Settings</span>
                         <svg x-show="sidebarCollapsed" class="w-5 h-5 mx-auto {{ request()->routeIs('settings.*') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     </a>
+                    @endif
+                    @if(auth()->user()->hasPermission('users'))
                     <a href="{{ route('users.index') }}" class="block py-2 text-sm font-bold transition-colors {{ request()->routeIs('users.*') ? 'text-mango' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'text-center' : ''" title="Staff & Roles">
                         <span x-show="!sidebarCollapsed">Staff & Roles</span>
                         <svg x-show="sidebarCollapsed" class="w-5 h-5 mx-auto {{ request()->routeIs('users.*') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     </a>
+                    @endif
                 </div>
             </div>
         @endif

@@ -16,8 +16,8 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
-            return redirect()->route('categories.index')->with('error', 'Access Denied: Only Administrators can create categories.');
+        if (!auth()->user()->hasPermission('categories')) {
+            return redirect()->route('categories.index')->with('error', 'Access Denied: You do not have permission to create categories.');
         }
 
         $request->validate(['name' => 'required|string|max:255']);
@@ -48,8 +48,8 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        if (auth()->user()->role !== 'admin') {
-            return redirect()->route('categories.index')->with('error', 'Access Denied: Only Administrators can edit categories.');
+        if (!auth()->user()->hasPermission('categories')) {
+            return redirect()->route('categories.index')->with('error', 'Access Denied: You do not have permission to edit categories.');
         }
 
         $request->validate(['name' => 'required|string|max:255']);
@@ -80,8 +80,8 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        if (auth()->user()->role !== 'admin') {
-            return redirect()->route('categories.index')->with('error', 'Access Denied: Only Administrators can delete categories.');
+        if (!auth()->user()->hasPermission('categories')) {
+            return redirect()->route('categories.index')->with('error', 'Access Denied: You do not have permission to delete categories.');
         }
 
         try {
@@ -91,7 +91,7 @@ class CategoryController extends Controller
             \Log::info('Category deleted successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete category: ' . $e->getMessage());
-            return back()->with('error', 'Cannot delete category: ' . $e->getMessage());
+            return back()->with('error', 'Cannot delete category. It may be linked to existing products.');
         }
         return back()->with('success', 'Category deleted.');
     }

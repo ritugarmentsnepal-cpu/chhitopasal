@@ -100,8 +100,9 @@ class SettingController extends Controller
                 ->with('success', 'Connection successful! API is working perfectly.');
                 
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Pathao connection test failed', ['error' => $e->getMessage()]);
             return redirect()->route('settings.index', ['tab' => 'integrations'])
-                ->with('error', 'Connection failed: ' . $e->getMessage());
+                ->with('error', 'Connection failed. Please check your credentials and try again.');
         }
     }
 
@@ -120,6 +121,16 @@ class SettingController extends Controller
 
         // Preserve current admin user
         $adminUser = auth()->user();
+
+        // MED-10: Log factory reset to file BEFORE executing (DB logs will be wiped)
+        \Illuminate\Support\Facades\Log::channel('single')->critical('FACTORY RESET INITIATED', [
+            'user_id' => $adminUser->id,
+            'user_name' => $adminUser->name,
+            'user_email' => $adminUser->email,
+            'ip' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'timestamp' => now()->toIso8601String(),
+        ]);
 
         \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0');
 

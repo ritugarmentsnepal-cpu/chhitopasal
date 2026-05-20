@@ -57,7 +57,7 @@ class PathaoManagerController extends Controller
             'account_id' => 'required|exists:accounts,id',
             'date' => 'required|date',
             'reference' => 'nullable|string',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string|max:2000'
         ]);
 
         $pathaoParty = Party::where('type', 'pathao')->firstOrFail();

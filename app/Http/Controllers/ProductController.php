@@ -20,14 +20,13 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        // SEC-MED-05: Only admins can create products
-        if (auth()->user()->role !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'Access Denied: Only Administrators can create products.');
+        if (!auth()->user()->hasPermission('products')) {
+            return redirect()->route('products.index')->with('error', 'Access Denied: You do not have permission to create products.');
         }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'required|string|max:10000',
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
@@ -35,7 +34,7 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'image' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:2048', // Thumbnail
             'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
-            'video' => 'nullable|mimes:mp4,webm,mov', // Max 10MB video
+            'video' => 'nullable|mimes:mp4,webm,mov|max:10240', // Max 10MB video
             'bundles' => 'nullable|array',
             'bundles.*.qty' => 'required_with:bundles|integer|min:2',
             'bundles.*.price' => 'required_with:bundles|numeric|min:0',
@@ -79,13 +78,13 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        if (auth()->user()->role !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'Access Denied: Only Administrators can edit products.');
+        if (!auth()->user()->hasPermission('products')) {
+            return redirect()->route('products.index')->with('error', 'Access Denied: You do not have permission to edit products.');
         }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'required|string|max:10000',
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
@@ -93,7 +92,7 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
             'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
-            'video' => 'nullable|mimes:mp4,webm,mov',
+            'video' => 'nullable|mimes:mp4,webm,mov|max:10240',
             'bundles' => 'nullable|array',
             'bundles.*.qty' => 'required_with:bundles|integer|min:2',
             'bundles.*.price' => 'required_with:bundles|numeric|min:0',
@@ -149,8 +148,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if (auth()->user()->role !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'Access Denied: Only Administrators can delete products.');
+        if (!auth()->user()->hasPermission('products')) {
+            return redirect()->route('products.index')->with('error', 'Access Denied: You do not have permission to delete products.');
         }
 
         try {

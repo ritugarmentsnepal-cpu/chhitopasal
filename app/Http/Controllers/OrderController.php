@@ -490,7 +490,7 @@ class OrderController extends Controller
     public function bulkManualStore(Request $request)
     {
         $validated = $request->validate([
-            'orders' => 'required|array|min:1',
+            'orders' => 'required|array|min:1|max:100',
             'orders.*.customer_name' => 'required|string|max:255',
             'orders.*.customer_phone' => 'required|string|max:20',
             'orders.*.address' => 'required|string|max:255',
@@ -569,13 +569,13 @@ class OrderController extends Controller
 
     public function bulkDelete(Request $request)
     {
-        // SEC-HIGH-08: Only admins can bulk delete orders
-        if (auth()->user()->role !== 'admin') {
-            return response()->json(['message' => 'Access Denied: Only administrators can delete orders.'], 403);
+        // SEC-HIGH-08: Only users with orders.delete permission can bulk delete
+        if (!auth()->user()->hasPermission('orders.delete')) {
+            return response()->json(['message' => 'Access Denied: You do not have permission to delete orders.'], 403);
         }
 
         $validated = $request->validate([
-            'order_ids' => 'required|array|min:1',
+            'order_ids' => 'required|array|min:1|max:500',
             'order_ids.*' => 'integer|exists:orders,id',
         ]);
 
@@ -611,7 +611,7 @@ class OrderController extends Controller
     public function bulkShip(Request $request, PathaoService $pathao)
     {
         $validated = $request->validate([
-            'order_ids' => 'required|array|min:1',
+            'order_ids' => 'required|array|min:1|max:500',
             'order_ids.*' => 'integer|exists:orders,id',
         ]);
 
@@ -680,7 +680,7 @@ class OrderController extends Controller
     public function bulkStatusUpdate(Request $request)
     {
         $validated = $request->validate([
-            'order_ids' => 'required|array|min:1',
+            'order_ids' => 'required|array|min:1|max:500',
             'order_ids.*' => 'integer|exists:orders,id',
             'status' => 'required|string|in:confirmed,rejected,failed',
         ]);
@@ -829,15 +829,22 @@ class OrderController extends Controller
 
     public function masterSyncPathao()
     {
+        // MED-05: Cooldown lock to prevent Pathao API flooding
+        $lockKey = 'pathao_master_sync_lock';
+        if (\Illuminate\Support\Facades\Cache::has($lockKey)) {
+            return redirect()->back()->with('error', 'Please wait at least 5 minutes between sync operations.');
+        }
+        \Illuminate\Support\Facades\Cache::put($lockKey, true, now()->addMinutes(5));
+
         \Illuminate\Support\Facades\Artisan::call('pathao:sync');
         return redirect()->back()->with('success', 'Master sync completed. ' . \Illuminate\Support\Facades\Artisan::output());
     }
 
     public function updateAmount(Request $request, Order $order)
     {
-        // AUTH-02: Only admin/manager can modify order amounts
-        if (!in_array(auth()->user()->role, ['admin', 'manager'])) {
-            return back()->with('error', 'Access Denied: Only admins and managers can modify order amounts.');
+        // AUTH-02: Only users with orders permission and delete sub-permission can modify amounts
+        if (!auth()->user()->hasPermission('orders')) {
+            return back()->with('error', 'Access Denied: You do not have permission to modify order amounts.');
         }
 
         // FIN-MED-01: Block amount changes on orders with recorded financial transactions
@@ -869,7 +876,7 @@ class OrderController extends Controller
     public function fullUpdate(Request $request, Order $order)
     {
         // Admin can edit any order, others can only edit pending or confirmed
-        if (!in_array($order->status, ['pending', 'confirmed']) && auth()->user()->role !== 'admin') {
+        if (!in_array($order->status, ['pending', 'confirmed']) && !auth()->user()->hasPermission('orders.delete')) {
             return back()->with('error', 'Only pending or confirmed orders can be edited by staff.');
         }
 
@@ -888,7 +895,7 @@ class OrderController extends Controller
             'items.*.total_price' => 'required|numeric|min:0',
             'status' => 'nullable|string|in:pending,confirmed,shipped,delivered,failed,rejected,return_delivered',
             'confirm_order' => 'nullable|boolean',
-            'remarks' => 'nullable|string',
+            'remarks' => 'nullable|string|max:1000',
         ]);
 
         // ORD-03: Wrap entire edit in a transaction for atomicity
@@ -1089,7 +1096,7 @@ class OrderController extends Controller
             'payment_method' => 'required|in:cod,paid,partial',
             'amount' => 'required_if:payment_method,paid,partial|numeric|min:0',
             'account_id' => 'required_if:payment_method,paid,partial|exists:accounts,id',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string|max:2000'
         ]);
 
         if ($validated['payment_method'] === 'cod') {
