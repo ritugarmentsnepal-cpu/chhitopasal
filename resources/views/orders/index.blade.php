@@ -1333,12 +1333,52 @@
                     this.dragFillEndRow = null;
                 },
 
+                parseTSV(text) {
+                    let rows = [];
+                    let currentRow = [];
+                    let currentCell = '';
+                    let inQuotes = false;
+                    
+                    for (let i = 0; i < text.length; i++) {
+                        const char = text[i];
+                        const nextChar = text[i + 1];
+                        
+                        if (char === '"') {
+                            if (inQuotes && nextChar === '"') {
+                                currentCell += '"';
+                                i++; // skip escaped quote
+                            } else {
+                                inQuotes = !inQuotes;
+                            }
+                        } else if (char === '\t' && !inQuotes) {
+                            currentRow.push(currentCell);
+                            currentCell = '';
+                        } else if ((char === '\r' || char === '\n') && !inQuotes) {
+                            if (char === '\r' && nextChar === '\n') i++; 
+                            currentRow.push(currentCell);
+                            rows.push(currentRow);
+                            currentRow = [];
+                            currentCell = '';
+                        } else {
+                            currentCell += char;
+                        }
+                    }
+                    if (currentCell !== '' || currentRow.length > 0) {
+                        currentRow.push(currentCell);
+                        rows.push(currentRow);
+                    }
+                    if (rows.length > 0 && rows[rows.length - 1].length === 1 && rows[rows.length - 1][0] === '') {
+                        rows.pop();
+                    }
+                    return rows;
+                },
+
                 handlePaste(e, startRowIdx, startColIdx) {
                     const clipboardData = e.clipboardData || window.clipboardData;
                     const pastedText = clipboardData.getData('text');
                     if (!pastedText) return;
 
-                    const rowsData = pastedText.replace(/\r?\n$/, '').split(/\r?\n/).map(r => r.split('\t'));
+                    const rowsData = this.parseTSV(pastedText);
 
                     // If it's a 1x1 paste, let the browser handle it natively so we don't break simple copy/paste
                     if (rowsData.length === 1 && rowsData[0].length === 1) {
@@ -1385,14 +1425,14 @@
                         if (select) {
                             Array.from(select.options).forEach(opt => {
                                 if (opt.value) {
-                                    this._productOptionsTextMap.push({ text: opt.text.toLowerCase(), value: opt.value });
+                                    this._productOptionsTextMap.push({ text: opt.text.trim().toLowerCase(), value: opt.value });
                                 }
                             });
                         }
                     }
                     if (!text) return '';
                     if (!this._productOptionsTextMap) return text;
-                    const search = text.toLowerCase();
+                    const search = text.trim().toLowerCase();
                     const exact = this._productOptionsTextMap.find(o => o.text === search);
                     if (exact) return exact.value;
                     const partial = this._productOptionsTextMap.find(o => o.text.includes(search) || search.includes(o.text));
@@ -1406,13 +1446,16 @@
                     this.bulkRows.forEach(r => {
                         r._error = false;
                         if (!r.customer_name && !r.customer_phone && !r.address && !r.product_selection) return; // skip empty rows
-                        if (!r.customer_name || !r.customer_phone || !r.address || !r.product_id) {
+                        
+                        const isValidProduct = r.product_id && !isNaN(r.product_id);
+                        
+                        if (!r.customer_name || !r.customer_phone || !r.address || !isValidProduct) {
                             r._error = true;
                             hasError = true;
                         }
                     });
 
-                    const validRows = this.bulkRows.filter(r => r.customer_name && r.customer_phone && r.address && r.product_id);
+                    const validRows = this.bulkRows.filter(r => r.customer_name && r.customer_phone && r.address && r.product_id && !isNaN(r.product_id));
                     if (validRows.length === 0) {
                         alert('Please fill in at least one complete row.');
                         return;
