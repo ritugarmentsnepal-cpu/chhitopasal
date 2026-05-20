@@ -48,15 +48,15 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <div class="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 flex flex-col justify-between">
                     <p class="text-sm font-bold text-gray-500 mb-2">Pending Orders</p>
-                    <p class="text-3xl font-black text-gray-900">{{ $pendingOrders->count() }}</p>
+                    <p class="text-3xl font-black text-gray-900">{{ $pendingOrdersCount }}</p>
                 </div>
                 <div class="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 flex flex-col justify-between">
                     <p class="text-sm font-bold text-gray-500 mb-2">Ready to Ship</p>
-                    <p class="text-3xl font-black text-blue-500">{{ $confirmedOrders->count() }}</p>
+                    <p class="text-3xl font-black text-blue-500">{{ $confirmedOrdersCount }}</p>
                 </div>
                 <div class="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 flex flex-col justify-between">
                     <p class="text-sm font-bold text-gray-500 mb-2">Shipped</p>
-                    <p class="text-3xl font-black text-green-500">{{ $shippedOrders->count() }}</p>
+                    <p class="text-3xl font-black text-green-500">{{ $shippedOrdersCount }}</p>
                 </div>
                 <div class="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 flex flex-col justify-between bg-gradient-to-br from-gray-900 to-gray-800 text-white">
                     <p class="text-sm font-bold text-gray-400 mb-2">Pipeline Value</p>
@@ -89,9 +89,9 @@
 
             <!-- Mobile Tabs -->
             <div class="md:hidden flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
-                <button @click="activeTab = 'pending'" :class="activeTab === 'pending' ? 'bg-mango text-gray-900' : 'bg-white text-gray-500'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap shadow-sm border border-gray-100 transition-colors">Pending ({{ $pendingOrders->count() }})</button>
-                <button @click="activeTab = 'confirmed'" :class="activeTab === 'confirmed' ? 'bg-blue-500 text-white' : 'bg-white text-gray-500'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap shadow-sm border border-gray-100 transition-colors">Confirmed ({{ $confirmedOrders->count() }})</button>
-                <button @click="activeTab = 'shipped'" :class="activeTab === 'shipped' ? 'bg-green-500 text-white' : 'bg-white text-gray-500'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap shadow-sm border border-gray-100 transition-colors">Shipped ({{ $shippedOrders->count() }})</button>
+                <button @click="activeTab = 'pending'" :class="activeTab === 'pending' ? 'bg-mango text-gray-900' : 'bg-white text-gray-500'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap shadow-sm border border-gray-100 transition-colors">Pending ({{ $pendingOrdersCount }})</button>
+                <button @click="activeTab = 'confirmed'" :class="activeTab === 'confirmed' ? 'bg-blue-500 text-white' : 'bg-white text-gray-500'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap shadow-sm border border-gray-100 transition-colors">Confirmed ({{ $confirmedOrdersCount }})</button>
+                <button @click="activeTab = 'shipped'" :class="activeTab === 'shipped' ? 'bg-green-500 text-white' : 'bg-white text-gray-500'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap shadow-sm border border-gray-100 transition-colors">Shipped ({{ $shippedOrdersCount }})</button>
             </div>
 
             <!-- Kanban Board (Desktop: Flex Row, Mobile: Single Column based on Tab) -->
@@ -104,7 +104,7 @@
                             <div class="w-3 h-3 bg-mango rounded-full animate-pulse shadow-[0_0_10px_#FFD166]"></div>
                             <h3 class="text-xl font-black text-gray-900">Pending</h3>
                         </div>
-                        <span class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-500 border border-gray-200 shadow-sm">{{ $pendingOrders->count() }}</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-500 border border-gray-200 shadow-sm">{{ $pendingOrdersCount }}</span>
                     </div>
 
                     <div class="flex flex-col gap-4">
@@ -173,6 +173,12 @@
                                 <p class="font-bold">No pending orders</p>
                             </div>
                         @endforelse
+
+                        @if($pendingOrdersCount > 20)
+                            <a href="{{ route('orders.index', ['status' => 'pending']) }}" class="block text-center text-gray-500 font-bold hover:text-mango transition-colors py-2">
+                                View all {{ $pendingOrdersCount }} pending orders &rarr;
+                            </a>
+                        @endif
                     </div>
                 </div>
 
@@ -183,7 +189,7 @@
                             <div class="w-3 h-3 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
                             <h3 class="text-xl font-black text-gray-900">Confirmed</h3>
                         </div>
-                        <span class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-500 border border-gray-200 shadow-sm">{{ $confirmedOrders->count() }}</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-500 border border-gray-200 shadow-sm">{{ $confirmedOrdersCount }}</span>
                     </div>
 
                     <div class="flex flex-col gap-4">
@@ -218,6 +224,12 @@
                                 <p class="font-bold">No confirmed orders</p>
                             </div>
                         @endforelse
+
+                        @if($confirmedOrdersCount > 20)
+                            <a href="{{ route('orders.index', ['status' => 'confirmed']) }}" class="block text-center text-gray-500 font-bold hover:text-blue-500 transition-colors py-2">
+                                View all {{ $confirmedOrdersCount }} confirmed orders &rarr;
+                            </a>
+                        @endif
                     </div>
                 </div>
 
@@ -228,7 +240,7 @@
                             <div class="w-3 h-3 bg-green-500 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
                             <h3 class="text-xl font-black text-gray-900">Shipped</h3>
                         </div>
-                        <span class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-500 border border-gray-200 shadow-sm">{{ $shippedOrders->count() }}</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-500 border border-gray-200 shadow-sm">{{ $shippedOrdersCount }}</span>
                     </div>
 
                     <div class="flex flex-col gap-4">
@@ -256,6 +268,12 @@
                                 <p class="font-bold">No shipped orders</p>
                             </div>
                         @endforelse
+
+                        @if($shippedOrdersCount > 20)
+                            <a href="{{ route('orders.index', ['status' => 'shipped']) }}" class="block text-center text-gray-500 font-bold hover:text-green-500 transition-colors py-2">
+                                View all {{ $shippedOrdersCount }} shipped orders &rarr;
+                            </a>
+                        @endif
                     </div>
                 </div>
 

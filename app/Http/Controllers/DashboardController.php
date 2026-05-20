@@ -15,11 +15,22 @@ class DashboardController extends Controller
         $pendingOrders = Cache::remember('dashboard_pending', 60, function () {
             return Order::with('orderItems.product')->where('status', 'pending')->latest()->take(20)->get();
         });
+        $pendingOrdersCount = Cache::remember('dashboard_pending_count', 60, function () {
+            return Order::where('status', 'pending')->count();
+        });
+
         $confirmedOrders = Cache::remember('dashboard_confirmed', 60, function () {
             return Order::with('orderItems.product')->where('status', 'confirmed')->latest()->take(20)->get();
         });
+        $confirmedOrdersCount = Cache::remember('dashboard_confirmed_count', 60, function () {
+            return Order::where('status', 'confirmed')->count();
+        });
+
         $shippedOrders = Cache::remember('dashboard_shipped', 60, function () {
             return Order::with('orderItems.product')->where('status', 'shipped')->latest()->take(20)->get();
+        });
+        $shippedOrdersCount = Cache::remember('dashboard_shipped_count', 60, function () {
+            return Order::where('status', 'shipped')->count();
         });
         
         $products = Product::select('id', 'name', 'price', 'stock', 'image_path')->get();
@@ -27,6 +38,11 @@ class DashboardController extends Controller
         $lowStockThreshold = (int) setting('low_stock_threshold', 10);
         $lowStockProducts = Product::where('stock', '<', $lowStockThreshold)->get();
 
-        return view('dashboard', compact('pendingOrders', 'confirmedOrders', 'shippedOrders', 'products', 'lowStockProducts'));
+        return view('dashboard', compact(
+            'pendingOrders', 'pendingOrdersCount', 
+            'confirmedOrders', 'confirmedOrdersCount', 
+            'shippedOrders', 'shippedOrdersCount', 
+            'products', 'lowStockProducts'
+        ));
     }
 }
