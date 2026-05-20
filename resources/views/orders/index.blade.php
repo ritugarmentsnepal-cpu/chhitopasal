@@ -377,11 +377,11 @@
         <!-- Smart Confirmation Popup Removed, logic merged into Edit Popup -->
 
         <!-- Bulk Upload Spreadsheet Modal -->
-        <div x-show="bulkModalOpen" x-cloak class="fixed inset-0 z-50 overflow-auto" aria-labelledby="bulk-modal" role="dialog" aria-modal="true">
+        <div x-show="bulkModalOpen" x-cloak @mouseup.window="endDragFill()" class="fixed inset-0 z-50 overflow-auto" aria-labelledby="bulk-modal" role="dialog" aria-modal="true">
             <div class="flex items-start justify-center min-h-screen p-2 sm:p-4">
                 <div x-show="bulkModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity" @click="closeBulkModal()"></div>
 
-                <div x-show="bulkModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="relative bg-white rounded-[1.5rem] shadow-2xl transform transition-all w-full max-w-[95vw] max-h-[90vh] flex flex-col z-10 my-4" style="overflow: hidden;">
+                <div x-show="bulkModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="relative bg-white rounded-[1.5rem] shadow-2xl transform transition-all w-full max-w-[95vw] max-h-[90vh] flex flex-col z-10 my-4 select-none" style="overflow: hidden;">
                     
                     <!-- Header -->
                     <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50/40 flex justify-between items-center flex-shrink-0">
@@ -420,20 +420,24 @@
                                 <template x-for="(row, idx) in bulkRows" :key="idx">
                                     <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors group" :class="row._error ? 'bg-red-50' : ''">
                                         <td class="px-2 py-1 text-center text-xs font-bold text-gray-400 border-r border-gray-100 bg-gray-50" x-text="idx + 1"></td>
-                                        <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="text" x-model="row.customer_name" @paste="handlePaste($event, idx, 0)" placeholder="Full Name" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                            <input type="text" x-model="row.customer_name" :data-row="idx" :data-col="0" @focus="activeCell = { row: idx, col: 0 }" @keydown.enter.prevent="moveFocusDown(idx, 0)" @paste="handlePaste($event, idx, 0)" @mouseenter="updateDragFill(idx, 0)" placeholder="Full Name" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 0 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
+                                            <div x-show="activeCell.row === idx && activeCell.col === 0" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 0, 'customer_name')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="text" x-model="row.customer_phone" @paste="handlePaste($event, idx, 1)" placeholder="98XXXXXXXX" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                            <input type="text" x-model="row.customer_phone" :data-row="idx" :data-col="1" @focus="activeCell = { row: idx, col: 1 }" @keydown.enter.prevent="moveFocusDown(idx, 1)" @paste="handlePaste($event, idx, 1)" @mouseenter="updateDragFill(idx, 1)" placeholder="98XXXXXXXX" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 1 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
+                                            <div x-show="activeCell.row === idx && activeCell.col === 1" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 1, 'customer_phone')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="text" x-model="row.address" @paste="handlePaste($event, idx, 2)" placeholder="Street address" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                            <input type="text" x-model="row.address" :data-row="idx" :data-col="2" @focus="activeCell = { row: idx, col: 2 }" @keydown.enter.prevent="moveFocusDown(idx, 2)" @paste="handlePaste($event, idx, 2)" @mouseenter="updateDragFill(idx, 2)" placeholder="Street address" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 2 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
+                                            <div x-show="activeCell.row === idx && activeCell.col === 2" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 2, 'address')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="text" x-model="row.city" @paste="handlePaste($event, idx, 3)" placeholder="City" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                            <input type="text" x-model="row.city" :data-row="idx" :data-col="3" @focus="activeCell = { row: idx, col: 3 }" @keydown.enter.prevent="moveFocusDown(idx, 3)" @paste="handlePaste($event, idx, 3)" @mouseenter="updateDragFill(idx, 3)" placeholder="City" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 3 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
+                                            <div x-show="activeCell.row === idx && activeCell.col === 3" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 3, 'city')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100">
-                                            <select x-model="row.product_selection" @change="onBulkProductChange(idx)" @paste="handlePaste($event, idx, 4)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-1 py-1.5 text-sm font-medium transition cursor-pointer">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                            <select x-model="row.product_selection" :data-row="idx" :data-col="4" @focus="activeCell = { row: idx, col: 4 }" @keydown.enter.prevent="moveFocusDown(idx, 4)" @change="onBulkProductChange(idx)" @paste="handlePaste($event, idx, 4)" @mouseenter="updateDragFill(idx, 4)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-1 py-1.5 text-sm font-medium transition cursor-pointer" :class="(isDraggingFill && dragFillStart?.col === 4 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
                                                 <option value="">-- Select Product --</option>
                                                 @foreach($products as $product)
                                                     <option value="{{ $product->id }}:1:{{ $product->price }}">{{ $product->name }} (Rs.{{ number_format($product->price) }})</option>
@@ -444,12 +448,15 @@
                                                     @endif
                                                 @endforeach
                                             </select>
+                                            <div x-show="activeCell.row === idx && activeCell.col === 4" class="absolute bottom-2 right-4 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 4, 'product_selection')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="number" x-model.number="row.quantity" min="1" @input="onBulkQtyChange(idx)" @paste="handlePaste($event, idx, 5)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                            <input type="number" x-model.number="row.quantity" :data-row="idx" :data-col="5" @focus="activeCell = { row: idx, col: 5 }" @keydown.enter.prevent="moveFocusDown(idx, 5)" min="1" @input="onBulkQtyChange(idx)" @paste="handlePaste($event, idx, 5)" @mouseenter="updateDragFill(idx, 5)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 5 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
+                                            <div x-show="activeCell.row === idx && activeCell.col === 5" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 5, 'quantity')"></div>
                                         </td>
-                                        <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="number" x-model.number="row.amount" step="0.01" min="0" @paste="handlePaste($event, idx, 6)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition">
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group">
+                                            <input type="number" x-model.number="row.amount" :data-row="idx" :data-col="6" @focus="activeCell = { row: idx, col: 6 }" @keydown.enter.prevent="moveFocusDown(idx, 6)" step="0.01" min="0" @paste="handlePaste($event, idx, 6)" @mouseenter="updateDragFill(idx, 6)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 6 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
+                                            <div x-show="activeCell.row === idx && activeCell.col === 6" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 6, 'amount')"></div>
                                         </td>
                                         <td class="px-1 py-1 text-center">
                                             <button type="button" @click="removeBulkRow(idx)" class="p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition opacity-0 group-hover:opacity-100" :class="bulkRows.length <= 1 ? 'invisible' : ''">
@@ -1006,6 +1013,12 @@
                 bulkProcessing: false, // UX-05: Loading state for bulk ship/delete
                 bulkRows: [],
 
+                // Google Sheets Features State
+                activeCell: { row: null, col: null },
+                isDraggingFill: false,
+                dragFillStart: null,
+                dragFillEndRow: null,
+
                 async init() {
                     // Pre-fetch cities when dashboard loads
                     try {
@@ -1266,6 +1279,58 @@
 
                 bulkFilledRows() {
                     return this.bulkRows.filter(r => r.customer_name && r.customer_phone && r.address && r.product_id).length;
+                },
+
+                moveFocusDown(rowIdx, colIdx) {
+                    const nextRowIdx = rowIdx + 1;
+                    if (nextRowIdx >= this.bulkRows.length) {
+                        this.addBulkRow();
+                    }
+                    this.$nextTick(() => {
+                        const nextInput = document.querySelector(`[data-row="${nextRowIdx}"][data-col="${colIdx}"]`);
+                        if (nextInput) {
+                            nextInput.focus();
+                            if (nextInput.tagName === 'INPUT' && nextInput.type !== 'number') {
+                                try { nextInput.select(); } catch(e) {}
+                            }
+                        }
+                    });
+                },
+
+                startDragFill(rowIdx, colIdx, field) {
+                    this.isDraggingFill = true;
+                    this.dragFillStart = { row: rowIdx, col: colIdx, field: field };
+                    this.dragFillEndRow = rowIdx;
+                },
+
+                updateDragFill(rowIdx, colIdx) {
+                    if (this.isDraggingFill && this.dragFillStart && colIdx === this.dragFillStart.col) {
+                        this.dragFillEndRow = rowIdx;
+                    }
+                },
+
+                endDragFill() {
+                    if (!this.isDraggingFill) return;
+                    this.isDraggingFill = false;
+                    
+                    if (!this.dragFillStart || this.dragFillEndRow === null) return;
+
+                    const startRow = Math.min(this.dragFillStart.row, this.dragFillEndRow);
+                    const endRow = Math.max(this.dragFillStart.row, this.dragFillEndRow);
+                    
+                    if (startRow === endRow) return;
+
+                    const field = this.dragFillStart.field;
+                    const valueToCopy = this.bulkRows[this.dragFillStart.row][field];
+
+                    for (let i = startRow; i <= endRow; i++) {
+                        if (i === this.dragFillStart.row) continue;
+                        this.bulkRows[i][field] = valueToCopy;
+                        if (field === 'quantity') this.onBulkQtyChange(i);
+                        if (field === 'product_selection') this.onBulkProductChange(i);
+                    }
+                    this.dragFillStart = null;
+                    this.dragFillEndRow = null;
                 },
 
                 handlePaste(e, startRowIdx, startColIdx) {
