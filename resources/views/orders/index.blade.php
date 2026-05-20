@@ -534,7 +534,7 @@
 
                 <div x-show="editModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
                     
-                    <form :action="`{{ url('orders') }}/${selectedEditOrder?.id}/full-update`" method="POST">
+                    <form :action="`{{ url('orders') }}/${selectedEditOrder?.id}/full-update`" method="POST" @submit="validateEditForm">
                         @csrf
                         @method('PUT')
                         
@@ -570,7 +570,7 @@
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-xs font-bold text-blue-800 mb-1">Pathao City</label>
-                                        <select name="pathao_city_id" x-model="editFormData.pathao_city_id" @change="fetchEditZones()" class="w-full rounded-xl border-blue-200 bg-white py-2 text-sm focus:ring-blue-500" :required="selectedEditOrder?.status === 'pending'">
+                                        <select name="pathao_city_id" x-model="editFormData.pathao_city_id" @change="fetchEditZones()" class="w-full rounded-xl border-blue-200 bg-white py-2 text-sm focus:ring-blue-500">
                                             <option value="">Select City</option>
                                             <template x-for="city in cities" :key="city.city_id">
                                                 <option :value="city.city_id" x-text="city.city_name"></option>
@@ -579,7 +579,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-blue-800 mb-1">Pathao Zone</label>
-                                        <select name="pathao_zone_id" x-model="editFormData.pathao_zone_id" class="w-full rounded-xl border-blue-200 bg-white py-2 text-sm focus:ring-blue-500" :disabled="!editZones.length" :required="selectedEditOrder?.status === 'pending'">
+                                        <select name="pathao_zone_id" x-model="editFormData.pathao_zone_id" class="w-full rounded-xl border-blue-200 bg-white py-2 text-sm focus:ring-blue-500" :disabled="!editZones.length">
                                             <option value="">Select Zone</option>
                                             <template x-for="zone in editZones" :key="zone.zone_id">
                                                 <option :value="zone.zone_id" x-text="zone.zone_name"></option>
@@ -680,10 +680,10 @@
                             <button type="button" @click="closeEditModal()" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
                             
                             <template x-if="selectedEditOrder?.status === 'pending'">
-                                <button type="submit" name="confirm_order" value="1" class="px-5 py-2.5 bg-mango text-gray-900 font-bold rounded-xl shadow-lg hover:bg-[#FFC033] transition active:scale-95">Save & Confirm Order</button>
+                                <button type="submit" name="confirm_order" value="1" class="px-5 py-2.5 bg-mango text-gray-900 font-bold rounded-xl shadow-lg hover:bg-[#FFC033] transition active:scale-95" @click="isConfirming = true">Save & Confirm Order</button>
                             </template>
                             
-                            <button type="submit" class="px-5 py-2.5 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 transition active:scale-95" x-text="selectedEditOrder?.status === 'pending' ? 'Save Draft' : 'Save Changes'"></button>
+                            <button type="submit" class="px-5 py-2.5 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 transition active:scale-95" x-text="selectedEditOrder?.status === 'pending' ? 'Save Draft' : 'Save Changes'" @click="isConfirming = false"></button>
                         </div>
                     </form>
                 </div>
@@ -993,6 +993,7 @@
 
                 editModalOpen: false,
                 selectedEditOrder: null,
+                isConfirming: false,
                 editFormData: {
                     customer_name: '',
                     customer_phone: '',
@@ -1123,7 +1124,19 @@
 
                 closeEditModal() {
                     this.editModalOpen = false;
-                    setTimeout(() => { this.selectedEditOrder = null; }, 300);
+                    setTimeout(() => { this.selectedEditOrder = null; this.isConfirming = false; }, 300);
+                },
+
+                validateEditForm(e) {
+                    const isStatusConfirmed = this.editFormData.status === 'confirmed' || this.editFormData.status === 'shipped' || this.editFormData.status === 'delivered';
+                    
+                    if (this.isConfirming || isStatusConfirmed) {
+                        if (!this.editFormData.pathao_city_id || !this.editFormData.pathao_zone_id) {
+                            e.preventDefault();
+                            alert('Pathao City and Zone are required when confirming or shipping an order.');
+                            return false;
+                        }
+                    }
                 },
 
                 openPaymentModal(order) {
