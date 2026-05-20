@@ -421,19 +421,19 @@
                                     <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors group" :class="row._error ? 'bg-red-50' : ''">
                                         <td class="px-2 py-1 text-center text-xs font-bold text-gray-400 border-r border-gray-100 bg-gray-50" x-text="idx + 1"></td>
                                         <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="text" x-model="row.customer_name" placeholder="Full Name" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
+                                            <input type="text" x-model="row.customer_name" @paste="handlePaste($event, idx, 0)" placeholder="Full Name" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
                                         </td>
                                         <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="text" x-model="row.customer_phone" placeholder="98XXXXXXXX" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
+                                            <input type="text" x-model="row.customer_phone" @paste="handlePaste($event, idx, 1)" placeholder="98XXXXXXXX" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
                                         </td>
                                         <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="text" x-model="row.address" placeholder="Street address" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
+                                            <input type="text" x-model="row.address" @paste="handlePaste($event, idx, 2)" placeholder="Street address" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
                                         </td>
                                         <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="text" x-model="row.city" placeholder="City" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
+                                            <input type="text" x-model="row.city" @paste="handlePaste($event, idx, 3)" placeholder="City" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition">
                                         </td>
                                         <td class="px-1 py-1 border-r border-gray-100">
-                                            <select x-model="row.product_selection" @change="onBulkProductChange(idx)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-1 py-1.5 text-sm font-medium transition cursor-pointer">
+                                            <select x-model="row.product_selection" @change="onBulkProductChange(idx)" @paste="handlePaste($event, idx, 4)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-1 py-1.5 text-sm font-medium transition cursor-pointer">
                                                 <option value="">-- Select Product --</option>
                                                 @foreach($products as $product)
                                                     <option value="{{ $product->id }}:1:{{ $product->price }}">{{ $product->name }} (Rs.{{ number_format($product->price) }})</option>
@@ -446,10 +446,10 @@
                                             </select>
                                         </td>
                                         <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="number" x-model.number="row.quantity" min="1" @input="onBulkQtyChange(idx)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition">
+                                            <input type="number" x-model.number="row.quantity" min="1" @input="onBulkQtyChange(idx)" @paste="handlePaste($event, idx, 5)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition">
                                         </td>
                                         <td class="px-1 py-1 border-r border-gray-100">
-                                            <input type="number" x-model.number="row.amount" step="0.01" min="0" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition">
+                                            <input type="number" x-model.number="row.amount" step="0.01" min="0" @paste="handlePaste($event, idx, 6)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition">
                                         </td>
                                         <td class="px-1 py-1 text-center">
                                             <button type="button" @click="removeBulkRow(idx)" class="p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition opacity-0 group-hover:opacity-100" :class="bulkRows.length <= 1 ? 'invisible' : ''">
@@ -1266,6 +1266,73 @@
 
                 bulkFilledRows() {
                     return this.bulkRows.filter(r => r.customer_name && r.customer_phone && r.address && r.product_id).length;
+                },
+
+                handlePaste(e, startRowIdx, startColIdx) {
+                    const clipboardData = e.clipboardData || window.clipboardData;
+                    const pastedText = clipboardData.getData('text');
+                    if (!pastedText) return;
+
+                    const rowsData = pastedText.replace(/\r?\n$/, '').split(/\r?\n/).map(r => r.split('\t'));
+
+                    // If it's a 1x1 paste, let the browser handle it natively so we don't break simple copy/paste
+                    if (rowsData.length === 1 && rowsData[0].length === 1) {
+                        return;
+                    }
+
+                    e.preventDefault();
+
+                    const colMap = ['customer_name', 'customer_phone', 'address', 'city', 'product_selection', 'quantity', 'amount'];
+
+                    const neededRows = startRowIdx + rowsData.length;
+                    while (this.bulkRows.length < neededRows) {
+                        this.bulkRows.push(this.emptyBulkRow());
+                    }
+
+                    rowsData.forEach((cells, rOffset) => {
+                        const targetRowIdx = startRowIdx + rOffset;
+                        cells.forEach((cellText, cOffset) => {
+                            const targetColIdx = startColIdx + cOffset;
+                            if (targetColIdx < colMap.length) {
+                                const field = colMap[targetColIdx];
+                                let text = cellText.trim();
+                                
+                                if (field === 'quantity' || field === 'amount') {
+                                    this.bulkRows[targetRowIdx][field] = Number(text) || (field === 'quantity' ? 1 : 0);
+                                    if (field === 'quantity') this.onBulkQtyChange(targetRowIdx);
+                                } else if (field === 'product_selection') {
+                                    // Attempt to match dropdown options
+                                    let matchedValue = this.findProductSelectionByText(text);
+                                    this.bulkRows[targetRowIdx][field] = matchedValue;
+                                    this.onBulkProductChange(targetRowIdx);
+                                } else {
+                                    this.bulkRows[targetRowIdx][field] = text;
+                                }
+                            }
+                        });
+                    });
+                },
+
+                findProductSelectionByText(text) {
+                    if (!this._productOptionsTextMap) {
+                        this._productOptionsTextMap = [];
+                        const select = document.querySelector('#bulk-spreadsheet select');
+                        if (select) {
+                            Array.from(select.options).forEach(opt => {
+                                if (opt.value) {
+                                    this._productOptionsTextMap.push({ text: opt.text.toLowerCase(), value: opt.value });
+                                }
+                            });
+                        }
+                    }
+                    if (!text) return '';
+                    if (!this._productOptionsTextMap) return text;
+                    const search = text.toLowerCase();
+                    const exact = this._productOptionsTextMap.find(o => o.text === search);
+                    if (exact) return exact.value;
+                    const partial = this._productOptionsTextMap.find(o => o.text.includes(search) || search.includes(o.text));
+                    if (partial) return partial.value;
+                    return text; 
                 },
 
                 async submitBulkOrders() {
