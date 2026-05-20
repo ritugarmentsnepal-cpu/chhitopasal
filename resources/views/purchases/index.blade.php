@@ -1,46 +1,48 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-black text-2xl text-gray-900 leading-tight tracking-tight">
+            <h2 class="font-black text-2xl text-gray-900 dark:text-white leading-tight tracking-tight">
                 {{ __('Purchases & Inventory Restock') }}
             </h2>
-            <button x-data="" @click="$dispatch('open-modal', 'add-purchase')" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-5 rounded-xl transition-all active:scale-95 shadow-sm flex items-center gap-2">
+            <button x-data="" @click="$dispatch('open-modal', 'add-purchase')" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-5 rounded-xl transition-all active:scale-95 shadow-[0_8px_20px_rgb(17,24,39,0.2)] flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                 Record Purchase Bill
             </button>
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="purchaseManager()">
-        <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
+    <div class="py-6" x-data="purchaseManager()">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             
             @if(session('success'))
-                <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-xl shadow-sm">
-                    <p class="font-bold text-green-800">{{ session('success') }}</p>
+                <div class="mb-6 bg-green-50 text-green-700 border border-green-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p class="font-bold">{{ session('success') }}</p>
                 </div>
             @endif
             @if(session('error'))
-                <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl shadow-sm">
-                    <p class="font-bold text-red-800">{{ session('error') }}</p>
+                <div class="mb-6 bg-red-50 text-red-700 border border-red-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p class="font-bold">{{ session('error') }}</p>
                 </div>
             @endif
 
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50/50">
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider">Date</th>
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider">Supplier</th>
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider">Ref No.</th>
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider">Total Amount</th>
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider">Items Restocked</th>
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                            <tr class="bg-white">
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Supplier</th>
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Ref No.</th>
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Amount</th>
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Items Restocked</th>
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($purchases as $purchase)
-                                <tr class="hover:bg-gray-50/50 transition-colors">
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td class="py-4 px-6 font-bold text-gray-900">{{ \Carbon\Carbon::parse($purchase->date)->format('M d, Y') }}</td>
                                     <td class="py-4 px-6 font-bold text-gray-700">{{ $purchase->supplier_name }}</td>
                                     <td class="py-4 px-6 font-medium text-gray-500">{{ $purchase->reference_no ?? '-' }}</td>
@@ -77,20 +79,20 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Date</label>
-                            <input type="date" name="date" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Date</label>
+                            <input type="date" name="date" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Supplier Name</label>
-                            <input type="text" name="supplier_name" placeholder="e.g. Vendor XYZ" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Supplier Name</label>
+                            <input type="text" name="supplier_name" placeholder="e.g. Vendor XYZ" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Reference No. (Bill No.)</label>
-                            <input type="text" name="reference_no" placeholder="Optional" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors">
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Reference No. (Bill No.)</label>
+                            <input type="text" name="reference_no" placeholder="Optional" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors">
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Notes</label>
-                            <input type="text" name="notes" placeholder="Optional notes" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors">
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Notes</label>
+                            <input type="text" name="notes" placeholder="Optional notes" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors">
                         </div>
                     </div>
 
@@ -130,8 +132,8 @@
                             Total Bill: Rs. <span x-text="calculateTotal()"></span>
                         </div>
                         <div class="flex gap-3">
-                            <button type="button" x-on:click="$dispatch('close')" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
-                            <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm">Save & Update Stock</button>
+                            <button type="button" x-on:click="$dispatch('close')" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
+                            <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Save & Update Stock</button>
                         </div>
                     </div>
                 </form>

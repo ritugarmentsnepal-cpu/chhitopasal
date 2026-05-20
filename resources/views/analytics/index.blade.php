@@ -1,10 +1,10 @@
 <x-app-layout>
-<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
     {{-- ── PAGE HEADER ────────────────────────────────────────────────────── --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h2 class="text-3xl font-black text-gray-900 tracking-tight">Analytics</h2>
+            <h2 class="text-2xl font-black text-gray-900 tracking-tight">Analytics</h2>
             <p class="text-gray-500 font-medium mt-1">Storefront funnel, ad performance & conversions.</p>
         </div>
         <form method="GET" action="{{ route('analytics.index') }}">
@@ -20,15 +20,15 @@
     {{-- ── TAB SWITCHER ────────────────────────────────────────────────────── --}}
     <div x-data="{ activeTab: 'storefront' }">
 
-        <div class="flex gap-2 bg-gray-100 p-1.5 rounded-2xl w-fit">
+        <div class="flex gap-2 bg-white p-2 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-gray-100 w-fit">
             <button @click="activeTab = 'storefront'"
-                :class="activeTab === 'storefront' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
-                class="px-5 py-2.5 rounded-xl font-bold text-sm transition-all">
+                :class="activeTab === 'storefront' ? 'bg-mango text-gray-900 shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'"
+                class="px-5 py-2.5 rounded-full font-bold text-sm transition-all">
                 🏪 Storefront Analytics
             </button>
             <button @click="activeTab = 'ads'"
-                :class="activeTab === 'ads' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
-                class="px-5 py-2.5 rounded-xl font-bold text-sm transition-all">
+                :class="activeTab === 'ads' ? 'bg-mango text-gray-900 shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'"
+                class="px-5 py-2.5 rounded-full font-bold text-sm transition-all">
                 📣 Meta Ads Performance
             </button>
         </div>
@@ -50,12 +50,12 @@
                     $colorMap = ['blue' => 'bg-blue-50 text-blue-700', 'red' => 'bg-red-50 text-red-700', 'green' => 'bg-green-50 text-green-700', 'yellow' => 'bg-amber-50 text-amber-700'];
                 @endphp
                 @foreach($kpis as $kpi)
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <div class="bg-white dark:bg-gray-900 rounded-[24px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
                     <div class="flex items-center gap-3 mb-3">
                         <span class="text-xl">{{ $kpi['icon'] }}</span>
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ $kpi['label'] }}</span>
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ $kpi['label'] }}</span>
                     </div>
-                    <div class="text-2xl font-black text-gray-900">{{ $kpi['value'] }}</div>
+                    <div class="text-2xl font-black text-gray-900 dark:text-white">{{ $kpi['value'] }}</div>
                 </div>
                 @endforeach
             </div>
@@ -64,7 +64,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {{-- Funnel Chart --}}
-                <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
                     <h3 class="text-lg font-black text-gray-900 mb-1">Customer Funnel</h3>
                     <p class="text-xs text-gray-400 font-medium mb-5">How many visitors reach each stage</p>
                     <div class="relative h-64">
@@ -73,7 +73,7 @@
                 </div>
 
                 {{-- Funnel Step Breakdown --}}
-                <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
                     <h3 class="text-lg font-black text-gray-900 mb-1">Funnel Breakdown</h3>
                     <p class="text-xs text-gray-400 font-medium mb-5">Step-by-step drop-off analysis</p>
                     @php
@@ -98,7 +98,7 @@
                                     @if($dropOff !== null && $dropOff > 0)
                                         <span class="text-xs font-bold text-red-400">-{{ $dropOff }}%</span>
                                     @endif
-                                    <span class="text-sm font-black text-gray-900">{{ number_format($step['count']) }}</span>
+                                    <span class="text-sm font-black text-gray-900 dark:text-white">{{ number_format($step['count']) }}</span>
                                 </div>
                             </div>
                             <div class="w-full bg-gray-100 rounded-full h-2.5">
@@ -112,9 +112,9 @@
             </div>
 
             {{-- TOP PRODUCTS TABLE --}}
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 <div class="p-6 border-b border-gray-100">
-                    <h3 class="text-lg font-black text-gray-900">🔥 Top Performing Products</h3>
+                    <h3 class="text-lg font-black text-gray-900 dark:text-white">🔥 Top Performing Products</h3>
                     <p class="text-xs text-gray-400 font-medium mt-1">Most viewed products and their cart conversion</p>
                 </div>
                 @if($topViewedProducts->isEmpty())
@@ -123,17 +123,17 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
-                            <tr class="bg-gray-50/70">
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">#</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Product</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">Views</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">Add to Cart</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Price</th>
+                            <tr>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">#</th>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Product</th>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Views</th>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Add to Cart</th>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Price</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
                             @foreach($topViewedProducts as $i => $event)
-                            <tr class="hover:bg-gray-50/50 transition-colors">
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                                 <td class="px-6 py-4 text-sm font-black text-gray-400">{{ $i + 1 }}</td>
                                 <td class="px-6 py-4">
                                     <span class="font-bold text-gray-900 text-sm">
@@ -169,7 +169,7 @@
         <div x-show="activeTab === 'ads'" x-transition class="space-y-8 mt-6">
 
             {{-- ROAS CALCULATOR --}}
-            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-3xl p-6 shadow-xl"
+            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-[24px] p-6 shadow-[0_10px_40px_rgb(79,70,229,0.3)]"
                  x-data="{ adSpend: '', revenue: {{ $totalRevenue }}, orders: {{ $totalOrders }} }">
                 <div class="flex items-center gap-3 mb-6">
                     <span class="text-2xl">🧮</span>
@@ -201,13 +201,13 @@
             </div>
 
             {{-- CAMPAIGN PERFORMANCE TABLE --}}
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 <div class="p-6 border-b border-gray-100 flex items-center gap-3">
                     <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
                         <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-black text-gray-900">Campaign Performance</h3>
+                        <h3 class="text-lg font-black text-gray-900 dark:text-white">Campaign Performance</h3>
                         <p class="text-xs text-gray-400 font-medium">Tracked via UTM parameters in your Facebook Ad URLs</p>
                     </div>
                 </div>
@@ -215,7 +215,7 @@
                 @if($campaigns->isEmpty())
                 <div class="p-14 text-center">
                     <div class="text-5xl mb-4">📡</div>
-                    <h4 class="text-lg font-black text-gray-900">No Ad Traffic Detected Yet</h4>
+                    <h4 class="text-lg font-black text-gray-900 dark:text-white">No Ad Traffic Detected Yet</h4>
                     <p class="text-gray-500 mt-2 max-w-sm mx-auto text-sm font-medium">Add UTM parameters to your Facebook Ad URLs to see performance here.<br><br>
                     Example: <code class="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg text-xs font-mono">chhitopasal.com?utm_source=facebook&amp;utm_campaign=summer_sale</code></p>
                 </div>
@@ -223,19 +223,19 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
-                            <tr class="bg-gray-50/70">
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Campaign</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Source</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">Visitors</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">Add to Cart</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">Orders</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">Conv. %</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Revenue</th>
+                            <tr>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Campaign</th>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Source</th>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Visitors</th>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Add to Cart</th>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Orders</th>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Conv. %</th>
+                                <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Revenue</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
                             @foreach($campaigns as $campaign)
-                            <tr class="hover:bg-gray-50/50 transition-colors">
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                                 <td class="px-6 py-4 font-black text-gray-900 text-sm">{{ $campaign->utm_campaign }}</td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
@@ -244,7 +244,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-center font-medium text-gray-600">{{ number_format($campaign->total_clicks) }}</td>
                                 <td class="px-6 py-4 text-center font-medium text-gray-600">{{ number_format($campaign->add_to_carts) }}</td>
-                                <td class="px-6 py-4 text-center font-black text-gray-900">{{ number_format($campaign->orders) }}</td>
+                                <td class="px-6 py-4 text-center font-black text-gray-900 dark:text-white">{{ number_format($campaign->orders) }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black {{ $campaign->conversion_rate > 2 ? 'bg-green-100 text-green-800' : ($campaign->conversion_rate > 0 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500') }}">
                                         {{ $campaign->conversion_rate }}%
@@ -261,7 +261,7 @@
 
             {{-- CATEGORY BREAKDOWN CHART --}}
             @if(!$categoryBreakdown->isEmpty())
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+            <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
                 <h3 class="text-lg font-black text-gray-900 mb-1">Category Interest (Add to Cart)</h3>
                 <p class="text-xs text-gray-400 font-medium mb-5">Which categories are getting the most cart activity</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">

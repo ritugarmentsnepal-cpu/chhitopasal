@@ -7,9 +7,9 @@
     editAccountData: { id: '', name: '', type: '', account_number: '', bank_name: '', branch: '' }
 }">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <h3 class="text-2xl font-black text-gray-900">Banking & Ledger</h3>
+        <h3 class="text-2xl font-black text-gray-900 dark:text-white">Banking & Ledger</h3>
         <div class="flex flex-wrap gap-2 sm:gap-3">
-            <button @click="addAccountModal = true" class="bg-gray-900 text-white font-bold py-2 sm:py-2.5 px-3 sm:px-5 rounded-xl shadow-sm hover:bg-gray-800 transition-colors flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
+            <button @click="addAccountModal = true" class="bg-gray-900 text-white font-bold py-2 sm:py-2.5 px-3 sm:px-5 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition-colors flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Add Account
             </button>
@@ -39,7 +39,7 @@
     <!-- Account Balances -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         @foreach($data['accounts'] as $account)
-        <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative group hover:shadow-md transition-shadow">
+        <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 border border-gray-100 dark:border-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none relative group hover:shadow-md transition-shadow">
             <a href="{{ route('accounting.statement', $account->id) }}" class="block">
                 <div class="flex justify-between items-start mb-2">
                     <div class="flex items-center gap-2">
@@ -80,7 +80,7 @@
     </div>
 
     <!-- Recent Transactions -->
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <h4 class="font-black text-lg text-gray-900">Recent Transactions</h4>
         </div>
@@ -88,15 +88,15 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50/50">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Account</th>
-                        <th class="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Reference / Notes</th>
-                        <th class="px-6 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Account</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Reference / Notes</th>
+                        <th class="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @foreach($data['transactions'] as $transaction)
-                    <tr class="hover:bg-gray-50/50 transition-colors">
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="font-bold text-gray-900">{{ \Carbon\Carbon::parse($transaction->date)->format('M d, Y h:i A') }}</div>
                         </td>
@@ -132,7 +132,7 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 opacity-75" aria-hidden="true" @click="transferModal = false"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="inline-block align-bottom bg-white dark:bg-gray-900 rounded-[24px] text-left overflow-hidden shadow-[0_20px_60px_rgb(0,0,0,0.15)] transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
                 <form action="{{ route('accounting.transferFunds') }}" method="POST" class="p-8">
                     @csrf
                     <h3 class="text-2xl font-black text-blue-600 mb-6 flex items-center gap-2">
@@ -142,7 +142,7 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">From Account</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">From Account</label>
                             <select name="from_account_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-blue-500 focus:border-blue-500" required>
                                 <option value="">Select source account...</option>
                                 @foreach($data['accounts'] as $account)
@@ -151,7 +151,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">To Account</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">To Account</label>
                             <select name="to_account_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-blue-500 focus:border-blue-500" required>
                                 <option value="">Select destination account...</option>
                                 @foreach($data['accounts'] as $account)
@@ -160,18 +160,18 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Amount (Rs.)</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Amount (Rs.)</label>
                             <input type="number" name="amount" step="0.01" min="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-blue-500 focus:border-blue-500" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Notes / Description</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Notes / Description</label>
                             <input type="text" name="notes" placeholder="e.g. Cash deposit to bank" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-3 mt-8">
                         <button type="button" @click="transferModal = false" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm">Transfer</button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Transfer</button>
                     </div>
                 </form>
             </div>
@@ -183,7 +183,7 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 opacity-75" aria-hidden="true" @click="addAccountModal = false"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="inline-block align-bottom bg-white dark:bg-gray-900 rounded-[24px] text-left overflow-hidden shadow-[0_20px_60px_rgb(0,0,0,0.15)] transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
                 <form action="{{ route('accounting.storeAccount') }}" method="POST" class="p-8" x-data="{ accountType: 'cash' }">
                     @csrf
                     <h3 class="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
@@ -193,11 +193,11 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Account Name</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Account Name</label>
                             <input type="text" name="name" placeholder="e.g. Nabil Bank Checking" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Account Type</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Account Type</label>
                             <select name="type" x-model="accountType" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3" required>
                                 <option value="cash">Cash</option>
                                 <option value="bank">Bank Account</option>
@@ -208,28 +208,28 @@
                         
                         <div x-show="accountType === 'bank' || accountType === 'mobile_wallet'" class="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Bank / Provider Name</label>
-                                <input type="text" name="bank_name" placeholder="e.g. Nabil Bank, eSewa" class="w-full rounded-lg border-gray-300 py-2 text-sm">
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Bank / Provider Name</label>
+                                <input type="text" name="bank_name" placeholder="e.g. Nabil Bank, eSewa" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Account / Wallet Number</label>
-                                <input type="text" name="account_number" placeholder="e.g. 0123456789" class="w-full rounded-lg border-gray-300 py-2 text-sm">
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Account / Wallet Number</label>
+                                <input type="text" name="account_number" placeholder="e.g. 0123456789" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors">
                             </div>
                             <div x-show="accountType === 'bank'">
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Branch</label>
-                                <input type="text" name="branch" placeholder="e.g. New Baneshwor" class="w-full rounded-lg border-gray-300 py-2 text-sm">
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Branch</label>
+                                <input type="text" name="branch" placeholder="e.g. New Baneshwor" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Opening Balance (Rs.)</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Opening Balance (Rs.)</label>
                             <input type="number" name="opening_balance" step="0.01" min="0" value="0.00" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3">
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-3 mt-8">
                         <button type="button" @click="addAccountModal = false" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
-                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm">Save Account</button>
+                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Save Account</button>
                     </div>
                 </form>
             </div>
@@ -241,7 +241,7 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 opacity-75" aria-hidden="true" @click="editAccountModal = false"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="inline-block align-bottom bg-white dark:bg-gray-900 rounded-[24px] text-left overflow-hidden shadow-[0_20px_60px_rgb(0,0,0,0.15)] transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
                 <form :action="'{{ route('accounting.updateAccount', 'ACCOUNT_ID') }}'.replace('ACCOUNT_ID', editAccountData.id)" method="POST" class="p-8">
                     @csrf
                     @method('PUT')
@@ -252,11 +252,11 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Account Name</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Account Name</label>
                             <input type="text" name="name" x-model="editAccountData.name" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Account Type</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Account Type</label>
                             <select name="type" x-model="editAccountData.type" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3" required>
                                 <option value="cash">Cash</option>
                                 <option value="bank">Bank Account</option>
@@ -267,23 +267,23 @@
                         
                         <div x-show="editAccountData.type === 'bank' || editAccountData.type === 'mobile_wallet'" class="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Bank / Provider Name</label>
-                                <input type="text" name="bank_name" x-model="editAccountData.bank_name" class="w-full rounded-lg border-gray-300 py-2 text-sm">
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Bank / Provider Name</label>
+                                <input type="text" name="bank_name" x-model="editAccountData.bank_name" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Account / Wallet Number</label>
-                                <input type="text" name="account_number" x-model="editAccountData.account_number" class="w-full rounded-lg border-gray-300 py-2 text-sm">
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Account / Wallet Number</label>
+                                <input type="text" name="account_number" x-model="editAccountData.account_number" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors">
                             </div>
                             <div x-show="editAccountData.type === 'bank'">
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Branch</label>
-                                <input type="text" name="branch" x-model="editAccountData.branch" class="w-full rounded-lg border-gray-300 py-2 text-sm">
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Branch</label>
+                                <input type="text" name="branch" x-model="editAccountData.branch" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors">
                             </div>
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-3 mt-8">
                         <button type="button" @click="editAccountModal = false" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
-                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm">Update Account</button>
+                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Update Account</button>
                     </div>
                 </form>
             </div>
@@ -296,7 +296,7 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 opacity-75" aria-hidden="true" @click="paymentInModal = false"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="inline-block align-bottom bg-white dark:bg-gray-900 rounded-[24px] text-left overflow-hidden shadow-[0_20px_60px_rgb(0,0,0,0.15)] transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
                 <form action="{{ route('accounting.storeTransaction') }}" method="POST" class="p-8">
                     @csrf
                     <input type="hidden" name="type" value="in">
@@ -307,11 +307,11 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Amount (Rs.)</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Amount (Rs.)</label>
                             <input type="number" name="amount" step="0.01" min="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-green-500 focus:border-green-500" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Receive Into Account</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Receive Into Account</label>
                             <select name="account_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-green-500 focus:border-green-500" required>
                                 @foreach($data['accounts'] as $account)
                                     <option value="{{ $account->id }}">{{ $account->name }} (Bal: Rs. {{ number_format($account->balance, 2) }})</option>
@@ -319,7 +319,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">From Party (Optional)</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">From Party (Optional)</label>
                             <select name="party_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-green-500 focus:border-green-500">
                                 <option value="">None / Walk-in</option>
                                 @foreach(App\Models\Party::all() as $party)
@@ -328,14 +328,14 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Notes / Description</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Notes / Description</label>
                             <input type="text" name="notes" placeholder="e.g. Sales Collection" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-green-500 focus:border-green-500">
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-3 mt-8">
                         <button type="button" @click="paymentInModal = false" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
-                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm">Save Receipt</button>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Save Receipt</button>
                     </div>
                 </form>
             </div>
@@ -347,7 +347,7 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 opacity-75" aria-hidden="true" @click="paymentOutModal = false"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="inline-block align-bottom bg-white dark:bg-gray-900 rounded-[24px] text-left overflow-hidden shadow-[0_20px_60px_rgb(0,0,0,0.15)] transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
                 <form action="{{ route('accounting.storeTransaction') }}" method="POST" class="p-8">
                     @csrf
                     <input type="hidden" name="type" value="out">
@@ -358,11 +358,11 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Amount (Rs.)</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Amount (Rs.)</label>
                             <input type="number" name="amount" step="0.01" min="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-red-500 focus:border-red-500" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Pay From Account</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Pay From Account</label>
                             <select name="account_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-red-500 focus:border-red-500" required>
                                 @foreach($data['accounts'] as $account)
                                     <option value="{{ $account->id }}">{{ $account->name }} (Bal: Rs. {{ number_format($account->balance, 2) }})</option>
@@ -370,7 +370,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">To Party (Optional)</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">To Party (Optional)</label>
                             <select name="party_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-red-500 focus:border-red-500">
                                 <option value="">None / General</option>
                                 @foreach(App\Models\Party::all() as $party)
@@ -379,14 +379,14 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Notes / Description</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Notes / Description</label>
                             <input type="text" name="notes" placeholder="e.g. Utility Bill Payment" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-red-500 focus:border-red-500">
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-3 mt-8">
                         <button type="button" @click="paymentOutModal = false" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
-                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm">Save Payment</button>
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Save Payment</button>
                     </div>
                 </form>
             </div>

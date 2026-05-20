@@ -29,24 +29,24 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-[#F8FAFC] min-h-screen" x-data="orderManager()">
+    <div class="py-6" x-data="orderManager()">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             
             @if (session('success'))
-                <div class="mb-6 bg-green-500 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center gap-3 animate-[fadeInUp_0.3s_ease-out]">
+                <div class="mb-6 bg-green-50 text-green-700 border border-green-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3 animate-[fadeInUp_0.3s_ease-out]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <span class="font-bold">{{ session('success') }}</span>
                 </div>
             @endif
             @if (session('error'))
-                <div class="mb-6 bg-red-500 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center gap-3 animate-[fadeInUp_0.3s_ease-out]">
+                <div class="mb-6 bg-red-50 text-red-700 border border-red-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3 animate-[fadeInUp_0.3s_ease-out]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <span class="font-bold">{{ session('error') }}</span>
                 </div>
             @endif
 
             <!-- Tabs Navigation -->
-            <div class="bg-white p-2 rounded-2xl shadow-sm border border-gray-100 flex overflow-x-auto no-scrollbar mb-6">
+            <div class="bg-white p-2 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex overflow-x-auto no-scrollbar mb-6">
                 @php
                     $tabs = [
                         'pending' => 'Pending',
@@ -59,7 +59,7 @@
                     ];
                 @endphp
                 @foreach($tabs as $key => $label)
-                    <a href="{{ request()->fullUrlWithQuery(['status' => $key]) }}" class="px-6 py-2.5 rounded-xl font-bold whitespace-nowrap transition-all flex-1 text-center {{ $status === $key ? 'bg-mango text-gray-900 shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <a href="{{ request()->fullUrlWithQuery(['status' => $key]) }}" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex-1 text-center {{ $status === $key ? 'bg-mango text-gray-900 shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
                         {{ $label }}
                     </a>
                 @endforeach
@@ -110,7 +110,7 @@
                 @endphp
                 @foreach($pathaoFilters as $filterKey => $filterData)
                     <a href="{{ request()->fullUrlWithQuery(['pathao_filter' => $filterKey ?: null]) }}"
-                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all border
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border
                               {{ $currentPathaoFilter === $filterKey ? 'bg-gray-900 text-white border-gray-900 shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50' }}">
                         <span class="w-2 h-2 rounded-full {{ $filterData['dot'] }} {{ $currentPathaoFilter === $filterKey ? 'ring-2 ring-white/40' : '' }}"></span>
                         {{ $filterData['label'] }}
@@ -120,7 +120,7 @@
             @endif
 
             <!-- Filter Bar -->
-            <form method="GET" action="{{ route('orders.index') }}" class="mb-6 flex gap-4 items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+            <form method="GET" action="{{ route('orders.index') }}" class="mb-6 flex gap-4 items-center bg-white p-3 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
                 <input type="hidden" name="status" value="{{ $status }}">
                 @if(request('pathao_filter'))
                     <input type="hidden" name="pathao_filter" value="{{ request('pathao_filter') }}">
@@ -130,11 +130,11 @@
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by Order ID, Name, or Phone..." class="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-mango focus:ring-mango transition-colors font-medium">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by Order ID, Name, or Phone..." class="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors font-medium">
                 </div>
 
                 <div class="w-48 relative">
-                    <select name="date_filter" onchange="this.form.submit()" class="block w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-mango focus:ring-mango transition-colors font-medium appearance-none">
+                    <select name="date_filter" onchange="this.form.submit()" class="block w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors font-medium appearance-none">
                         <option value="">All Time</option>
                         <option value="today" {{ request('date_filter') == 'today' ? 'selected' : '' }}>Today</option>
                         <option value="yesterday" {{ request('date_filter') == 'yesterday' ? 'selected' : '' }}>Yesterday</option>
@@ -143,7 +143,7 @@
                     </select>
                 </div>
 
-                <button type="submit" class="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-800 transition active:scale-95 whitespace-nowrap">
+                <button type="submit" class="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 transition active:scale-95 whitespace-nowrap">
                     Search
                 </button>
                 @if(request('search') || request('date_filter') || request('pathao_filter'))
@@ -152,7 +152,7 @@
             </form>
 
             <!-- Orders Table -->
-            <div class="bg-white rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 overflow-hidden">
+            <div class="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 <div x-show="selectedOrders.length > 0" x-cloak class="border-b px-6 py-3 flex items-center justify-between transition-all
                     {{ $status === 'pending' ? 'bg-red-50 border-red-100' : ($status === 'confirmed' ? 'bg-emerald-50 border-emerald-100' : 'bg-blue-50 border-blue-100') }}">
                     <span class="text-sm font-bold {{ $status === 'pending' ? 'text-red-900' : ($status === 'confirmed' ? 'text-emerald-900' : 'text-blue-900') }}"><span x-text="selectedOrders.length"></span> orders selected</span>
@@ -194,7 +194,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-bold">
+                            <tr class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                 <th class="p-4 border-b border-gray-100 rounded-tl-3xl w-10">
                                     <input type="checkbox" class="rounded border-gray-300 text-mango focus:ring-mango" 
                                            @change="$event.target.checked ? selectAll() : deselectAll()"
@@ -212,7 +212,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($orders as $order)
-                                <tr class="hover:bg-gray-50 transition-colors group">
+                                <tr class="hover:bg-gray-50/50 transition-colors group">
                                     <td class="p-4 align-top">
                                         <input type="checkbox" class="rounded border-gray-300 text-mango focus:ring-mango order-checkbox" 
                                                value="{{ $order->id }}"
@@ -254,7 +254,7 @@
                                                 default => 'bg-yellow-50 text-yellow-700 border-yellow-200',
                                             };
                                         @endphp
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border {{ $badgeClass }}">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border {{ $badgeClass }}">
                                             <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
                                             {{ $order->pathao_status ?? 'Awaiting Pickup' }}
                                         </span>
@@ -367,7 +367,7 @@
                 </div>
                 <!-- Pagination -->
                 @if($orders->hasPages())
-                    <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-3xl">
+                    <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-[24px]">
                         {{ $orders->links() }}
                     </div>
                 @endif
@@ -508,18 +508,18 @@
                 <form method="POST" action="{{ route('orders.store') }}" class="mt-6 space-y-4">
                     @csrf
                     <!-- Normal form fields... omitted for brevity as bulk upload is preferred -->
-                    <input type="text" name="customer_name" placeholder="Name" class="w-full rounded-xl border-gray-200" required>
-                    <input type="text" name="customer_phone" placeholder="Phone" class="w-full rounded-xl border-gray-200" required>
-                    <input type="text" name="address" placeholder="Address" class="w-full rounded-xl border-gray-200" required>
-                    <input type="text" name="city" placeholder="City (Optional)" class="w-full rounded-xl border-gray-200">
-                    <select name="product_id" class="w-full rounded-xl border-gray-200" required>
+                    <input type="text" name="customer_name" placeholder="Name" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
+                    <input type="text" name="customer_phone" placeholder="Phone" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
+                    <input type="text" name="address" placeholder="Address" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
+                    <input type="text" name="city" placeholder="City (Optional)" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors">
+                    <select name="product_id" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
                         @foreach($products as $p) <option value="{{ $p->id }}">{{ $p->name }}</option> @endforeach
                     </select>
-                    <input type="number" name="quantity" value="1" min="1" class="w-full rounded-xl border-gray-200" required>
+                    <input type="number" name="quantity" value="1" min="1" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
                     
                     <div class="flex justify-end gap-2 pt-4">
-                        <button type="button" x-on:click="$dispatch('close')" class="px-4 py-2 bg-gray-100 rounded-lg">Cancel</button>
-                        <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-lg">Save</button>
+                        <button type="button" x-on:click="$dispatch('close')" class="bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition px-4 py-2">Cancel</button>
+                        <button type="submit" class="bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition px-4 py-2">Save</button>
                     </div>
                 </form>
             </div>
@@ -547,12 +547,12 @@
                             <!-- Customer Details -->
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Customer Name</label>
-                                    <input name="customer_name" x-model="editFormData.customer_name" type="text" class="w-full rounded-xl border-gray-200 bg-gray-50 py-2 focus:ring-mango" required>
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Customer Name</label>
+                                    <input name="customer_name" x-model="editFormData.customer_name" type="text" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Phone Number</label>
-                                    <input name="customer_phone" x-model="editFormData.customer_phone" type="text" class="w-full rounded-xl border-gray-200 bg-gray-50 py-2 focus:ring-mango" required>
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Phone Number</label>
+                                    <input name="customer_phone" x-model="editFormData.customer_phone" type="text" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
                                 </div>
                             </div>
 
@@ -659,12 +659,12 @@
                                 <div class="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
                                     <div class="flex items-center justify-between gap-4">
                                         <div class="w-1/2">
-                                            <label class="block text-sm font-bold text-gray-700 mb-1">Delivery Charge (Rs.)</label>
-                                            <input name="delivery_charge" x-model.number="editFormData.delivery_charge" type="number" min="0" step="0.01" class="w-full rounded-xl border-gray-200 bg-white py-2 focus:ring-mango font-bold text-gray-900">
+                                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Delivery Charge (Rs.)</label>
+                                            <input name="delivery_charge" x-model.number="editFormData.delivery_charge" type="number" min="0" step="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors text-gray-900">
                                             <p class="text-xs text-gray-500 mt-1">Can be modified or waived.</p>
                                         </div>
                                         <div class="w-1/2 text-right">
-                                            <label class="block text-sm font-bold text-gray-500 mb-1">Grand Total</label>
+                                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Grand Total</label>
                                             <div class="text-2xl font-black text-gray-900">Rs.<span x-text="calculateEditGrandTotal()"></span></div>
                                         </div>
                                     </div>
@@ -777,7 +777,7 @@
                                 <h4 class="font-black text-gray-900 text-xs uppercase tracking-wider">Order Items</h4>
                             </div>
                             <table class="w-full text-sm">
-                                <thead><tr class="text-xs text-gray-500 font-bold uppercase"><th class="px-4 py-2 text-left">Product</th><th class="px-4 py-2 text-center">Qty</th><th class="px-4 py-2 text-right">Amount</th></tr></thead>
+                                <thead><tr class="text-[10px] font-black text-gray-400 uppercase tracking-widest"><th class="px-4 py-2 text-left">Product</th><th class="px-4 py-2 text-center">Qty</th><th class="px-4 py-2 text-right">Amount</th></tr></thead>
                                 <tbody class="divide-y divide-gray-50">
                                     <template x-for="item in trackingData?.order?.items || []" :key="item.name">
                                         <tr>
@@ -907,8 +907,8 @@
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">Payment Method</label>
-                                    <select name="payment_method" x-model="paymentMethod" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango font-bold text-sm" required>
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Payment Method</label>
+                                    <select name="payment_method" x-model="paymentMethod" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors text-sm" required>
                                         <option value="cod">Cash on Delivery (Pathao)</option>
                                         <option value="paid">Fully Paid (Advance)</option>
                                         <option value="partial">Partially Paid (Advance)</option>
@@ -917,13 +917,13 @@
 
                                 <div x-show="paymentMethod === 'paid' || paymentMethod === 'partial'" x-transition>
                                     <div class="mb-4">
-                                        <label class="block text-sm font-bold text-gray-700 mb-1">Amount to Pay</label>
-                                        <input name="amount" x-model="paymentAmount" type="number" step="0.01" min="0" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango" :required="paymentMethod !== 'cod'">
+                                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Amount to Pay</label>
+                                        <input name="amount" x-model="paymentAmount" type="number" step="0.01" min="0" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" :required="paymentMethod !== 'cod'">
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-bold text-gray-700 mb-1">Deposit To Account</label>
-                                        <select name="account_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango" :required="paymentMethod !== 'cod'">
+                                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Deposit To Account</label>
+                                        <select name="account_id" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" :required="paymentMethod !== 'cod'">
                                             <option value="">Select Account...</option>
                                             @foreach($accounts as $account)
                                                 <option value="{{ $account->id }}">{{ $account->name }} (Rs. {{ number_format($account->balance, 2) }})</option>
@@ -932,8 +932,8 @@
                                     </div>
                                     
                                     <div class="mt-4">
-                                        <label class="block text-sm font-bold text-gray-700 mb-1">Notes (Optional)</label>
-                                        <input name="notes" type="text" placeholder="e.g. Fonepay, Bank Transfer" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango">
+                                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Notes (Optional)</label>
+                                        <input name="notes" type="text" placeholder="e.g. Fonepay, Bank Transfer" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors">
                                     </div>
                                 </div>
                             </div>

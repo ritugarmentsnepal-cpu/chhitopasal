@@ -3,19 +3,19 @@
     {{-- Header --}}
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-black text-gray-900">Sale Returns</h2>
+            <h2 class="text-2xl font-black text-gray-900 dark:text-white">Sale Returns</h2>
             <p class="text-gray-500 font-medium mt-1">Process cancelled / returned orders and deduct from Pathao receivables.</p>
         </div>
         @if(isset($data['pathao_clearing']))
         <div class="bg-white border border-gray-200 rounded-2xl px-6 py-4 text-right shadow-sm">
             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Pathao Clearing Balance</p>
-            <p class="text-2xl font-black text-gray-900">Rs. {{ number_format($data['pathao_clearing']->balance ?? 0) }}</p>
+            <p class="text-2xl font-black text-gray-900 dark:text-white">Rs. {{ number_format($data['pathao_clearing']->balance ?? 0) }}</p>
         </div>
         @endif
     </div>
 
     {{-- Search & Process Return --}}
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-[24px] border border-gray-100 dark:border-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden">
         <div class="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5 text-white">
             <h3 class="font-black text-lg flex items-center gap-2">
                 <svg class="w-5 h-5 text-mango" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -28,7 +28,7 @@
             {{-- Search Bar --}}
             <div class="flex gap-3 mb-6">
                 <input type="text" x-model="searchQuery" @keydown.enter="searchOrder()" placeholder="Order # or Consignment ID (e.g. 15 or DC280426...)"
-                       class="flex-1 bg-gray-50 border-gray-200 rounded-xl focus:ring-mango focus:border-mango font-bold text-lg py-3">
+                       class="flex-1 bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-bold text-lg py-3">
                 <button @click="searchOrder()" :disabled="searching" class="bg-gray-900 text-white font-bold px-6 py-3 rounded-xl hover:bg-gray-800 transition active:scale-95 disabled:opacity-50 flex items-center gap-2">
                     <svg x-show="!searching" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     <span x-show="searching" class="animate-spin">⏳</span>
@@ -47,10 +47,10 @@
                 <div class="p-5">
                     <div class="flex items-start justify-between mb-4">
                         <div>
-                            <h4 class="text-xl font-black text-gray-900">Order #<span x-text="foundOrder?.id"></span></h4>
+                            <h4 class="text-xl font-black text-gray-900 dark:text-white">Order #<span x-text="foundOrder?.id"></span></h4>
                             <p class="text-gray-500 font-medium text-sm" x-text="foundOrder?.created_at"></p>
                         </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-black uppercase"
+                        <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md"
                               :class="{
                                   'bg-red-100 text-red-700': ['failed','rejected','return_delivered'].includes(foundOrder?.status),
                                   'bg-yellow-100 text-yellow-700': foundOrder?.status === 'pending',
@@ -64,7 +64,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 text-sm">
                         <div class="bg-white rounded-xl p-3 border border-gray-100">
                             <p class="text-gray-400 font-bold text-xs uppercase">Customer</p>
-                            <p class="font-black text-gray-900" x-text="foundOrder?.customer_name"></p>
+                            <p class="font-black text-gray-900 dark:text-white" x-text="foundOrder?.customer_name"></p>
                             <p class="text-gray-500" x-text="foundOrder?.customer_phone"></p>
                         </div>
                         <div class="bg-white rounded-xl p-3 border border-gray-100">
@@ -73,7 +73,7 @@
                         </div>
                         <div class="bg-white rounded-xl p-3 border border-gray-100">
                             <p class="text-gray-400 font-bold text-xs uppercase">Consignment</p>
-                            <p class="font-black text-gray-900" x-text="foundOrder?.pathao_consignment_id || 'N/A'"></p>
+                            <p class="font-black text-gray-900 dark:text-white" x-text="foundOrder?.pathao_consignment_id || 'N/A'"></p>
                         </div>
                     </div>
 
@@ -82,10 +82,10 @@
                         <table class="w-full text-sm">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="text-left px-4 py-2 font-bold text-gray-500">Item</th>
-                                    <th class="text-center px-4 py-2 font-bold text-gray-500">Qty</th>
-                                    <th class="text-right px-4 py-2 font-bold text-gray-500">Price</th>
-                                    <th class="text-right px-4 py-2 font-bold text-gray-500">Total</th>
+                                    <th class="text-left px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Item</th>
+                                    <th class="text-center px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Qty</th>
+                                    <th class="text-right px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Price</th>
+                                    <th class="text-right px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -115,13 +115,13 @@
 
                             <div class="space-y-3">
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Return Reason *</label>
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Return Reason *</label>
                                     <input type="text" name="reason" required placeholder="e.g. Customer refused delivery, Wrong address, Damaged in transit..."
-                                           class="w-full bg-white border-gray-200 rounded-xl focus:ring-mango focus:border-mango font-medium py-3">
+                                           class="w-full bg-white border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium py-3">
                                 </div>
 
                                 <label class="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-3 cursor-pointer hover:bg-gray-50 transition">
-                                    <input type="checkbox" name="restore_stock" value="1" checked class="rounded border-gray-300 text-mango focus:ring-mango">
+                                    <input type="checkbox" name="restore_stock" value="1" checked class="rounded border-gray-300 text-mango shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10">
                                     <span class="font-bold text-gray-900 text-sm">Restore stock to inventory</span>
                                 </label>
 
@@ -139,7 +139,7 @@
 
     {{-- History of Returned Orders --}}
     @if(isset($data['returned_orders']) && $data['returned_orders']->count() > 0)
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-[24px] border border-gray-100 dark:border-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-100">
             <h3 class="font-black text-lg text-gray-900">Return History ({{ $data['returned_orders']->count() }} orders)</h3>
         </div>
@@ -147,13 +147,13 @@
             <table class="w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="text-left px-4 py-3 font-bold text-gray-500">Order #</th>
-                        <th class="text-left px-4 py-3 font-bold text-gray-500">Customer</th>
-                        <th class="text-left px-4 py-3 font-bold text-gray-500">Consignment</th>
-                        <th class="text-right px-4 py-3 font-bold text-gray-500">Amount</th>
-                        <th class="text-center px-4 py-3 font-bold text-gray-500">Status</th>
-                        <th class="text-left px-4 py-3 font-bold text-gray-500">Date</th>
-                        <th class="text-center px-4 py-3 font-bold text-gray-500">Accounted?</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Order #</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Customer</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Consignment</th>
+                        <th class="text-right px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
+                        <th class="text-center px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                        <th class="text-center px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Accounted?</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -162,12 +162,12 @@
                         $isAccounted = \App\Models\Transaction::where('reference_type', 'SaleReturn')->where('reference_id', $order->id)->exists();
                     @endphp
                     <tr class="border-t border-gray-50 hover:bg-gray-50/50">
-                        <td class="px-4 py-3 font-black text-gray-900">#{{ $order->id }}</td>
+                        <td class="px-4 py-3 font-black text-gray-900 dark:text-white">#{{ $order->id }}</td>
                         <td class="px-4 py-3 font-bold text-gray-700">{{ $order->customer_name }}</td>
                         <td class="px-4 py-3 text-gray-500 font-mono text-xs">{{ $order->pathao_consignment_id ?? '—' }}</td>
-                        <td class="px-4 py-3 text-right font-black text-gray-900">Rs. {{ number_format($order->total_amount) }}</td>
+                        <td class="px-4 py-3 text-right font-black text-gray-900 dark:text-white">Rs. {{ number_format($order->total_amount) }}</td>
                         <td class="px-4 py-3 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs font-black uppercase bg-red-100 text-red-700">{{ $order->status }}</span>
+                            <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md bg-red-100 text-red-700">{{ $order->status }}</span>
                         </td>
                         <td class="px-4 py-3 text-gray-500 text-xs">{{ $order->created_at->format('d M Y') }}</td>
                         <td class="px-4 py-3 text-center">

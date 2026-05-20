@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-black text-xl text-gray-800 leading-tight flex items-center gap-2">
+            <h2 class="font-black text-2xl text-gray-900 dark:text-white leading-tight tracking-tight flex items-center gap-2">
                 <a href="{{ route('accounting.index', ['tab' => 'banking']) }}" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 </a>
@@ -10,19 +10,19 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-6">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             
             <!-- Account Info Card -->
-            <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="bg-white dark:bg-gray-900 rounded-[24px] p-8 border border-gray-100 dark:border-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl shadow-inner">
+                    <div class="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center text-3xl shadow-inner">
                         {{ $account->getTypeIcon() }}
                     </div>
                     <div>
-                        <h3 class="text-3xl font-black text-gray-900">{{ $account->name }}</h3>
+                        <h3 class="text-3xl font-black text-gray-900 dark:text-white">{{ $account->name }}</h3>
                         <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-1">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-800 uppercase tracking-wider">
+                            <span class="inline-flex items-center text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md bg-gray-100 text-gray-800">
                                 {{ $account->type }}
                             </span>
                             @if($account->bank_name)
@@ -48,25 +48,25 @@
                 </div>
                 <div class="text-left md:text-right w-full md:w-auto">
                     <p class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Current Balance</p>
-                    <p class="text-4xl font-black text-gray-900">Rs. {{ number_format($account->balance, 2) }}</p>
+                    <p class="text-4xl font-black text-gray-900 dark:text-white">Rs. {{ number_format($account->balance, 2) }}</p>
                 </div>
             </div>
 
             <!-- Filters -->
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+            <div class="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
                 <form action="{{ route('accounting.statement', $account->id) }}" method="GET" class="flex flex-col sm:flex-row items-end gap-4">
                     <div class="w-full sm:w-auto">
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Start Date</label>
-                        <input type="date" name="start_date" value="{{ $startDate }}" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango py-2 px-3 text-sm font-bold">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Start Date</label>
+                        <input type="date" name="start_date" value="{{ $startDate }}" class="w-full bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2 px-3 text-sm font-medium transition-colors">
                     </div>
                     
                     <div class="w-full sm:w-auto">
-                        <label class="block text-sm font-bold text-gray-700 mb-1">End Date</label>
-                        <input type="date" name="end_date" value="{{ $endDate }}" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango py-2 px-3 text-sm font-bold">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">End Date</label>
+                        <input type="date" name="end_date" value="{{ $endDate }}" class="w-full bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2 px-3 text-sm font-medium transition-colors">
                     </div>
 
                     <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                        <button type="submit" class="w-full sm:w-auto bg-gray-900 text-white font-bold py-2 px-6 rounded-xl hover:bg-gray-800 transition">
+                        <button type="submit" class="w-full sm:w-auto bg-gray-900 text-white font-bold py-2 px-6 rounded-xl hover:bg-gray-800 shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95 transition">
                             Filter
                         </button>
                         <a href="{{ route('accounting.exportStatement', [$account->id, 'start_date' => $startDate, 'end_date' => $endDate]) }}" class="w-full sm:w-auto bg-green-100 text-green-800 hover:bg-green-200 font-bold py-2 px-4 rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap">
@@ -79,9 +79,9 @@
 
             <!-- Summary Stats -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 border border-gray-100">
                     <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Opening Balance</p>
-                    <p class="text-xl font-black text-gray-900">Rs. {{ number_format($openingBalance, 2) }}</p>
+                    <p class="text-xl font-black text-gray-900 dark:text-white">Rs. {{ number_format($openingBalance, 2) }}</p>
                 </div>
                 <div class="bg-green-50 rounded-2xl p-4 border border-green-100">
                     <p class="text-xs font-bold text-green-600 uppercase tracking-wider mb-1">Total In (+)</p>
@@ -94,11 +94,11 @@
             </div>
 
             <!-- Transactions Table -->
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50 text-gray-500 text-xs tracking-wider font-bold uppercase">
+                            <tr class="bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                 <th class="px-6 py-4">Date</th>
                                 <th class="px-6 py-4">Reference</th>
                                 <th class="px-6 py-4">Notes / Party</th>
@@ -120,8 +120,8 @@
 
                             <!-- Transactions -->
                             @forelse($transactionsWithBalance as $tx)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 text-sm text-gray-500 font-bold whitespace-nowrap">
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 font-bold whitespace-nowrap">
                                         {{ \Carbon\Carbon::parse($tx->date)->format('M d, Y h:i A') }}
                                     </td>
                                     <td class="px-6 py-4 text-sm font-bold text-gray-900">

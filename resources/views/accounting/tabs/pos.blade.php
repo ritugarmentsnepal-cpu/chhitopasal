@@ -1,10 +1,10 @@
 <div class="space-y-8" x-data="posInvoice()">
     <div class="flex justify-between items-center">
-        <h3 class="text-2xl font-black text-gray-900">Point of Sale (Invoice Builder)</h3>
+        <h3 class="text-2xl font-black text-gray-900 dark:text-white">Point of Sale (Invoice Builder)</h3>
     </div>
 
     <!-- Main Form -->
-    <form method="POST" action="{{ route('orders.pos') }}" class="bg-white p-10 rounded-2xl shadow-xl w-full border border-gray-100">
+    <form method="POST" action="{{ route('orders.pos') }}" class="bg-white p-10 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full border border-gray-100">
         @csrf
         
         <!-- Header -->
@@ -31,13 +31,13 @@
                 <!-- Payment Method & Party Selection -->
                 <div class="flex gap-4">
                     <div class="w-1/3">
-                        <select name="payment_method" x-model="paymentMethod" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango font-bold text-gray-800">
+                        <select name="payment_method" x-model="paymentMethod" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-bold text-gray-800">
                             <option value="cash">Cash Sale</option>
                             <option value="credit">Credit Sale</option>
                         </select>
                     </div>
                     <div class="w-2/3" x-show="paymentMethod === 'credit'" x-cloak>
-                        <select name="party_id" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango font-bold text-gray-800" :required="paymentMethod === 'credit'">
+                        <select name="party_id" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-bold text-gray-800" :required="paymentMethod === 'credit'">
                             <option value="">Select Party Name...</option>
                             @foreach($data['parties'] as $party)
                                 <option value="{{ $party->id }}">{{ $party->name }} ({{ ucfirst($party->type) }})</option>
@@ -47,10 +47,10 @@
                 </div>
 
                 <div>
-                    <input type="text" name="customer_name" placeholder="Customer Name (e.g. Walk-in Customer)" class="w-full text-lg font-bold rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango" required>
+                    <input type="text" name="customer_name" placeholder="Customer Name (e.g. Walk-in Customer)" class="w-full text-lg font-bold rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10" required>
                 </div>
                 <div>
-                    <input type="text" name="customer_phone" placeholder="Phone Number" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango" required>
+                    <input type="text" name="customer_phone" placeholder="Phone Number" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10" required>
                 </div>
             </div>
             <div class="space-y-4 text-right flex flex-col items-end">
@@ -68,10 +68,10 @@
             <table class="w-full text-left">
                 <thead class="border-b-2 border-gray-900">
                     <tr>
-                        <th class="py-3 font-black text-gray-900 w-1/2">Item Description</th>
-                        <th class="py-3 font-black text-gray-900 text-center w-32">Qty</th>
-                        <th class="py-3 font-black text-gray-900 text-right">Rate</th>
-                        <th class="py-3 font-black text-gray-900 text-right">Amount</th>
+                        <th class="py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest w-1/2">Item Description</th>
+                        <th class="py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center w-32">Qty</th>
+                        <th class="py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Rate</th>
+                        <th class="py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount</th>
                         <th class="py-3 text-center w-12"></th>
                     </tr>
                 </thead>
@@ -79,7 +79,7 @@
                     <template x-for="(item, index) in items" :key="index">
                         <tr class="group">
                             <td class="py-4">
-                                <select x-model="item.product_id" :name="'items['+index+'][product_id]'" @change="updatePrice(index)" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango font-bold text-gray-800" required>
+                                <select x-model="item.product_id" :name="'items['+index+'][product_id]'" @change="updatePrice(index)" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-bold text-gray-800" required>
                                     <option value="">Select product...</option>
                                     @foreach($data['products'] as $product)
                                         <option value="{{ $product->id }}" data-price="{{ $product->price }}" data-stock="{{ $product->stock }}">{{ $product->name }} (Stock: {{ $product->stock }})</option>
@@ -87,18 +87,18 @@
                                 </select>
                             </td>
                             <td class="py-4 px-2">
-                                <input type="number" x-model.number="item.quantity" :name="'items['+index+'][quantity]'" min="1" class="w-full text-center rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango" required>
+                                <input type="number" x-model.number="item.quantity" :name="'items['+index+'][quantity]'" min="1" class="w-full text-center rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10" required>
                             </td>
                             <td class="py-4 px-2">
                                 <div class="flex items-center justify-end">
                                     <span class="text-gray-500 mr-2 text-sm">Rs.</span>
-                                    <input type="number" x-model.number="item.price" :name="'items['+index+'][price]'" step="0.01" min="0" class="w-24 text-right rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango py-1" required>
+                                    <input type="number" x-model.number="item.price" :name="'items['+index+'][price]'" step="0.01" min="0" class="w-24 text-right rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-1" required>
                                 </div>
                             </td>
                             <td class="py-4 px-2">
                                 <div class="flex items-center justify-end">
                                     <span class="text-gray-500 mr-2 text-sm font-bold">Rs.</span>
-                                    <input type="number" :value="(item.price * item.quantity).toFixed(2)" @input="item.price = $event.target.value / item.quantity" step="0.01" min="0" class="w-28 text-right font-bold rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango py-1">
+                                    <input type="number" :value="(item.price * item.quantity).toFixed(2)" @input="item.price = $event.target.value / item.quantity" step="0.01" min="0" class="w-28 text-right font-bold rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-1">
                                 </div>
                             </td>
                             <td class="py-4 text-center">
@@ -128,12 +128,12 @@
                     <span class="font-bold text-gray-500">Delivery Charge</span>
                     <div class="flex items-center w-32 justify-end">
                         <span class="text-gray-500 mr-2">Rs.</span>
-                        <input type="number" x-model.number="deliveryCharge" name="delivery_charge" class="w-24 text-right rounded-xl border-gray-200 bg-gray-50 focus:ring-mango focus:border-mango py-1" min="0" step="0.01">
+                        <input type="number" x-model.number="deliveryCharge" name="delivery_charge" class="w-24 text-right rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-1" min="0" step="0.01">
                     </div>
                 </div>
                 <div class="flex justify-between py-4 border-b-4 border-gray-900">
-                    <span class="text-xl font-black text-gray-900">Total</span>
-                    <span class="text-xl font-black text-gray-900">Rs. <span x-text="total.toFixed(2)"></span></span>
+                    <span class="text-xl font-black text-gray-900 dark:text-white">Total</span>
+                    <span class="text-xl font-black text-gray-900 dark:text-white">Rs. <span x-text="total.toFixed(2)"></span></span>
                 </div>
 
                 <!-- Amount Paid and Due Balance -->
@@ -141,7 +141,7 @@
                     <span class="font-bold text-gray-700">Amount Paid</span>
                     <div class="flex items-center w-32 justify-end">
                         <span class="text-gray-700 mr-2 font-bold">Rs.</span>
-                        <input type="number" name="paid_amount" x-model.number="paidAmount" step="0.01" min="0" class="w-28 text-right font-bold rounded-xl border-gray-200 bg-white focus:ring-mango focus:border-mango py-1">
+                        <input type="number" name="paid_amount" x-model.number="paidAmount" step="0.01" min="0" class="w-28 text-right font-bold rounded-xl border-gray-200 bg-white shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-1">
                     </div>
                 </div>
                 <div class="flex justify-between py-3 px-4 mt-2 rounded-xl items-center" :class="paymentMethod === 'credit' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'">
@@ -152,7 +152,7 @@
         </div>
 
         <div class="pt-6 border-t border-gray-100 flex justify-end">
-            <button type="submit" class="bg-mango hover:bg-yellow-400 text-gray-900 font-black py-4 px-8 rounded-xl transition-all shadow-sm text-lg flex items-center gap-2">
+            <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-black py-4 px-8 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95 text-lg flex items-center gap-2">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 Issue Bill & Record Payment
             </button>

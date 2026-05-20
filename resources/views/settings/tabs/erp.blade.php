@@ -3,55 +3,55 @@
     <input type="hidden" name="redirect_tab" value="erp">
     
     <!-- Legal Profile -->
-    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8">
+    <div class="bg-white dark:bg-gray-900 rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-8">
         <h3 class="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
             Legal Company Profile
         </h3>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Legal Company Name</label>
-                <input name="company_name" type="text" value="{{ setting('company_name', 'ChhitoPasal Pvt. Ltd.') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold" />
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Legal Company Name</label>
+                <input name="company_name" type="text" value="{{ setting('company_name', 'ChhitoPasal Pvt. Ltd.') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
             </div>
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">VAT / PAN Number</label>
-                <input name="vat_number" type="text" value="{{ setting('vat_number') }}" placeholder="e.g. 609876543" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold" />
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">VAT / PAN Number</label>
+                <input name="vat_number" type="text" value="{{ setting('vat_number') }}" placeholder="e.g. 609876543" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
             </div>
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Company Phone</label>
-                <input name="company_phone" type="text" value="{{ setting('company_phone') }}" placeholder="e.g. 9800000000" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold" />
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Company Phone</label>
+                <input name="company_phone" type="text" value="{{ setting('company_phone') }}" placeholder="e.g. 9800000000" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
             </div>
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Company Email</label>
-                <input name="company_email" type="email" value="{{ setting('company_email') }}" placeholder="e.g. info@chhitopasal.com" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold" />
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Company Email</label>
+                <input name="company_email" type="email" value="{{ setting('company_email') }}" placeholder="e.g. info@chhitopasal.com" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
             </div>
             <div class="md:col-span-2">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Billing Address</label>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Billing Address</label>
                 <textarea name="billing_address" rows="2" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-medium">{{ setting('billing_address', 'Kathmandu, Nepal') }}</textarea>
             </div>
         </div>
     </div>
 
     <!-- Financial Defaults -->
-    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8">
+    <div class="bg-white dark:bg-gray-900 rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-8">
         <h3 class="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
             Financial Defaults
         </h3>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Base Currency Symbol</label>
-                <input name="currency_symbol" type="text" value="{{ setting('currency_symbol', 'Rs.') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold" />
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Base Currency Symbol</label>
+                <input name="currency_symbol" type="text" value="{{ setting('currency_symbol', 'Rs.') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
             </div>
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Global VAT / Tax Rate (%)</label>
-                <input name="tax_rate" type="number" step="0.01" value="{{ setting('tax_rate', '13') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold" />
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Global VAT / Tax Rate (%)</label>
+                <input name="tax_rate" type="number" step="0.01" value="{{ setting('tax_rate', '13') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
                 <p class="text-xs text-gray-400 mt-1">Leave 0 if not applicable.</p>
             </div>
             
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Default Cash Account (POS Sales)</label>
-                <select name="default_cash_account_id" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold">
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Default Cash Account (POS Sales)</label>
+                <select name="default_cash_account_id" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors">
                     <option value="">-- Select Account --</option>
                     @if(isset($accounts))
                         @foreach($accounts as $acc)
@@ -62,8 +62,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Default Bank Account (Pathao Settlements)</label>
-                <select name="default_bank_account_id" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold">
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Default Bank Account (Pathao Settlements)</label>
+                <select name="default_bank_account_id" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors">
                     <option value="">-- Select Account --</option>
                     @if(isset($accounts))
                         @foreach($accounts as $acc)
@@ -76,7 +76,7 @@
     </div>
 
     <!-- Invoice Formatting -->
-    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8">
+    <div class="bg-white dark:bg-gray-900 rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-8">
         <h3 class="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
             Invoice Formatting
         </h3>
@@ -84,17 +84,17 @@
         <div class="grid grid-cols-1 gap-8">
             <div class="grid grid-cols-2 gap-8">
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Order Invoice Prefix</label>
-                    <input name="order_invoice_prefix" type="text" value="{{ setting('order_invoice_prefix', 'ORD-') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold" />
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Order Invoice Prefix</label>
+                    <input name="order_invoice_prefix" type="text" value="{{ setting('order_invoice_prefix', 'ORD-') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">POS Invoice Prefix</label>
-                    <input name="pos_invoice_prefix" type="text" value="{{ setting('pos_invoice_prefix', 'POS-') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-bold" />
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">POS Invoice Prefix</label>
+                    <input name="pos_invoice_prefix" type="text" value="{{ setting('pos_invoice_prefix', 'POS-') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
                 </div>
             </div>
             
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Invoice Terms & Conditions (Footer)</label>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Invoice Terms & Conditions (Footer)</label>
                 <textarea name="invoice_terms" rows="3" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-medium">{{ setting('invoice_terms', '1. Goods once sold will not be returned.
 2. Subject to Kathmandu jurisdiction.') }}</textarea>
             </div>
@@ -102,7 +102,7 @@
     </div>
 
     <div class="flex justify-end sticky bottom-8">
-        <button type="submit" class="bg-mango text-gray-900 font-black py-4 px-10 rounded-2xl shadow-sm hover:bg-yellow-400 transition-colors text-lg">
+        <button type="submit" class="bg-gray-900 text-white font-bold py-4 px-10 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition text-lg">
             Save ERP Settings
         </button>
     </div>

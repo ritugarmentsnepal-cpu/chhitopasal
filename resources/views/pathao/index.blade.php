@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-black text-2xl text-gray-900 leading-tight tracking-tight flex items-center gap-2">
+            <h2 class="font-black text-2xl text-gray-900 dark:text-white leading-tight tracking-tight flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-mango" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 Pathao Manager
             </h2>
@@ -29,25 +29,25 @@
         }
     </style>
 
-    <div class="py-8 bg-[#F8FAFC] min-h-screen" x-data="{ activeTab: 'dashboard' }">
+    <div class="py-6 min-h-screen" x-data="{ activeTab: 'dashboard' }">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             
             @if (session('success'))
-                <div class="mb-6 bg-green-500 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center gap-3">
+                <div class="mb-6 bg-green-50 text-green-700 border border-green-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <span class="font-bold">{{ session('success') }}</span>
                 </div>
             @endif
 
             <!-- Tabs Navigation -->
-            <div class="bg-white p-2 rounded-2xl shadow-sm border border-gray-100 flex overflow-x-auto no-scrollbar mb-6">
-                <button @click="activeTab = 'dashboard'" :class="{'bg-mango text-gray-900 shadow-sm': activeTab === 'dashboard', 'text-gray-500 hover:bg-gray-50 hover:text-gray-900': activeTab !== 'dashboard'}" class="px-6 py-2.5 rounded-xl font-bold whitespace-nowrap transition-all flex-1 text-center">
+            <div class="bg-white p-2 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex overflow-x-auto no-scrollbar mb-6">
+                <button @click="activeTab = 'dashboard'" :class="{'bg-mango text-gray-900 shadow-sm': activeTab === 'dashboard', 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50': activeTab !== 'dashboard'}" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex-1 text-center">
                     Overview
                 </button>
-                <button @click="activeTab = 'deliveries'" :class="{'bg-mango text-gray-900 shadow-sm': activeTab === 'deliveries', 'text-gray-500 hover:bg-gray-50 hover:text-gray-900': activeTab !== 'deliveries'}" class="px-6 py-2.5 rounded-xl font-bold whitespace-nowrap transition-all flex-1 text-center">
+                <button @click="activeTab = 'deliveries'" :class="{'bg-mango text-gray-900 shadow-sm': activeTab === 'deliveries', 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50': activeTab !== 'deliveries'}" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex-1 text-center">
                     Deliveries Tracker
                 </button>
-                <button @click="activeTab = 'ledger'" :class="{'bg-mango text-gray-900 shadow-sm': activeTab === 'ledger', 'text-gray-500 hover:bg-gray-50 hover:text-gray-900': activeTab !== 'ledger'}" class="px-6 py-2.5 rounded-xl font-bold whitespace-nowrap transition-all flex-1 text-center">
+                <button @click="activeTab = 'ledger'" :class="{'bg-mango text-gray-900 shadow-sm': activeTab === 'ledger', 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50': activeTab !== 'ledger'}" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex-1 text-center">
                     Financial Ledger
                 </button>
             </div>
@@ -56,25 +56,25 @@
             <div x-show="activeTab === 'dashboard'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <!-- Metric Card -->
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group">
+                    <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group">
                         <div class="absolute -right-10 -top-10 w-32 h-32 bg-blue-50 rounded-full group-hover:scale-110 transition-transform duration-500 opacity-50"></div>
                         <div class="relative z-10">
                             <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">In Transit (Shipped)</p>
-                            <h3 class="text-4xl font-black text-gray-900">{{ $inTransitCount }} <span class="text-lg text-gray-400 font-medium">orders</span></h3>
+                            <h3 class="text-4xl font-black text-gray-900 dark:text-white">{{ $inTransitCount }} <span class="text-lg text-gray-400 font-medium">orders</span></h3>
                         </div>
                     </div>
                     
                     <!-- Metric Card -->
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group">
+                    <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group">
                         <div class="absolute -right-10 -top-10 w-32 h-32 bg-green-50 rounded-full group-hover:scale-110 transition-transform duration-500 opacity-50"></div>
                         <div class="relative z-10">
                             <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Delivered (Pending COD)</p>
-                            <h3 class="text-4xl font-black text-gray-900">{{ $deliveredCount }} <span class="text-lg text-gray-400 font-medium">orders</span></h3>
+                            <h3 class="text-4xl font-black text-gray-900 dark:text-white">{{ $deliveredCount }} <span class="text-lg text-gray-400 font-medium">orders</span></h3>
                         </div>
                     </div>
 
                     <!-- Metric Card -->
-                    <div class="bg-gray-900 rounded-3xl p-6 shadow-lg border border-gray-800 relative overflow-hidden group">
+                    <div class="bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-800 relative overflow-hidden group">
                         <div class="absolute -right-10 -top-10 w-32 h-32 bg-mango/10 rounded-full group-hover:scale-110 transition-transform duration-500 opacity-50"></div>
                         <div class="relative z-10">
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Pathao Receivables</p>
@@ -84,11 +84,11 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-0 overflow-hidden" x-data="locationFinder()">
+                <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-0 overflow-hidden" x-data="locationFinder()">
                     <!-- Header -->
                     <div class="p-6 border-b border-gray-100">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-black text-gray-900">Our Coverage Areas</h3>
+                            <h3 class="text-xl font-black text-gray-900 dark:text-white">Our Coverage Areas</h3>
                             <a href="#" class="text-red-600 text-sm font-bold hover:underline">Click to View Details</a>
                         </div>
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -184,10 +184,10 @@
 
             <!-- Deliveries Tab -->
             <div x-show="activeTab === 'deliveries'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-bold">
+                            <tr class="bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                 <th class="p-4 border-b border-gray-100">Consignment ID</th>
                                 <th class="p-4 border-b border-gray-100">Order ID & Date</th>
                                 <th class="p-4 border-b border-gray-100">Customer</th>
@@ -197,9 +197,9 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($deliveries as $order)
-                                <tr class="hover:bg-gray-50 transition-colors">
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td class="p-4">
-                                        <div class="font-black text-gray-900">{{ $order->pathao_consignment_id }}</div>
+                                        <div class="font-black text-gray-900 dark:text-white">{{ $order->pathao_consignment_id }}</div>
                                     </td>
                                     <td class="p-4">
                                         <div class="font-bold text-gray-900">#{{ $order->id }}</div>
@@ -210,7 +210,7 @@
                                         <div class="text-xs text-gray-500">{{ $order->city }}</div>
                                     </td>
                                     <td class="p-4">
-                                        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase
+                                        <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md
                                             {{ $order->status === 'delivered' ? 'bg-green-100 text-green-700' : '' }}
                                             {{ $order->status === 'shipped' ? 'bg-blue-100 text-blue-700' : '' }}
                                             {{ $order->status === 'return_delivered' ? 'bg-orange-100 text-orange-700' : '' }}
@@ -244,7 +244,7 @@
 
             <!-- Ledger Tab -->
             <div x-show="activeTab === 'ledger'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                         <div>
                             <h3 class="font-black text-gray-900 text-lg">Pathao Financial Ledger</h3>
@@ -257,7 +257,7 @@
                     </div>
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-white text-gray-400 text-xs uppercase tracking-wider font-bold border-b border-gray-100">
+                            <tr class="bg-white text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
                                 <th class="p-4">Date</th>
                                 <th class="p-4">Reference & Notes</th>
                                 <th class="p-4 text-right">Debit (Owed)</th>
@@ -266,7 +266,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($ledger as $tx)
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td class="p-4 text-sm font-bold text-gray-900">{{ \Carbon\Carbon::parse($tx->date)->format('M d, Y') }}</td>
                                     <td class="p-4">
                                         <div class="text-sm font-bold text-gray-900">{{ $tx->reference_type }} {{ $tx->reference_id ? '#'.$tx->reference_id : '' }}</div>
@@ -302,20 +302,20 @@
         <x-modal name="settlement-modal" focusable>
             <div class="p-8">
                 <div class="mb-6 border-b border-gray-100 pb-4">
-                    <h2 class="text-2xl font-black text-gray-900">Record Pathao Settlement</h2>
+                    <h2 class="text-2xl font-black text-gray-900 dark:text-white">Record Pathao Settlement</h2>
                     <p class="text-sm text-gray-500 mt-1">Record the COD bulk amount deposited by Pathao.</p>
                 </div>
                 
                 <form method="POST" action="{{ route('pathao.settlement') }}" class="space-y-5">
                     @csrf
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Settlement Amount (Rs.)</label>
-                        <input type="number" name="amount" step="0.01" min="1" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 text-lg font-black focus:ring-mango" required placeholder="e.g. 50000">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Settlement Amount (Rs.)</label>
+                        <input type="number" name="amount" step="0.01" min="1" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 text-lg font-black transition-colors" required placeholder="e.g. 50000">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Deposit To</label>
-                        <select name="account_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango" required>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Deposit To</label>
+                        <select name="account_id" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
                             <option value="">Select Bank Account...</option>
                             @foreach($accounts as $account)
                                 <option value="{{ $account->id }}">{{ $account->name }}</option>
@@ -325,23 +325,23 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Date</label>
-                            <input type="date" name="date" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Date</label>
+                            <input type="date" name="date" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Reference ID (Optional)</label>
-                            <input type="text" name="reference" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango" placeholder="Bank Txn ID">
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Reference ID (Optional)</label>
+                            <input type="text" name="reference" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" placeholder="Bank Txn ID">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Notes</label>
-                        <input type="text" name="notes" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango" placeholder="e.g. Bulk settlement for 12 orders">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Notes</label>
+                        <input type="text" name="notes" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" placeholder="e.g. Bulk settlement for 12 orders">
                     </div>
 
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
-                        <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 transition active:scale-95">Save Settlement</button>
+                        <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 transition active:scale-95">Save Settlement</button>
                     </div>
                 </form>
             </div>

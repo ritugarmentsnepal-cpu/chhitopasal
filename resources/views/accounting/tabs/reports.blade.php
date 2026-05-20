@@ -1,35 +1,35 @@
 <div class="space-y-8">
     <div class="flex justify-between items-center">
-        <h3 class="text-2xl font-black text-gray-900">Financial Reports</h3>
+        <h3 class="text-2xl font-black text-gray-900 dark:text-white">Financial Reports</h3>
     </div>
 
     <!-- Report Filters -->
-    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+    <div class="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
         <form action="{{ route('accounting.index') }}" method="GET" class="flex flex-wrap items-end gap-4">
             <input type="hidden" name="tab" value="reports">
             
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1">Report Type</label>
-                <select name="report_type" onchange="this.form.submit()" class="bg-gray-50 border-gray-200 rounded-xl focus:ring-mango py-2 pl-3 pr-8 text-sm font-bold">
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Report Type</label>
+                <select name="report_type" onchange="this.form.submit()" class="bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2 pl-3 pr-8 text-sm font-bold">
                     <option value="pl" {{ $data['report_type'] === 'pl' ? 'selected' : '' }}>Profit & Loss (P&L)</option>
                     <option value="ledger" {{ $data['report_type'] === 'ledger' ? 'selected' : '' }}>Transaction Ledger</option>
                 </select>
             </div>
 
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1">Start Date</label>
-                <input type="date" name="start_date" value="{{ $data['start_date'] }}" class="bg-gray-50 border-gray-200 rounded-xl focus:ring-mango py-2 px-3 text-sm font-bold">
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Start Date</label>
+                <input type="date" name="start_date" value="{{ $data['start_date'] }}" class="bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2 px-3 text-sm font-bold">
             </div>
             
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1">End Date</label>
-                <input type="date" name="end_date" value="{{ $data['end_date'] }}" class="bg-gray-50 border-gray-200 rounded-xl focus:ring-mango py-2 px-3 text-sm font-bold">
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">End Date</label>
+                <input type="date" name="end_date" value="{{ $data['end_date'] }}" class="bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2 px-3 text-sm font-bold">
             </div>
 
             @if($data['report_type'] === 'ledger')
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Filter by Party</label>
-                    <select name="party_id" class="bg-gray-50 border-gray-200 rounded-xl focus:ring-mango py-2 pl-3 pr-8 text-sm">
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Filter by Party</label>
+                    <select name="party_id" class="bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2 pl-3 pr-8 text-sm">
                         <option value="">All Parties</option>
                         @foreach($data['parties'] as $party)
                             <option value="{{ $party->id }}" {{ (isset($data['selected_party']) && $data['selected_party'] == $party->id) ? 'selected' : '' }}>{{ $party->name }}</option>
@@ -37,8 +37,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Filter by Account</label>
-                    <select name="account_id" class="bg-gray-50 border-gray-200 rounded-xl focus:ring-mango py-2 pl-3 pr-8 text-sm">
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Filter by Account</label>
+                    <select name="account_id" class="bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2 pl-3 pr-8 text-sm">
                         <option value="">All Accounts</option>
                         @foreach($data['accounts'] as $acc)
                             <option value="{{ $acc->id }}" {{ (isset($data['selected_account']) && $data['selected_account'] == $acc->id) ? 'selected' : '' }}>{{ $acc->name }}</option>
@@ -48,7 +48,7 @@
             @endif
 
             <div class="flex gap-2">
-                <button type="submit" class="bg-gray-900 text-white font-bold py-2 px-6 rounded-xl hover:bg-gray-800 transition">
+                <button type="submit" class="bg-gray-900 text-white font-bold py-2 px-6 rounded-xl hover:bg-gray-800 shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95 transition">
                     Generate
                 </button>
                 <a href="{{ route('accounting.exportReport', request()->query()) }}" class="bg-green-100 text-green-800 hover:bg-green-200 font-bold py-2 px-4 rounded-xl transition flex items-center gap-2">
@@ -61,7 +61,7 @@
 
     @if($data['report_type'] === 'pl')
         <!-- P&L Statement -->
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
             <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                 <h4 class="font-black text-xl text-gray-900">Income Statement (P&L)</h4>
                 <span class="text-sm font-bold text-gray-500">{{ \Carbon\Carbon::parse($data['start_date'])->format('M d, Y') }} - {{ \Carbon\Carbon::parse($data['end_date'])->format('M d, Y') }}</span>
@@ -70,14 +70,14 @@
                 <div class="space-y-4 text-lg">
                     <div class="flex justify-between items-center py-3 border-b border-gray-100">
                         <span class="font-bold text-gray-700">Total Revenue (Sales)</span>
-                        <span class="font-black text-gray-900">Rs. {{ number_format($data['pl_revenue'], 2) }}</span>
+                        <span class="font-black text-gray-900 dark:text-white">Rs. {{ number_format($data['pl_revenue'], 2) }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 border-b border-gray-100 text-red-500">
                         <span class="font-bold">Less: Cost of Goods Sold (COGS)</span>
                         <span class="font-black">(Rs. {{ number_format($data['pl_cogs'], 2) }})</span>
                     </div>
                     <div class="flex justify-between items-center py-4 bg-gray-50 rounded-xl px-4 mt-2 mb-6">
-                        <span class="font-black text-gray-900">Gross Profit</span>
+                        <span class="font-black text-gray-900 dark:text-white">Gross Profit</span>
                         <span class="font-black text-xl text-mango">Rs. {{ number_format($data['pl_gross'], 2) }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 border-b border-gray-100 text-red-500">
@@ -95,7 +95,7 @@
         </div>
     @else
         <!-- Ledger Statement -->
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
             <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                 <h4 class="font-black text-xl text-gray-900">Transaction Ledger</h4>
                 <span class="text-sm font-bold text-gray-500">{{ \Carbon\Carbon::parse($data['start_date'])->format('M d, Y') }} - {{ \Carbon\Carbon::parse($data['end_date'])->format('M d, Y') }}</span>
@@ -103,7 +103,7 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-gray-50 text-gray-500 text-xs tracking-wider font-bold uppercase">
+                        <tr class="bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                             <th class="px-6 py-4">Date</th>
                             <th class="px-6 py-4">Account</th>
                             <th class="px-6 py-4">Party</th>
@@ -122,8 +122,8 @@
                                 if ($tx->type === 'in') $totalIn += $tx->amount;
                                 else $totalOut += $tx->amount;
                             @endphp
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-3 text-sm text-gray-500 font-bold">{{ \Carbon\Carbon::parse($tx->date)->format('M d, Y') }}</td>
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400 font-bold">{{ \Carbon\Carbon::parse($tx->date)->format('M d, Y') }}</td>
                                 <td class="px-6 py-3 text-sm font-bold text-gray-900">{{ $tx->account->name }}</td>
                                 <td class="px-6 py-3 text-sm text-gray-600">{{ $tx->party ? $tx->party->name : '-' }}</td>
                                 <td class="px-6 py-3 text-sm text-gray-500">{{ $tx->notes ?: $tx->reference_type . ' #' . $tx->reference_id }}</td>
@@ -142,7 +142,7 @@
                     </tbody>
                     <tfoot class="bg-gray-50 border-t-2 border-gray-200">
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-right font-black text-gray-900">Totals:</td>
+                            <td colspan="4" class="px-6 py-4 text-right font-black text-gray-900 dark:text-white">Totals:</td>
                             <td class="px-6 py-4 text-right font-black text-green-600">Rs. {{ number_format($totalIn, 2) }}</td>
                             <td class="px-6 py-4 text-right font-black text-red-600">Rs. {{ number_format($totalOut, 2) }}</td>
                         </tr>

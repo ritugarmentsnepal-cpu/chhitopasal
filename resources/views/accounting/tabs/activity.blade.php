@@ -1,4 +1,4 @@
-<div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+<div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
     <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
         <h3 class="font-black text-gray-900 text-lg flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -8,17 +8,17 @@
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="bg-gray-50/50 text-gray-500 text-sm">
-                    <th class="py-4 px-6 font-bold w-48">Timestamp</th>
-                    <th class="py-4 px-6 font-bold">User</th>
-                    <th class="py-4 px-6 font-bold">Action</th>
-                    <th class="py-4 px-6 font-bold">Module / ID</th>
-                    <th class="py-4 px-6 font-bold">Details</th>
+                <tr class="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    <th class="py-4 px-6 w-48">Timestamp</th>
+                    <th class="py-4 px-6">User</th>
+                    <th class="py-4 px-6">Action</th>
+                    <th class="py-4 px-6">Module / ID</th>
+                    <th class="py-4 px-6">Details</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($data['logs'] as $log)
-                    <tr class="hover:bg-gray-50/50 transition-colors">
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                         <td class="py-4 px-6 text-sm font-medium text-gray-500">
                             {{ $log->created_at->format('M d, Y h:i A') }}
                         </td>

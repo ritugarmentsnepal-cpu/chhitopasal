@@ -8,7 +8,7 @@
                 Manage Staff Members &rarr;
             </a>
         </div>
-        <button x-on:click.prevent="$dispatch('open-modal', 'add-user-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:bg-gray-800 transition duration-150 active:scale-95 flex items-center gap-2">
+        <button x-on:click.prevent="$dispatch('open-modal', 'add-user-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 transition duration-150 active:scale-95 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
             <span class="hidden sm:inline">Add Staff</span>
         </button>
@@ -17,7 +17,7 @@
     <!-- Users Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         @foreach($users as $user)
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col hover:shadow-lg transition-shadow">
+            <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col hover:shadow-lg transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div class="w-14 h-14 bg-mango/20 text-mango rounded-2xl flex items-center justify-center font-black text-xl">
                         {{ strtoupper(substr($user->name, 0, 2)) }}
@@ -40,13 +40,13 @@
                 
                 <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
                     @if($user->role === 'admin')
-                        <span class="bg-purple-100 text-purple-700 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Admin</span>
+                        <span class="bg-purple-100 text-purple-700 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Admin</span>
                     @elseif($user->role === 'manager')
-                        <span class="bg-blue-100 text-blue-700 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Manager</span>
+                        <span class="bg-blue-100 text-blue-700 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Manager</span>
                     @elseif($user->role === 'accountant')
-                        <span class="bg-green-100 text-green-700 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Accountant</span>
+                        <span class="bg-green-100 text-green-700 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Accountant</span>
                     @else
-                        <span class="bg-gray-100 text-gray-700 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Op Staff</span>
+                        <span class="bg-gray-100 text-gray-700 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Op Staff</span>
                     @endif
                     <button @click="openEditModal({{ $user }})" class="text-wildOrchid font-bold text-sm hover:text-gray-900 transition-colors ml-auto">Edit Details</button>
                 </div>
@@ -63,16 +63,16 @@
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
-                    <input type="text" name="name" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
+                    <input type="text" name="name" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
-                    <input type="email" name="email" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
+                    <input type="email" name="email" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Role</label>
-                    <select name="role" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Role</label>
+                    <select name="role" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
                         <option value="operational_staff">Operational Staff (Orders/Products)</option>
                         <option value="accountant">Accountant (Financials Only)</option>
                         <option value="manager">Manager (No Delete/Edit System Settings)</option>
@@ -80,18 +80,18 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Password</label>
-                    <input type="password" name="password" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Password</label>
+                    <input type="password" name="password" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Confirm Password</label>
-                    <input type="password" name="password_confirmation" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Confirm Password</label>
+                    <input type="password" name="password_confirmation" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
                 </div>
             </div>
 
             <div class="flex justify-end gap-3 mt-8">
                 <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
-                <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 active:scale-95 transition">Create Staff</button>
+                <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">Create Staff</button>
             </div>
         </form>
     </x-modal>
@@ -113,16 +113,16 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
-                            <input type="text" name="name" x-model="formData.name" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
+                            <input type="text" name="name" x-model="formData.name" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
-                            <input type="email" name="email" x-model="formData.email" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
+                            <input type="email" name="email" x-model="formData.email" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Role</label>
-                            <select name="role" x-model="formData.role" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Role</label>
+                            <select name="role" x-model="formData.role" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors" required>
                                 <option value="operational_staff">Operational Staff (Orders/Products)</option>
                                 <option value="accountant">Accountant (Financials Only)</option>
                                 <option value="manager">Manager (No Delete/Edit System Settings)</option>
@@ -131,17 +131,17 @@
                         </div>
                         <div class="pt-4 border-t border-gray-100">
                             <p class="text-xs font-bold text-gray-400 mb-4">Leave passwords blank to keep current password.</p>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">New Password</label>
-                            <input type="password" name="password" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors mb-4">
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">New Password</label>
+                            <input type="password" name="password" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors mb-4">
                             
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Confirm New Password</label>
-                            <input type="password" name="password_confirmation" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors">
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Confirm New Password</label>
+                            <input type="password" name="password_confirmation" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors">
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-3 mt-8">
                         <button type="button" @click="closeEditModal()" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
-                        <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 active:scale-95 transition">Save Changes</button>
+                        <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">Save Changes</button>
                     </div>
                 </form>
             </div>

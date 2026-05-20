@@ -1,15 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-black text-2xl text-gray-900 leading-tight tracking-tight">
+            <h2 class="font-black text-2xl text-gray-900 dark:text-white leading-tight tracking-tight">
                 {{ __('Staff Management') }}
             </h2>
             <div class="flex gap-3">
-                <a href="{{ route('settings.index', ['tab' => 'staff']) }}" class="bg-white border border-gray-200 text-gray-700 font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-50 transition flex items-center gap-2">
+                <a href="{{ route('settings.index', ['tab' => 'staff']) }}" class="bg-white border border-gray-200 text-gray-700 font-bold py-2.5 px-5 rounded-xl hover:bg-gray-50 transition flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                     Manage Role Permissions
                 </a>
-                <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-user-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:bg-gray-800 transition duration-150 active:scale-95 flex items-center gap-2">
+                <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-user-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 transition duration-150 active:scale-95 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                     <span class="hidden sm:inline">Add Staff</span>
                 </button>
@@ -17,23 +17,23 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-[#F8FAFC] min-h-screen" x-data="userManager()">
+    <div class="py-6" x-data="userManager()">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             
             @if (session('success'))
-                <div class="mb-6 bg-green-500 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center gap-3 animate-[fadeInUp_0.3s_ease-out]">
+                <div class="mb-6 bg-green-50 text-green-700 border border-green-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <span class="font-bold">{{ session('success') }}</span>
                 </div>
             @endif
             @if (session('error'))
-                <div class="mb-6 bg-red-500 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center gap-3 animate-[fadeInUp_0.3s_ease-out]">
+                <div class="mb-6 bg-red-50 text-red-700 border border-red-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <span class="font-bold">{{ session('error') }}</span>
                 </div>
             @endif
             @if ($errors->any())
-                <div class="mb-6 bg-red-500 text-white px-6 py-4 rounded-2xl shadow-lg animate-[fadeInUp_0.3s_ease-out]">
+                <div class="mb-6 bg-red-50 text-red-700 border border-red-100 rounded-2xl px-6 py-4 shadow-sm">
                     <div class="flex items-center gap-3 mb-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                         <span class="font-bold">Please fix the following errors:</span>
@@ -49,7 +49,7 @@
             <!-- Users Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($users as $user)
-                    <div class="bg-white rounded-3xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 flex flex-col hover:shadow-lg transition-shadow">
+                    <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col hover:shadow-lg transition-shadow">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-14 h-14 bg-mango/20 text-mango rounded-2xl flex items-center justify-center font-black text-xl">
                                 {{ strtoupper(substr($user->name, 0, 2)) }}
@@ -98,16 +98,16 @@
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
-                        <input type="text" name="name" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
+                        <input type="text" name="name" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
-                        <input type="email" name="email" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
+                        <input type="email" name="email" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Role</label>
-                        <select name="role" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Role</label>
+                        <select name="role" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                             <option value="operational_staff">Operational Staff (Orders/Products)</option>
                             <option value="accountant">Accountant (Financials Only)</option>
                             <option value="manager">Manager (No Delete/Edit System Settings)</option>
@@ -115,18 +115,18 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Password</label>
-                        <input type="password" name="password" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Password</label>
+                        <input type="password" name="password" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Confirm Password</label>
-                        <input type="password" name="password_confirmation" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Confirm Password</label>
+                        <input type="password" name="password_confirmation" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-3 mt-8">
-                    <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
-                    <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 active:scale-95 transition">Create Staff</button>
+                    <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
+                    <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">Create Staff</button>
                 </div>
             </form>
         </x-modal>
@@ -147,16 +147,16 @@
                         
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
-                                <input type="text" name="name" x-model="formData.name" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors" required>
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
+                                <input type="text" name="name" x-model="formData.name" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
-                                <input type="email" name="email" x-model="formData.email" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors" required>
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
+                                <input type="email" name="email" x-model="formData.email" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">Role</label>
-                                <select name="role" x-model="formData.role" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors" required>
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Role</label>
+                                <select name="role" x-model="formData.role" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                                     <option value="operational_staff">Operational Staff (Orders/Products)</option>
                                     <option value="accountant">Accountant (Financials Only)</option>
                                     <option value="manager">Manager (No Delete/Edit System Settings)</option>
@@ -165,17 +165,17 @@
                             </div>
                             <div class="pt-4 border-t border-gray-100">
                                 <p class="text-xs font-bold text-gray-400 mb-4">Leave passwords blank to keep current password.</p>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">New Password</label>
-                                <input type="password" name="password" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors mb-4">
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">New Password</label>
+                                <input type="password" name="password" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors mb-4">
                                 
-                                <label class="block text-sm font-bold text-gray-700 mb-1">Confirm New Password</label>
-                                <input type="password" name="password_confirmation" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors">
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Confirm New Password</label>
+                                <input type="password" name="password_confirmation" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors">
                             </div>
                         </div>
 
                         <div class="flex justify-end gap-3 mt-8">
-                            <button type="button" @click="closeEditModal()" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
-                            <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 active:scale-95 transition">Save Changes</button>
+                            <button type="button" @click="closeEditModal()" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
+                            <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">Save Changes</button>
                         </div>
                     </form>
                 </div>

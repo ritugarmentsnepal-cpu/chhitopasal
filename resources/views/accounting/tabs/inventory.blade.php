@@ -18,18 +18,18 @@
     }
 }">
     <div class="flex justify-between items-center">
-        <h3 class="text-2xl font-black text-gray-900">Inventory Management</h3>
+        <h3 class="text-2xl font-black text-gray-900 dark:text-white">Inventory Management</h3>
     </div>
 
     <!-- Inventory Overview -->
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
             <h4 class="font-bold text-gray-900">Current Stock Levels</h4>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-gray-50/50 text-gray-500 text-xs tracking-wider font-bold uppercase">
+                    <tr class="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                         <th class="px-6 py-4">Product ID</th>
                         <th class="px-6 py-4">Product Name</th>
                         <th class="px-6 py-4">Category</th>
@@ -40,8 +40,8 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @foreach($data['products'] as $product)
-                        <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="px-6 py-4 text-sm text-gray-500 font-bold">#{{ $product->id }}</td>
+                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 font-bold">#{{ $product->id }}</td>
                             <td class="px-6 py-4 font-bold text-gray-900">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden">
@@ -58,11 +58,11 @@
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $product->category ? $product->category->name : 'Uncategorized' }}</td>
                             <td class="px-6 py-4 text-center">
-                                <span class="px-3 py-1 rounded-full text-xs font-black {{ $product->stock <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
+                                <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md {{ $product->stock <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
                                     {{ $product->stock }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right font-black text-gray-900">
+                            <td class="px-6 py-4 text-right font-black text-gray-900 dark:text-white">
                                 Rs. {{ number_format($product->cost_price * $product->stock, 2) }}
                                 <div class="text-[10px] text-gray-400 font-medium leading-none mt-1">@ Rs. {{ $product->cost_price }}/unit</div>
                             </td>
@@ -77,14 +77,14 @@
     </div>
 
     <!-- Inventory Logs -->
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
             <h4 class="font-bold text-gray-900">Recent Inventory Movements</h4>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-gray-50/50 text-gray-500 text-xs tracking-wider font-bold uppercase">
+                    <tr class="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                         <th class="px-6 py-4">Date</th>
                         <th class="px-6 py-4">User</th>
                         <th class="px-6 py-4">Action</th>
@@ -94,7 +94,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($data['inventory_logs'] as $log)
-                        <tr class="hover:bg-gray-50/50 transition-colors">
+                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $log->created_at->format('M d, Y h:i A') }}</td>
                             <td class="px-6 py-4 text-sm font-bold text-gray-900">{{ $log->user ? $log->user->name : 'System' }}</td>
                             <td class="px-6 py-4">
@@ -141,36 +141,36 @@
                 <input type="hidden" name="product_id" x-model="selectedProductId">
                 
                 <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <div class="text-sm text-gray-500 font-bold mb-1">Product</div>
-                    <div class="font-black text-gray-900" x-text="selectedProductName"></div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400 font-bold mb-1">Product</div>
+                    <div class="font-black text-gray-900 dark:text-white" x-text="selectedProductName"></div>
                     <div class="text-xs text-gray-500 mt-1">Current Stock: <span class="font-bold text-gray-900" x-text="currentStock"></span></div>
                 </div>
 
                 <div class="space-y-5">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Adjustment Type</label>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Adjustment Type</label>
                         <div class="flex gap-4">
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="type" value="add" x-model="adjustmentType" class="text-mango focus:ring-mango"> 
+                                <input type="radio" name="type" value="add" x-model="adjustmentType" class="text-mango shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10"> 
                                 <span class="font-bold text-sm text-green-600">+ Add Stock</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="type" value="deduct" x-model="adjustmentType" class="text-mango focus:ring-mango"> 
+                                <input type="radio" name="type" value="deduct" x-model="adjustmentType" class="text-mango shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10"> 
                                 <span class="font-bold text-sm text-red-600">- Deduct Stock</span>
                             </label>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Quantity</label>
-                        <input type="number" name="quantity" x-model="quantity" min="1" required class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango text-xl font-black text-center py-3">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Quantity</label>
+                        <input type="number" name="quantity" x-model="quantity" min="1" required class="w-full bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 text-xl font-black text-center py-3">
                         <div class="mt-2 text-center text-xs text-gray-500">
                             New Stock will be: 
                             <span class="font-black" :class="adjustmentType === 'add' ? 'text-green-600' : 'text-red-600'" x-text="adjustmentType === 'add' ? parseInt(currentStock) + parseInt(quantity || 0) : parseInt(currentStock) - parseInt(quantity || 0)"></span>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Reason</label>
-                        <select name="reason" x-model="reason" required class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Reason</label>
+                        <select name="reason" x-model="reason" required class="w-full bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10">
                             <option value="">Select reason...</option>
                             <template x-if="adjustmentType === 'add'">
                                 <optgroup label="Additions">
@@ -192,14 +192,14 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Additional Notes (Optional)</label>
-                        <input type="text" name="notes" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-mango">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Additional Notes (Optional)</label>
+                        <input type="text" name="notes" class="w-full bg-gray-50 border-gray-200 rounded-xl shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10">
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
                     <button type="button" @click="$dispatch('close-modal', 'adjust-stock-modal')" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
-                    <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition shadow-lg">Confirm Adjustment</button>
+                    <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Confirm Adjustment</button>
                 </div>
             </form>
         </div>

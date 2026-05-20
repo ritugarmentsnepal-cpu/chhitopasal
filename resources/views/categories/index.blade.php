@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-black text-2xl text-gray-900 leading-tight tracking-tight">
+            <h2 class="font-black text-2xl text-gray-900 dark:text-white leading-tight tracking-tight">
                 {{ __('Categories Manager') }}
             </h2>
-            <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-category-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:bg-gray-800 transition duration-150 active:scale-95 flex items-center gap-2">
+            <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-category-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 transition duration-150 active:scale-95 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -13,11 +13,11 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-[#F8FAFC] min-h-screen" x-data="categoryManager()">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="py-6" x-data="categoryManager()">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             
             @if (session('success'))
-                <div class="mb-6 bg-green-500 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center gap-3 animate-[fadeInUp_0.3s_ease-out]">
+                <div class="mb-6 bg-green-50 text-green-700 border border-green-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -26,7 +26,7 @@
             @endif
 
             @if (session('error'))
-                <div class="mb-6 bg-red-500 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center gap-3 animate-[fadeInUp_0.3s_ease-out]">
+                <div class="mb-6 bg-red-50 text-red-700 border border-red-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -36,7 +36,7 @@
 
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 @foreach($categories as $category)
-                    <div class="bg-white rounded-3xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 hover:shadow-lg transition-shadow">
+                    <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-lg transition-shadow">
                         <div class="flex items-center justify-between mb-3">
                             <div>
                                 <h3 class="font-black text-xl text-gray-900 mb-1">{{ $category->name }}</h3>
@@ -89,17 +89,17 @@
         <form method="POST" action="{{ route('categories.store') }}" class="p-8">
             @csrf
             <div class="mb-8">
-                <h2 class="text-2xl font-black text-gray-900">Add New Category</h2>
+                <h2 class="text-2xl font-black text-gray-900 dark:text-white">Add New Category</h2>
                 <p class="text-sm text-gray-500 mt-1">Create a new product classification.</p>
             </div>
             
             <div class="mb-6">
-                <label for="name" class="block text-sm font-bold text-gray-700 mb-2">Category Name</label>
-                <input id="name" name="name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-wildOrchid focus:ring focus:ring-wildOrchid/20 py-3 transition-colors font-bold" placeholder="e.g. Clothing" required />
+                <label for="name" class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category Name</label>
+                <input id="name" name="name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" placeholder="e.g. Clothing" required />
             </div>
 
             <!-- Variant Toggles -->
-            <div class="mb-6 bg-gray-50 rounded-2xl p-5 border border-gray-100 space-y-5" x-data="{ showColors: false, showSizes: false }">
+            <div class="mb-6 bg-gray-50 dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 space-y-5" x-data="{ showColors: false, showSizes: false }">
                 <h4 class="font-black text-gray-900 text-sm uppercase tracking-wider">Variant Options</h4>
                 
                 <!-- Color Toggle -->
@@ -146,8 +146,8 @@
             </div>
 
             <div class="flex justify-end gap-3 border-t border-gray-100 pt-6">
-                <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
-                <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 active:scale-95 transition">Save Category</button>
+                <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
+                <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">Save Category</button>
             </div>
         </form>
     </x-modal>
@@ -165,18 +165,18 @@
                     @method('PUT')
                     
                     <div class="px-8 py-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                        <h3 class="text-xl font-black text-gray-900">Edit Category</h3>
+                        <h3 class="text-xl font-black text-gray-900 dark:text-white">Edit Category</h3>
                         <button type="button" @click="closeEditModal()" class="text-gray-400 hover:text-gray-900"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                     </div>
 
                     <div class="p-8">
                         <div class="mb-5">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Category Name</label>
-                            <input name="name" x-model="formData.name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-wildOrchid focus:ring focus:ring-wildOrchid/20 py-3 transition-colors font-bold" required />
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category Name</label>
+                            <input name="name" x-model="formData.name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
                         </div>
 
                         <!-- Variant Toggles (Edit) -->
-                        <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 space-y-5">
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 space-y-5">
                             <h4 class="font-black text-gray-900 text-sm uppercase tracking-wider">Variant Options</h4>
                             
                             <!-- Color Toggle -->
@@ -225,7 +225,7 @@
 
                     <div class="px-8 py-5 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
                         <button type="button" @click="closeEditModal()" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
-                        <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 active:scale-95 transition">Update Category</button>
+                        <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">Update Category</button>
                     </div>
                 </form>
             </div>

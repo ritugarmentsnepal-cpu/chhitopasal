@@ -1,48 +1,50 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-black text-2xl text-gray-900 leading-tight tracking-tight">
+            <h2 class="font-black text-2xl text-gray-900 dark:text-white leading-tight tracking-tight">
                 {{ __('Expenses') }}
             </h2>
-            <button x-data="" @click="$dispatch('open-modal', 'add-expense')" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-5 rounded-xl transition-all active:scale-95 shadow-sm flex items-center gap-2">
+            <button x-data="" @click="$dispatch('open-modal', 'add-expense')" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-5 rounded-xl transition-all active:scale-95 shadow-[0_8px_20px_rgb(17,24,39,0.2)] flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                 Record Expense
             </button>
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="expenseManager()">
-        <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
+    <div class="py-6" x-data="expenseManager()">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             
             @if(session('success'))
-                <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-xl shadow-sm">
-                    <p class="font-bold text-green-800">{{ session('success') }}</p>
+                <div class="mb-6 bg-green-50 text-green-700 border border-green-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p class="font-bold">{{ session('success') }}</p>
                 </div>
             @endif
             @if(session('error'))
-                <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl shadow-sm">
-                    <p class="font-bold text-red-800">{{ session('error') }}</p>
+                <div class="mb-6 bg-red-50 text-red-700 border border-red-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p class="font-bold">{{ session('error') }}</p>
                 </div>
             @endif
 
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50/50">
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider">Date</th>
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider">Category</th>
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider">Amount</th>
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider">Description</th>
-                                <th class="py-4 px-6 font-black text-xs text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                            <tr class="bg-white">
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Description</th>
+                                <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($expenses as $expense)
-                                <tr class="hover:bg-gray-50/50 transition-colors">
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td class="py-4 px-6 font-bold text-gray-900">{{ \Carbon\Carbon::parse($expense->date)->format('M d, Y') }}</td>
                                     <td class="py-4 px-6 font-bold text-gray-700">
-                                        <span class="bg-gray-100 text-gray-700 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">{{ $expense->category }}</span>
+                                        <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md bg-gray-100 text-gray-700">{{ $expense->category }}</span>
                                     </td>
                                     <td class="py-4 px-6 font-black text-mango">Rs. {{ number_format($expense->amount, 2) }}</td>
                                     <td class="py-4 px-6 font-medium text-gray-500">{{ $expense->description ?? '-' }}</td>
@@ -74,26 +76,26 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Date</label>
-                            <input type="date" name="date" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Date</label>
+                            <input type="date" name="date" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Category</label>
-                            <input type="text" name="category" placeholder="e.g. Rent, Utilities, Courier" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category</label>
+                            <input type="text" name="category" placeholder="e.g. Rent, Utilities, Courier" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Amount (Rs.)</label>
-                            <input type="number" step="0.01" name="amount" placeholder="0.00" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Amount (Rs.)</label>
+                            <input type="number" step="0.01" name="amount" placeholder="0.00" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Description (Optional)</label>
-                            <textarea name="description" rows="2" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango transition-colors"></textarea>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Description (Optional)</label>
+                            <textarea name="description" rows="2" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors"></textarea>
                         </div>
                     </div>
 
                     <div class="mt-8 flex justify-end gap-3">
-                        <button type="button" x-on:click="$dispatch('close')" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
-                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm">Save Expense</button>
+                        <button type="button" x-on:click="$dispatch('close')" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
+                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Save Expense</button>
                     </div>
                 </form>
             </x-modal>
@@ -106,26 +108,26 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Date</label>
-                            <input type="date" name="date" x-model="formData.date" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Date</label>
+                            <input type="date" name="date" x-model="formData.date" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Category ID</label>
-                            <input type="number" name="expense_category_id" x-model="formData.expense_category_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category ID</label>
+                            <input type="number" name="expense_category_id" x-model="formData.expense_category_id" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Amount (Rs.)</label>
-                            <input type="number" step="0.01" name="amount" x-model="formData.amount" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Amount (Rs.)</label>
+                            <input type="number" step="0.01" name="amount" x-model="formData.amount" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Description</label>
-                            <textarea name="description" x-model="formData.description" rows="2" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango transition-colors"></textarea>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Description</label>
+                            <textarea name="description" x-model="formData.description" rows="2" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-3 focus:border-gray-900 focus:ring focus:ring-gray-900/10 font-medium transition-colors"></textarea>
                         </div>
                     </div>
 
                     <div class="mt-8 flex justify-end gap-3">
-                        <button type="button" @click="$dispatch('close')" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
-                        <button type="submit" class="bg-wildOrchid hover:bg-pink-600 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm">Update Expense</button>
+                        <button type="button" @click="$dispatch('close')" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
+                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Update Expense</button>
                     </div>
                 </form>
             </x-modal>

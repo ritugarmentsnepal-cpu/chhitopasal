@@ -30,27 +30,27 @@
     }
 }">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <h3 class="text-2xl font-black text-gray-900">Purchase Bills</h3>
-        <button @click="purchaseModal = true" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-800 transition-colors whitespace-nowrap">
+        <h3 class="text-2xl font-black text-gray-900 dark:text-white">Purchase Bills</h3>
+        <button @click="purchaseModal = true" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition-colors whitespace-nowrap">
             + Record Purchase
         </button>
     </div>
 
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50/50">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Supplier</th>
-                    <th class="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th class="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Payment Status</th>
-                    <th class="px-6 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-wider">Action</th>
+                    <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                    <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Supplier</th>
+                    <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
+                    <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Payment Status</th>
+                    <th class="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Action</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @foreach($data['purchases'] as $purchase)
-                <tr class="hover:bg-gray-50/50 transition-colors">
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="font-bold text-gray-900">{{ \Carbon\Carbon::parse($purchase->date)->format('M d, Y') }}</div>
                     </td>
@@ -66,7 +66,7 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div x-data="{ editingAmount: false, newAmount: {{ $purchase->total_amount }} }">
                             <div x-show="!editingAmount" class="flex items-center gap-2">
-                                <span class="font-black text-gray-900">Rs. {{ number_format($purchase->total_amount, 2) }}</span>
+                                <span class="font-black text-gray-900 dark:text-white">Rs. {{ number_format($purchase->total_amount, 2) }}</span>
                                 <button @click="editingAmount = true" class="text-gray-400 hover:text-mango">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </button>
@@ -80,7 +80,7 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-3 py-1 text-xs font-bold rounded-full {{ $purchase->payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                        <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md {{ $purchase->payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                             {{ ucfirst($purchase->payment_status) }}
                         </span>
                     </td>
@@ -107,7 +107,7 @@
                 <form action="{{ route('purchases.store') }}" method="POST" enctype="multipart/form-data" class="p-8">
                     @csrf
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-black text-gray-900">Record Purchase Bill</h3>
+                        <h3 class="text-2xl font-black text-gray-900 dark:text-white">Record Purchase Bill</h3>
                         <button type="button" @click="purchaseModal = false" class="text-gray-400 hover:text-gray-500">
                             <span class="sr-only">Close</span>
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -116,8 +116,8 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Supplier Party</label>
-                            <select name="party_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Supplier Party</label>
+                            <select name="party_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10" required>
                                 <option value="">Select a supplier...</option>
                                 @foreach($data['parties'] as $party)
                                     <option value="{{ $party->id }}">{{ $party->name }}</option>
@@ -125,15 +125,15 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Bill/Invoice Number</label>
-                            <input type="text" name="reference_no" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Bill/Invoice Number</label>
+                            <input type="text" name="reference_no" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Date</label>
-                            <input type="date" name="date" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Date</label>
+                            <input type="date" name="date" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Upload Bill Image/PDF</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Upload Bill Image/PDF</label>
                             <input type="file" name="attachment" class="w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-mango file:text-gray-900 hover:file:bg-yellow-400">
                         </div>
                     </div>
@@ -143,7 +143,7 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="py-3 px-4 font-bold text-sm text-gray-900">Product</th>
+                                    <th class="py-3 px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Product</th>
                                     <th class="py-3 px-4 font-bold text-sm text-gray-900 w-32">Qty</th>
                                     <th class="py-3 px-4 font-bold text-sm text-gray-900 w-40">Unit Cost</th>
                                     <th class="py-3 px-4 font-bold text-sm text-gray-900 text-right w-40">Total</th>
@@ -191,7 +191,7 @@
 
                     <div class="flex justify-end gap-3 mt-8">
                         <button type="button" @click="purchaseModal = false" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
-                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm">Record Purchase & Add Stock</button>
+                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Record Purchase & Add Stock</button>
                     </div>
                 </form>
             </div>
@@ -211,26 +211,26 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Payment Amount (Rs.)</label>
-                            <input type="number" name="amount" x-model="selectedPurchaseAmount" step="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Payment Amount (Rs.)</label>
+                            <input type="number" name="amount" x-model="selectedPurchaseAmount" step="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Pay From Account</label>
-                            <select name="account_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango" required>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Pay From Account</label>
+                            <select name="account_id" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10" required>
                                 @foreach(App\Models\Account::all() as $account)
                                     <option value="{{ $account->id }}">{{ $account->name }} (Bal: {{ $account->balance }})</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Payment Notes</label>
-                            <input type="text" name="notes" placeholder="e.g. Cheque No 123456" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 focus:ring-mango focus:border-mango">
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Payment Notes</label>
+                            <input type="text" name="notes" placeholder="e.g. Cheque No 123456" class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10">
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-3 mt-8">
                         <button type="button" @click="paymentModal = false" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
-                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm">Confirm Payment</button>
+                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_8px_20px_rgb(17,24,39,0.2)] active:scale-95">Confirm Payment</button>
                     </div>
                 </form>
             </div>
