@@ -204,7 +204,16 @@
                                 <th class="p-4 border-b border-gray-100">Customer</th>
                                 <th class="p-4 border-b border-gray-100">Location</th>
                                 @if($status === 'shipped')
-                                    <th class="p-4 border-b border-gray-100">Pathao Status</th>
+                                    <th class="p-4 border-b border-gray-100">
+                                        <div class="flex items-center gap-2">
+                                            Pathao Status
+                                            <span x-show="autoRefreshRunning" x-cloak class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                                                <span x-text="autoRefreshProgress"></span>
+                                            </span>
+                                            <span x-show="!autoRefreshRunning && autoRefreshProgress === ''" x-cloak></span>
+                                        </div>
+                                    </th>
                                 @endif
                                 <th class="p-4 border-b border-gray-100">Items & Total</th>
                                 <th class="p-4 border-b border-gray-100 text-right rounded-tr-3xl">Action</th>
@@ -254,14 +263,18 @@
                                                 default => 'bg-yellow-50 text-yellow-700 border-yellow-200',
                                             };
                                         @endphp
-                                        <button @click="openTrackingModal({{ $order->id }})" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border {{ $badgeClass }} cursor-pointer hover:shadow-md hover:scale-105 transition-all duration-150" title="Click for live tracking">
+                                        <button @click="openTrackingModal({{ $order->id }})" id="pathao-badge-{{ $order->id }}" data-order-id="{{ $order->id }}" class="pathao-status-badge inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border {{ $badgeClass }} cursor-pointer hover:shadow-md hover:scale-105 transition-all duration-150" title="Click for live tracking">
                                             <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
-                                            {{ $order->pathao_status ?? 'Awaiting Pickup' }}
+                                            <span class="pathao-status-text">{{ $order->pathao_status ?? 'Awaiting Pickup' }}</span>
                                             <svg class="w-2.5 h-2.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                                         </button>
-                                        @if($order->pathao_status_updated_at)
-                                            <div class="text-[10px] text-gray-400 mt-1">{{ \Carbon\Carbon::parse($order->pathao_status_updated_at)->diffForHumans() }}</div>
-                                        @endif
+                                        <div class="text-[10px] text-gray-400 mt-1 pathao-updated-text" id="pathao-updated-{{ $order->id }}">
+                                            @if($order->pathao_status_updated_at)
+                                                {{ \Carbon\Carbon::parse($order->pathao_status_updated_at)->diffForHumans() }}
+                                            @else
+                                                never synced
+                                            @endif
+                                        </div>
                                     </td>
                                     @endif
                                     <td class="p-4 align-top">
@@ -1051,6 +1064,8 @@
                 trackingSteps: ['Pickup', 'In Transit', 'At Hub', 'Out for Delivery', 'Delivered'],
                 refreshCooldown: 0,
                 refreshTimer: null,
+                autoRefreshRunning: false,
+                autoRefreshProgress: '',
                 
                 productPrices: {
                     @foreach($products as $product)
@@ -1121,6 +1136,11 @@
                     }
                     // Listen for bulk modal open event from header button
                     window.addEventListener('open-bulk-modal', () => this.openBulkModal());
+
+                    // Auto-refresh Pathao statuses on shipped tab
+                    @if($status === 'shipped')
+                        this.autoRefreshPathaoStatuses();
+                    @endif
 
                     // Keyboard shortcuts for multi-cell selection in bulk modal
                     document.addEventListener('keydown', (e) => {
@@ -1332,6 +1352,75 @@
                             this.refreshTimer = null;
                         }
                     }, 1000);
+                },
+
+                // Progressive auto-refresh: fetch live Pathao status for each visible order
+                async autoRefreshPathaoStatuses() {
+                    const badges = document.querySelectorAll('.pathao-status-badge');
+                    if (badges.length === 0) return;
+
+                    this.autoRefreshRunning = true;
+                    const total = badges.length;
+                    let current = 0;
+
+                    const badgeClassMap = {
+                        'delivered': 'bg-green-50 text-green-700 border-green-200',
+                        'successful': 'bg-green-50 text-green-700 border-green-200',
+                        'transit': 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                        'in transit': 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                        'picked': 'bg-blue-50 text-blue-700 border-blue-200',
+                        'pickup': 'bg-blue-50 text-blue-700 border-blue-200',
+                        'hub': 'bg-purple-50 text-purple-700 border-purple-200',
+                        'sorting': 'bg-purple-50 text-purple-700 border-purple-200',
+                        'last mile': 'bg-purple-50 text-purple-700 border-purple-200',
+                        'out for': 'bg-orange-50 text-orange-700 border-orange-200',
+                        'return': 'bg-red-50 text-red-700 border-red-200',
+                        'cancel': 'bg-gray-100 text-gray-600 border-gray-200',
+                    };
+                    const defaultClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                    const allBadgeClasses = [...new Set(Object.values(badgeClassMap).concat([defaultClass]).join(' ').split(' '))];
+
+                    for (const badge of badges) {
+                        current++;
+                        this.autoRefreshProgress = `Syncing ${current}/${total}...`;
+                        const orderId = badge.dataset.orderId;
+                        if (!orderId) continue;
+
+                        try {
+                            const res = await fetch(`{{ url('orders') }}/${orderId}/pathao-details`);
+                            if (res.ok) {
+                                const data = await res.json();
+                                const status = data?.pathao?.status || 'Awaiting Pickup';
+                                const statusLower = status.toLowerCase();
+
+                                // Update badge text
+                                const textEl = badge.querySelector('.pathao-status-text');
+                                if (textEl) textEl.textContent = status;
+
+                                // Update badge color
+                                badge.classList.remove(...allBadgeClasses);
+                                let matchedClass = defaultClass;
+                                for (const [key, cls] of Object.entries(badgeClassMap)) {
+                                    if (statusLower.includes(key)) { matchedClass = cls; break; }
+                                }
+                                badge.classList.add(...matchedClass.split(' '));
+
+                                // Update timestamp
+                                const updatedEl = document.getElementById(`pathao-updated-${orderId}`);
+                                if (updatedEl) updatedEl.textContent = data?.status_updated_at || 'just now';
+                            }
+                        } catch (e) {
+                            console.error(`Failed to refresh status for order ${orderId}`, e);
+                        }
+
+                        // 1.5 second delay between API calls
+                        if (current < total) {
+                            await new Promise(r => setTimeout(r, 1500));
+                        }
+                    }
+
+                    this.autoRefreshRunning = false;
+                    this.autoRefreshProgress = '';
                 },
 
                 getStepIndex() {
