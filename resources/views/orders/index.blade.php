@@ -254,10 +254,11 @@
                                                 default => 'bg-yellow-50 text-yellow-700 border-yellow-200',
                                             };
                                         @endphp
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border {{ $badgeClass }}">
+                                        <button @click="openTrackingModal({{ $order->id }})" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border {{ $badgeClass }} cursor-pointer hover:shadow-md hover:scale-105 transition-all duration-150" title="Click for live tracking">
                                             <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
                                             {{ $order->pathao_status ?? 'Awaiting Pickup' }}
-                                        </span>
+                                            <svg class="w-2.5 h-2.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                        </button>
                                         @if($order->pathao_status_updated_at)
                                             <div class="text-[10px] text-gray-400 mt-1">{{ \Carbon\Carbon::parse($order->pathao_status_updated_at)->diffForHumans() }}</div>
                                         @endif
