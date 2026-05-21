@@ -498,6 +498,7 @@ class OrderController extends Controller
             'orders.*.product_id' => 'required|exists:products,id',
             'orders.*.quantity' => 'required|integer|min:1',
             'orders.*.amount' => 'required|numeric|min:0',
+            'orders.*.remarks' => 'nullable|string|max:1000',
         ]);
 
         $successCount = 0;
@@ -522,6 +523,7 @@ class OrderController extends Controller
                         'total_amount' => $totalAmount,
                         'status' => 'pending',
                         'source' => 'manual',
+                        'remarks' => $row['remarks'] ?? null,
                     ]);
 
                     $order->orderItems()->create([

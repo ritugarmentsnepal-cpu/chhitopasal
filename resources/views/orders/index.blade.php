@@ -413,6 +413,7 @@
                                     <th class="px-2 py-3 text-left min-w-[220px] border-r border-gray-700">Product <span class="text-red-400">*</span></th>
                                     <th class="px-2 py-3 text-center min-w-[70px] border-r border-gray-700">Qty</th>
                                     <th class="px-2 py-3 text-center min-w-[110px] border-r border-gray-700">Amount (Rs.)</th>
+                                    <th class="px-2 py-3 text-left min-w-[180px] border-r border-gray-700">Internal Remarks</th>
                                     <th class="px-2 py-3 text-center w-14"></th>
                                 </tr>
                             </thead>
@@ -452,6 +453,10 @@
                                         <td class="px-1 py-1 border-r border-gray-100 relative group" @mousedown="cellMouseDown($event, idx, 6)" @mouseenter="cellMouseEnterSelect(idx, 6)" :class="isCellSelected(idx, 6) ? 'bg-blue-100/60 ring-1 ring-inset ring-blue-400' : ''">
                                             <input type="number" x-model.number="row.amount" :data-row="idx" :data-col="6" @focus="activeCell = { row: idx, col: 6 }" @keydown.enter.prevent="moveFocusDown(idx, 6)" step="0.01" min="0" @paste="handlePaste($event, idx, 6)" @mouseenter="updateDragFill(idx, 6)" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-bold text-center placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 6 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
                                             <div x-show="activeCell.row === idx && activeCell.col === 6" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 6, 'amount')"></div>
+                                        </td>
+                                        <td class="px-1 py-1 border-r border-gray-100 relative group" @mousedown="cellMouseDown($event, idx, 7)" @mouseenter="cellMouseEnterSelect(idx, 7)" :class="isCellSelected(idx, 7) ? 'bg-blue-100/60 ring-1 ring-inset ring-blue-400' : ''">
+                                            <input type="text" x-model="row.remarks" :data-row="idx" :data-col="7" @focus="activeCell = { row: idx, col: 7 }" @keydown.enter.prevent="moveFocusDown(idx, 7)" @paste="handlePaste($event, idx, 7)" @mouseenter="updateDragFill(idx, 7)" placeholder="Notes..." class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 7 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
+                                            <div x-show="activeCell.row === idx && activeCell.col === 7" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 7, 'remarks')"></div>
                                         </td>
                                         <td class="px-1 py-1 text-center">
                                             <button type="button" @click="removeBulkRow(idx)" class="p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition opacity-0 group-hover:opacity-100" :class="bulkRows.length <= 1 ? 'invisible' : ''">
@@ -1065,7 +1070,7 @@
                 isDragSelecting: false,      // Whether user is drag-selecting
                 dragSelectStart: null,       // Start cell of drag selection
                 selectionActionBar: false,   // Show floating action bar
-                _colFields: ['customer_name', 'customer_phone', 'address', 'city', 'product_selection', 'quantity', 'amount'],
+                _colFields: ['customer_name', 'customer_phone', 'address', 'city', 'product_selection', 'quantity', 'amount', 'remarks'],
 
                 async init() {
                     // Pre-fetch cities when dashboard loads
@@ -1310,7 +1315,7 @@
 
                 // === Bulk Spreadsheet Methods ===
                 emptyBulkRow() {
-                    return { customer_name: '', customer_phone: '', address: '', city: '', product_selection: '', product_id: '', quantity: 1, amount: 0, unit_price: 0, _error: false };
+                    return { customer_name: '', customer_phone: '', address: '', city: '', product_selection: '', product_id: '', quantity: 1, amount: 0, unit_price: 0, remarks: '', _error: false };
                 },
 
                 openBulkModal() {
@@ -1731,7 +1736,7 @@
                         const res = await fetch('{{ route("orders.bulkManualStore") }}', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-                            body: JSON.stringify({ orders: validRows.map(r => ({ customer_name: r.customer_name, customer_phone: r.customer_phone, address: r.address, city: r.city, product_id: r.product_id, quantity: parseInt(r.quantity) || 1, amount: parseFloat(r.amount) || 0 })) })
+                            body: JSON.stringify({ orders: validRows.map(r => ({ customer_name: r.customer_name, customer_phone: r.customer_phone, address: r.address, city: r.city, product_id: r.product_id, quantity: parseInt(r.quantity) || 1, amount: parseFloat(r.amount) || 0, remarks: r.remarks || '' })) })
                         });
                         const data = await res.json();
                         if (res.ok) {
