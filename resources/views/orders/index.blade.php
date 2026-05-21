@@ -366,9 +366,25 @@
                     </table>
                 </div>
                 <!-- Pagination -->
-                @if($orders->hasPages())
-                    <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-[24px]">
-                        {{ $orders->links() }}
+                @if($orders->hasPages() || $orders->total() > 20)
+                    <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-[24px] flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <span class="font-bold">Show</span>
+                            <div class="relative">
+                                <select onchange="window.location.href=this.value" class="appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-1.5 text-xs font-bold text-gray-700 focus:border-gray-900 focus:ring focus:ring-gray-900/10 transition-colors cursor-pointer">
+                                    @foreach([20, 50, 75, 100] as $size)
+                                        <option value="{{ request()->fullUrlWithQuery(['per_page' => $size, 'page' => 1]) }}" {{ request('per_page', 20) == $size ? 'selected' : '' }}>{{ $size }}</option>
+                                    @endforeach
+                                </select>
+                                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                            <span class="font-medium">per page</span>
+                            <span class="text-gray-300 mx-1">·</span>
+                            <span class="font-medium">{{ $orders->total() }} total</span>
+                        </div>
+                        <div>
+                            {{ $orders->links() }}
+                        </div>
                     </div>
                 @endif
             </div>
