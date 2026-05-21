@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Account extends Model
 {
+    use \App\Traits\Loggable;
+
     protected $fillable = ['name', 'type', 'balance', 'account_number', 'bank_name', 'branch'];
 
     /**

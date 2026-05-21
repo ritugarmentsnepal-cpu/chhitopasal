@@ -112,6 +112,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Analytics
         Route::get('/admin/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
 
+        // Activity Log
+        Route::get('/admin/activity-log', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-log.index');
+
         // Admin Utilities — SEC-09: Changed from GET to POST to prevent CSRF via link/image tags
         Route::post('/admin/clear-cache', function () {
             \Illuminate\Support\Facades\Artisan::call('cache:clear');

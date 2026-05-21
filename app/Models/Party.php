@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Party extends Model
 {
+    use \App\Traits\Loggable;
+
     protected $fillable = ['name', 'type', 'phone', 'email', 'address', 'opening_balance', 'current_balance'];
 
     public function purchases()

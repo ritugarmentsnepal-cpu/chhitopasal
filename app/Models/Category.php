@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\Loggable;
 
     protected $fillable = ['name', 'slug', 'has_color_variants', 'has_size_variants', 'color_options', 'size_options'];
 
