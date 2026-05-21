@@ -66,7 +66,7 @@ class OrderController extends Controller
             }
         }
 
-        $perPage = in_array((int) $request->get('per_page'), [20, 50, 75, 100]) ? (int) $request->get('per_page') : 20;
+        $perPage = max(1, min(500, (int) $request->get('per_page', 20))) ?: 20;
         $orders = $query->orderByDesc('id')->paginate($perPage)->withQueryString();
 
         // Fetch products for bulk upload reference modal
