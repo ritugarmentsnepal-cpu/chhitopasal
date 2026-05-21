@@ -24,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/orders/template', [OrderController::class, 'downloadTemplate'])->middleware('throttle:5,1')->name('orders.template');
         Route::post('/orders/bulk-upload', [OrderController::class, 'bulkUpload'])->name('orders.bulkUpload');
         Route::post('/orders/bulk-manual', [OrderController::class, 'bulkManualStore'])->name('orders.bulkManualStore');
+        Route::get('/orders/bulk-batches', [OrderController::class, 'bulkBatches'])->name('orders.bulkBatches');
         Route::post('/orders/bulk-print', [OrderController::class, 'bulkPrint'])->name('orders.bulkPrint');
         Route::post('/orders/bulk-delete', [OrderController::class, 'bulkDelete'])->name('orders.bulkDelete');
         Route::post('/orders/bulk-ship', [OrderController::class, 'bulkShip'])->name('orders.bulkShip');

@@ -420,7 +420,20 @@
                             <tbody>
                                 <template x-for="(row, idx) in bulkRows" :key="idx">
                                     <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors group" :class="row._error ? 'bg-red-50' : ''">
-                                        <td class="px-2 py-1 text-center text-xs font-bold text-gray-400 border-r border-gray-100 bg-gray-50" x-text="idx + 1"></td>
+                                        <td class="px-2 py-1 text-center text-xs font-bold border-r border-gray-100 relative" :class="row._error ? 'bg-red-100 text-red-600' : 'text-gray-400 bg-gray-50'">
+                                            <div class="flex items-center justify-center gap-1">
+                                                <span x-text="idx + 1"></span>
+                                                <template x-if="row._error">
+                                                    <div class="relative group/err">
+                                                        <svg class="w-3.5 h-3.5 text-red-500 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                                                        <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 w-56 p-2 bg-red-600 text-white text-[11px] font-bold rounded-lg shadow-xl opacity-0 invisible group-hover/err:opacity-100 group-hover/err:visible transition-all pointer-events-none">
+                                                            <div x-text="row._errorMsg"></div>
+                                                            <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-red-600"></div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </td>
                                         <td class="px-1 py-1 border-r border-gray-100 relative group" @mousedown="cellMouseDown($event, idx, 0)" @mouseenter="cellMouseEnterSelect(idx, 0)" :class="isCellSelected(idx, 0) ? 'bg-blue-100/60 ring-1 ring-inset ring-blue-400' : ''">
                                             <input type="text" x-model="row.customer_name" :data-row="idx" :data-col="0" @focus="activeCell = { row: idx, col: 0 }" @keydown.enter.prevent="moveFocusDown(idx, 0)" @paste="handlePaste($event, idx, 0)" @mouseenter="updateDragFill(idx, 0)" placeholder="Full Name" class="w-full border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-400 rounded px-2 py-1.5 text-sm font-medium placeholder:text-gray-300 transition" :class="(isDraggingFill && dragFillStart?.col === 0 && idx >= Math.min(dragFillStart.row, dragFillEndRow) && idx <= Math.max(dragFillStart.row, dragFillEndRow)) ? 'bg-blue-100 ring-1 ring-blue-400' : ''">
                                             <div x-show="activeCell.row === idx && activeCell.col === 0" class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-blue-600 cursor-ns-resize z-20 hover:bg-blue-800 rounded-sm" @mousedown.prevent.stop="startDragFill(idx, 0, 'customer_name')"></div>
@@ -1315,7 +1328,7 @@
 
                 // === Bulk Spreadsheet Methods ===
                 emptyBulkRow() {
-                    return { customer_name: '', customer_phone: '', address: '', city: '', product_selection: '', product_id: '', quantity: 1, amount: 0, unit_price: 0, remarks: '', _error: false };
+                    return { customer_name: '', customer_phone: '', address: '', city: '', product_selection: '', product_id: '', quantity: 1, amount: 0, unit_price: 0, remarks: '', _error: false, _errorMsg: '' };
                 },
 
                 openBulkModal() {
@@ -1708,27 +1721,25 @@
                 },
 
                 async submitBulkOrders() {
-                    // Validate
-                    let hasError = false;
-                    this.bulkRows.forEach(r => {
-                        r._error = false;
-                        if (!r.customer_name && !r.customer_phone && !r.address && !r.product_selection) return; // skip empty rows
-                        
-                        const isValidProduct = r.product_id && !isNaN(r.product_id);
-                        
-                        if (!r.customer_name || !r.customer_phone || !r.address || !isValidProduct) {
-                            r._error = true;
-                            hasError = true;
-                        }
-                    });
+                    // Reset all error states
+                    this.bulkRows.forEach(r => { r._error = false; r._errorMsg = ''; });
 
-                    const validRows = this.bulkRows.filter(r => r.customer_name && r.customer_phone && r.address && r.product_id && !isNaN(r.product_id));
-                    if (validRows.length === 0) {
-                        alert('Please fill in at least one complete row.');
+                    // Build payload from ALL non-empty rows (user must delete empty rows)
+                    const allRows = this.bulkRows.map((r, idx) => ({
+                        _idx: idx,
+                        customer_name: (r.customer_name || '').trim(),
+                        customer_phone: (r.customer_phone || '').trim(),
+                        address: (r.address || '').trim(),
+                        city: (r.city || '').trim(),
+                        product_id: r.product_id || '',
+                        quantity: parseInt(r.quantity) || 1,
+                        amount: parseFloat(r.amount) || 0,
+                        remarks: r.remarks || '',
+                    }));
+
+                    if (allRows.length === 0) {
+                        alert('Please add at least one order row.');
                         return;
-                    }
-                    if (hasError) {
-                        if (!confirm('Some rows have missing fields (highlighted in red) and will be skipped. Continue with ' + validRows.length + ' valid orders?')) return;
                     }
 
                     this.bulkSubmitting = true;
@@ -1736,11 +1747,24 @@
                         const res = await fetch('{{ route("orders.bulkManualStore") }}', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-                            body: JSON.stringify({ orders: validRows.map(r => ({ customer_name: r.customer_name, customer_phone: r.customer_phone, address: r.address, city: r.city, product_id: r.product_id, quantity: parseInt(r.quantity) || 1, amount: parseFloat(r.amount) || 0, remarks: r.remarks || '' })) })
+                            body: JSON.stringify({ orders: allRows.map(({ _idx, ...r }) => r) })
                         });
                         const data = await res.json();
                         if (res.ok) {
                             window.location.href = '{{ route("orders.index", ["status" => "pending"]) }}';
+                        } else if (data.row_errors) {
+                            // Per-row errors from backend — mark each row
+                            for (const [rowIdx, messages] of Object.entries(data.row_errors)) {
+                                const idx = parseInt(rowIdx);
+                                if (this.bulkRows[idx]) {
+                                    this.bulkRows[idx]._error = true;
+                                    this.bulkRows[idx]._errorMsg = messages.join(' ');
+                                }
+                            }
+                            // Scroll to first error row
+                            const firstErrIdx = Object.keys(data.row_errors)[0];
+                            const firstErrEl = document.querySelector(`[data-row="${firstErrIdx}"]`);
+                            if (firstErrEl) firstErrEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         } else {
                             alert(data.message || 'Failed to create orders.');
                         }

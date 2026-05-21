@@ -22,6 +22,7 @@ class Order extends Model
         'delivery_charge',
         'status',
         'source',
+        'bulk_batch_id',
         'pathao_consignment_id',
         'pathao_status',
         'pathao_status_updated_at',

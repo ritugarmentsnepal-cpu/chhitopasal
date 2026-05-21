@@ -12,6 +12,8 @@ use App\SystemAccounts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
@@ -489,27 +491,77 @@ class OrderController extends Controller
 
     public function bulkManualStore(Request $request)
     {
-        $validated = $request->validate([
-            'orders' => 'required|array|min:1|max:100',
-            'orders.*.customer_name' => 'required|string|max:255',
-            'orders.*.customer_phone' => 'required|string|max:20',
-            'orders.*.address' => 'required|string|max:255',
-            'orders.*.city' => 'nullable|string|max:100',
-            'orders.*.product_id' => 'required|exists:products,id',
-            'orders.*.quantity' => 'required|integer|min:1',
-            'orders.*.amount' => 'required|numeric|min:0',
-            'orders.*.remarks' => 'nullable|string|max:1000',
-        ]);
+        $orders = $request->input('orders', []);
 
+        if (!is_array($orders) || count($orders) === 0) {
+            return response()->json(['message' => 'No orders provided.'], 422);
+        }
+
+        if (count($orders) > 100) {
+            return response()->json(['message' => 'Maximum 100 orders per batch.'], 422);
+        }
+
+        // All-or-nothing: validate every row, collect per-row errors
+        $rowErrors = [];
+        $hasEmptyRows = false;
+
+        foreach ($orders as $index => $row) {
+            // Check for completely empty rows — user must explicitly delete them
+            $isEmpty = empty(trim($row['customer_name'] ?? ''))
+                    && empty(trim($row['customer_phone'] ?? ''))
+                    && empty(trim($row['address'] ?? ''))
+                    && empty($row['product_id']);
+
+            if ($isEmpty) {
+                $hasEmptyRows = true;
+                $rowErrors[$index] = ['Empty row — please delete this row or fill in the required fields.'];
+                continue;
+            }
+
+            $rowValidator = Validator::make($row, [
+                'customer_name' => 'required|string|max:255',
+                'customer_phone' => 'required|string|max:20',
+                'address' => 'required|string|max:255',
+                'city' => 'nullable|string|max:100',
+                'product_id' => 'required|exists:products,id',
+                'quantity' => 'required|integer|min:1',
+                'amount' => 'required|numeric|min:0',
+                'remarks' => 'nullable|string|max:1000',
+            ], [
+                'customer_name.required' => 'Customer name is required.',
+                'customer_phone.required' => 'Phone number is required.',
+                'address.required' => 'Address is required.',
+                'product_id.required' => 'Please select a product.',
+                'product_id.exists' => 'Selected product does not exist.',
+                'quantity.required' => 'Quantity is required.',
+                'quantity.min' => 'Quantity must be at least 1.',
+                'amount.required' => 'Amount is required.',
+                'amount.min' => 'Amount cannot be negative.',
+            ]);
+
+            if ($rowValidator->fails()) {
+                $rowErrors[$index] = $rowValidator->errors()->all();
+            }
+        }
+
+        // If any errors, return them all — create nothing
+        if (!empty($rowErrors)) {
+            $errorCount = count($rowErrors);
+            return response()->json([
+                'message' => "{$errorCount} order(s) have errors. Please fix them and try again.",
+                'row_errors' => $rowErrors,
+            ], 422);
+        }
+
+        // All valid — create all orders in a single transaction with batch ID
+        $batchId = (string) Str::uuid();
         $successCount = 0;
 
-        // NEW-FIN-04 + NEW-ARCH-01: Wrap in transaction, suppress logging for bulk
         Order::$suppressLogging = true;
         try {
-            DB::transaction(function () use ($validated, &$successCount) {
-                foreach ($validated['orders'] as $row) {
-                    $product = Product::find($row['product_id']);
-                    if (!$product) continue;
+            DB::transaction(function () use ($orders, $batchId, &$successCount) {
+                foreach ($orders as $row) {
+                    $product = Product::findOrFail($row['product_id']);
 
                     $totalAmount = $row['amount'];
                     $qty = $row['quantity'];
@@ -523,6 +575,7 @@ class OrderController extends Controller
                         'total_amount' => $totalAmount,
                         'status' => 'pending',
                         'source' => 'manual',
+                        'bulk_batch_id' => $batchId,
                         'remarks' => $row['remarks'] ?? null,
                     ]);
 
@@ -542,9 +595,25 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Successfully created $successCount orders.",
-            'count' => $successCount
+            'message' => "Successfully created {$successCount} orders.",
+            'count' => $successCount,
+            'bulk_batch_id' => $batchId,
         ]);
+    }
+
+    public function bulkBatches(Request $request)
+    {
+        $batches = Order::whereNotNull('bulk_batch_id')
+            ->select('bulk_batch_id')
+            ->selectRaw('MIN(created_at) as created_at')
+            ->selectRaw('COUNT(*) as order_count')
+            ->selectRaw('SUM(total_amount) as total_amount')
+            ->selectRaw('GROUP_CONCAT(id ORDER BY id ASC) as order_ids')
+            ->groupBy('bulk_batch_id')
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        return view('orders.bulk_batches', compact('batches'));
     }
 
     public function bulkPrint(Request $request)
