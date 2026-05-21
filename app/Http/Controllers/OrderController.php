@@ -64,7 +64,7 @@ class OrderController extends Controller
             }
         }
 
-        $orders = $query->latest()->paginate(20)->withQueryString();
+        $orders = $query->orderByDesc('id')->paginate(20)->withQueryString();
 
         // Fetch products for bulk upload reference modal
         $products = Product::select('id', 'name', 'price', 'stock', 'bundles')->get();
