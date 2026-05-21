@@ -31,7 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/bulk-status-update', [OrderController::class, 'bulkStatusUpdate'])->name('orders.bulkStatusUpdate');
 
         Route::post('/orders/{order}/ship', [OrderController::class, 'shipWithPathao'])->name('orders.ship');
-        Route::post('/orders/{order}/sync-pathao', [OrderController::class, 'syncPathaoStatus'])->name('orders.syncPathaoStatus');
+        Route::post('/orders/{order}/sync-pathao', [OrderController::class, 'syncPathaoStatus'])->middleware('throttle:10,1')->name('orders.syncPathaoStatus');
         Route::post('/orders/master-sync-pathao', [OrderController::class, 'masterSyncPathao'])->name('orders.masterSyncPathao');
         Route::get('orders/{order}/print-label', [OrderController::class, 'printLabel'])->name('orders.printLabel');
         Route::post('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
@@ -40,7 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/orders/{order}/full-update', [OrderController::class, 'fullUpdate'])->name('orders.fullUpdate');
         Route::post('/orders/{order}/payment', [OrderController::class, 'recordPayment'])->name('orders.payment');
         Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
-        Route::get('/orders/{order}/pathao-details', [OrderController::class, 'getPathaoDetails'])->name('orders.pathaoDetails');
+        Route::get('/orders/{order}/pathao-details', [OrderController::class, 'getPathaoDetails'])->middleware('throttle:10,1')->name('orders.pathaoDetails');
     });
 
     // POS — permission:pos
@@ -65,7 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Accounting — permission:accounting
     Route::middleware(['permission:accounting'])->group(function () {
         Route::get('/accounting', [\App\Http\Controllers\AccountingController::class, 'index'])->name('accounting.index');
-        Route::post('/accounting/sync-pathao', [\App\Http\Controllers\AccountingController::class, 'syncPathao'])->name('accounting.syncPathao');
+        Route::post('/accounting/sync-pathao', [\App\Http\Controllers\AccountingController::class, 'syncPathao'])->middleware('throttle:5,1')->name('accounting.syncPathao');
         Route::post('/accounting/pay-purchase', [\App\Http\Controllers\AccountingController::class, 'payPurchase'])->name('accounting.payPurchase');
         Route::post('/accounting/store-category', [\App\Http\Controllers\AccountingController::class, 'storeCategory'])->name('accounting.storeCategory');
         Route::post('/accounting/store-party', [\App\Http\Controllers\AccountingController::class, 'storeParty'])->name('accounting.storeParty');

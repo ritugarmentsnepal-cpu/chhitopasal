@@ -63,23 +63,44 @@ class PathaoService
      */
     private function authenticatedRequest(string $method, string $url, array $data = [], array $headers = [])
     {
-        $token = $this->getAccessToken();
-        $request = Http::withToken($token);
-        if (!empty($headers)) {
-            $request = $request->withHeaders($headers);
-        }
-        $response = $request->{$method}($url, $data);
+        $maxRetries = 2;
+        $attempt = 0;
 
-        if ($response->status() === 401) {
-            // Token expired — refresh and retry once
-            Cache::forget('pathao_access_token');
+        do {
             $token = $this->getAccessToken();
             $request = Http::withToken($token);
             if (!empty($headers)) {
                 $request = $request->withHeaders($headers);
             }
             $response = $request->{$method}($url, $data);
-        }
+
+            if ($response->status() === 401 && $attempt === 0) {
+                // Token expired — refresh and retry once
+                Cache::forget('pathao_access_token');
+                $token = $this->getAccessToken();
+                $request = Http::withToken($token);
+                if (!empty($headers)) {
+                    $request = $request->withHeaders($headers);
+                }
+                $response = $request->{$method}($url, $data);
+            }
+
+            // Handle 429 Too Many Requests with exponential backoff
+            if ($response->status() === 429) {
+                $attempt++;
+                if ($attempt > $maxRetries) {
+                    Log::warning("Pathao API rate limit exceeded after {$maxRetries} retries", ['url' => $url]);
+                    return $response;
+                }
+                $retryAfter = (int) $response->header('Retry-After', $attempt * 2);
+                $delay = max($retryAfter, $attempt === 1 ? 1 : 3);
+                Log::warning("Pathao API rate limited (429). Retry {$attempt}/{$maxRetries} after {$delay}s", ['url' => $url]);
+                sleep($delay);
+                continue;
+            }
+
+            return $response;
+        } while ($attempt <= $maxRetries);
 
         return $response;
     }
@@ -234,26 +255,49 @@ class PathaoService
         return [];
     }
 
-    public function getOrderStatus($consignmentId)
+    public function getOrderStatus($consignmentId, bool $forceRefresh = false)
     {
-        $details = $this->getOrderDetails($consignmentId);
+        $details = $this->getOrderDetails($consignmentId, $forceRefresh);
         return $details['order_status'] ?? null;
     }
 
     /**
      * Get full order details from Pathao API.
      * Returns all available fields: order_status, invoice, pickup info, delivery info, etc.
+     * Results are cached for 2 minutes to prevent API flooding.
+     *
+     * @param string $consignmentId
+     * @param bool $forceRefresh  Bypass cache and make a live API call
      */
-    public function getOrderDetails($consignmentId): ?array
+    public function getOrderDetails($consignmentId, bool $forceRefresh = false): ?array
     {
+        $cacheKey = "pathao_order_{$consignmentId}";
+
+        // Return cached data unless force refresh is requested
+        if (!$forceRefresh) {
+            $cached = Cache::get($cacheKey);
+            if ($cached !== null) {
+                return $cached;
+            }
+        }
+
         try {
-            // NEW-SEC-01: Use authenticatedRequest for automatic token refresh on 401
             $response = $this->authenticatedRequest('get', "{$this->baseUrl}/aladdin/api/v1/orders/{$consignmentId}");
             
             if ($response->successful()) {
-                return $response->json('data') ?? null;
+                $data = $response->json('data') ?? null;
+                if ($data) {
+                    Cache::put($cacheKey, $data, 120); // Cache for 2 minutes
+                }
+                return $data;
             }
-            Log::error("Failed to fetch Pathao details for {$consignmentId}", ['response' => $response->body()]);
+
+            // Log 429 as warning (already handled by backoff), other errors as error
+            if ($response->status() === 429) {
+                Log::warning("Rate limited fetching Pathao details for {$consignmentId}");
+            } else {
+                Log::error("Failed to fetch Pathao details for {$consignmentId}", ['response' => $response->body()]);
+            }
         } catch (Exception $e) {
             Log::error("Failed to fetch Pathao details for {$consignmentId}: " . $e->getMessage());
         }

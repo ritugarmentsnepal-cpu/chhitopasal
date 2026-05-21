@@ -30,58 +30,83 @@ class SyncPathaoOrders extends Command
 
         $count = 0;
         $errors = 0;
+        $processed = 0;
+        $maxPerRun = 30;      // Cap per cycle — runs every 5 min, so 360 orders/hour
+        $maxErrors = 5;       // Abort threshold — if >5 failures, Pathao is likely rate-limiting
 
-        // PERF-BUG-04: Use chunk() to avoid loading all shipped orders into memory
-        Order::with('orderItems.product')
-            ->whereIn('status', ['shipped', 'delivered'])
+        // Sync stalest orders first — prioritize orders that haven't been checked recently
+        $orders = Order::with('orderItems.product')
+            ->where('status', 'shipped')
             ->whereNotNull('pathao_consignment_id')
-            ->chunk(50, function ($orders) use ($pathao, $orderService, &$count, &$errors) {
-                foreach ($orders as $order) {
-                    try {
-                        $status = $pathao->getOrderStatus($order->pathao_consignment_id);
+            ->orderBy('pathao_status_updated_at', 'asc')
+            ->orderBy('updated_at', 'asc')
+            ->limit($maxPerRun)
+            ->get();
 
-                        if (!$status) {
-                            $errors++;
-                            continue;
-                        }
+        $this->info("Found {$orders->count()} shipped orders to sync (max {$maxPerRun} per run).");
 
-                        // Always save the raw Pathao status for display
-                        $order->update([
-                            'pathao_status' => $status,
-                            'pathao_status_updated_at' => now(),
-                        ]);
+        foreach ($orders as $order) {
+            try {
+                // Always force-refresh: sync command must get live data, not cached
+                $status = $pathao->getOrderStatus($order->pathao_consignment_id, true);
 
-                        $normalizedStatus = strtolower($status);
-                        $newLocalStatus = null;
+                if (!$status) {
+                    $errors++;
+                    $this->warn("Failed to fetch status for Order #{$order->id}");
 
-                        // Map Pathao's status strings to our local database statuses
-                        if (in_array($normalizedStatus, ['delivered', 'successful'])) {
-                            $newLocalStatus = 'delivered';
-                        } elseif (in_array($normalizedStatus, ['returned', 'return'])) {
-                            $newLocalStatus = 'return_delivered';
-                        } elseif (in_array($normalizedStatus, ['cancelled', 'cancel', 'pickup cancel', 'pickup cancelled'])) {
-                            $newLocalStatus = 'rejected';
-                        }
-
-                        if ($newLocalStatus && $newLocalStatus !== $order->status) {
-                            DB::transaction(function () use ($order, $newLocalStatus, $orderService) {
-                                $orderService->transitionStatus($order, $newLocalStatus);
-                            });
-
-                            $this->info("Updated Order #{$order->id} from {$order->status} to {$newLocalStatus}.");
-                            $count++;
-                        }
-
-                    } catch (\Exception $e) {
-                        Log::error("Pathao Sync Error for Order #{$order->id}: " . $e->getMessage());
-                        $errors++;
+                    // Abort if too many total errors — likely rate-limited
+                    if ($errors >= $maxErrors) {
+                        Log::warning("Pathao sync aborted after {$errors} errors — likely rate-limited. Will retry next cycle.");
+                        $this->error("Sync aborted — {$errors} errors detected (likely rate-limited). Will retry next cycle.");
+                        break;
                     }
-
-                    // INT-01: Rate limit API calls — 200ms delay between requests
-                    usleep(200000);
+                    continue;
                 }
-            });
 
-        $this->info("Sync completed. Updated {$count} orders. Encountered {$errors} errors.");
+                $processed++;
+
+                // Always save the raw Pathao status for display
+                $order->update([
+                    'pathao_status' => $status,
+                    'pathao_status_updated_at' => now(),
+                ]);
+
+                $normalizedStatus = strtolower($status);
+                $newLocalStatus = null;
+
+                // Map Pathao's status strings to our local database statuses
+                if (in_array($normalizedStatus, ['delivered', 'successful'])) {
+                    $newLocalStatus = 'delivered';
+                } elseif (in_array($normalizedStatus, ['returned', 'return'])) {
+                    $newLocalStatus = 'return_delivered';
+                } elseif (in_array($normalizedStatus, ['cancelled', 'cancel', 'pickup cancel', 'pickup cancelled'])) {
+                    $newLocalStatus = 'rejected';
+                }
+
+                if ($newLocalStatus && $newLocalStatus !== $order->status) {
+                    DB::transaction(function () use ($order, $newLocalStatus, $orderService) {
+                        $orderService->transitionStatus($order, $newLocalStatus);
+                    });
+
+                    $this->info("Updated Order #{$order->id} from {$order->status} to {$newLocalStatus}.");
+                    $count++;
+                }
+
+            } catch (\Exception $e) {
+                Log::error("Pathao Sync Error for Order #{$order->id}: " . $e->getMessage());
+                $errors++;
+
+                if ($errors >= $maxErrors) {
+                    Log::warning("Pathao sync aborted after {$errors} errors — likely rate-limited.");
+                    $this->error("Sync aborted — {$errors} errors. Will retry next cycle.");
+                    break;
+                }
+            }
+
+            // Rate limit: 2 second delay between Pathao API calls
+            sleep(2);
+        }
+
+        $this->info("Sync completed. Processed: {$processed}, Updated: {$count}, Errors: {$errors}.");
     }
 }

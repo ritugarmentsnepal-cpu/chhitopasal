@@ -714,6 +714,10 @@ class OrderController extends Controller
 
                 try {
                     $result = $pathao->createOrder($order);
+
+                    // Rate limit: 500ms delay after each Pathao API call
+                    usleep(500000);
+
                     if ($result['success']) {
                         // NEW-FIN-03: Use OrderService for atomic stock deduction
                         DB::transaction(function () use ($order, $result, $orderService) {
@@ -861,7 +865,8 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Order has no Pathao consignment ID.');
         }
 
-        $status = $pathao->getOrderStatus($order->pathao_consignment_id);
+        // Force-refresh: user explicitly requested a sync, bypass the 2-min cache
+        $status = $pathao->getOrderStatus($order->pathao_consignment_id, true);
 
         if (!$status) {
             return redirect()->back()->with('error', 'Could not fetch status from Pathao.');
@@ -1216,6 +1221,7 @@ class OrderController extends Controller
 
     /**
      * AJAX: Get real-time Pathao tracking details for a shipped order.
+     * Uses 2-minute cached data to avoid API flooding.
      */
     public function getPathaoDetails(Order $order, \App\Services\PathaoService $pathao)
     {
@@ -1223,11 +1229,15 @@ class OrderController extends Controller
             return response()->json(['error' => 'No Pathao consignment ID found'], 404);
         }
 
-        // Fetch real-time details from Pathao API
+        // Check if data is already in cache (to avoid updating timestamp for stale data)
+        $cacheKey = "pathao_order_{$order->pathao_consignment_id}";
+        $wasCached = \Illuminate\Support\Facades\Cache::has($cacheKey);
+
+        // Use cached data (2-min TTL) — does not hit Pathao API on every click
         $pathaoData = $pathao->getOrderDetails($order->pathao_consignment_id);
         
-        // Update cached status if we got fresh data
-        if ($pathaoData && isset($pathaoData['order_status'])) {
+        // Only update DB timestamp when we actually fetched fresh data from Pathao
+        if (!$wasCached && $pathaoData && isset($pathaoData['order_status'])) {
             $order->update([
                 'pathao_status' => $pathaoData['order_status'],
                 'pathao_status_updated_at' => now(),

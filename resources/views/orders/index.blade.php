@@ -944,10 +944,11 @@
                                 Print Label
                             </a>
                         </div>
-                        <div class="flex gap-2">
-                            <button @click="refreshTrackingStatus()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow-sm hover:bg-indigo-700 transition active:scale-95 flex items-center gap-1.5">
+                        <div class="flex gap-2 items-center">
+                            <span x-show="trackingData?.status_updated_at" class="text-[10px] text-gray-400 font-medium" x-text="'Updated ' + (trackingData?.status_updated_at || '')"></span>
+                            <button @click="refreshTrackingStatus()" :disabled="refreshCooldown > 0 || trackingLoading" :class="refreshCooldown > 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'" class="px-4 py-2 text-white font-bold rounded-xl text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 disabled:opacity-70">
                                 <svg class="w-3.5 h-3.5" :class="trackingLoading ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                Sync Status
+                                <span x-text="refreshCooldown > 0 ? 'Wait ' + refreshCooldown + 's' : 'Sync Status'"></span>
                             </button>
                             <button @click="closeTrackingModal()" class="px-4 py-2 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs hover:bg-gray-300 transition">Close</button>
                         </div>
@@ -1041,6 +1042,8 @@
                 trackingLoading: false,
                 trackingOrderId: null,
                 trackingSteps: ['Pickup', 'In Transit', 'At Hub', 'Out for Delivery', 'Delivered'],
+                refreshCooldown: 0,
+                refreshTimer: null,
                 
                 productPrices: {
                     @foreach($products as $product)
@@ -1299,17 +1302,29 @@
 
                 closeTrackingModal() {
                     this.trackingModalOpen = false;
+                    this.refreshCooldown = 0;
+                    if (this.refreshTimer) { clearInterval(this.refreshTimer); this.refreshTimer = null; }
                     setTimeout(() => { this.trackingData = null; this.trackingOrderId = null; }, 300);
                 },
 
                 async refreshTrackingStatus() {
-                    if (!this.trackingOrderId) return;
+                    if (!this.trackingOrderId || this.refreshCooldown > 0) return;
                     this.trackingLoading = true;
                     try {
                         const res = await fetch(`{{ url('orders') }}/${this.trackingOrderId}/pathao-details`);
                         this.trackingData = await res.json();
                     } catch (e) { console.error(e); }
                     this.trackingLoading = false;
+
+                    // Start 10-second cooldown
+                    this.refreshCooldown = 10;
+                    this.refreshTimer = setInterval(() => {
+                        this.refreshCooldown--;
+                        if (this.refreshCooldown <= 0) {
+                            clearInterval(this.refreshTimer);
+                            this.refreshTimer = null;
+                        }
+                    }, 1000);
                 },
 
                 getStepIndex() {
