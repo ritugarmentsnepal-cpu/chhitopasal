@@ -18,6 +18,8 @@ class OrderItem extends Model
         'cost_at_purchase',
         'color',
         'size',
+        'returned_good_qty',
+        'returned_damaged_qty',
     ];
 
     public function order()

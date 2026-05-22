@@ -1098,73 +1098,130 @@ class OrderController extends Controller
     public function verifyReturn(Request $request, Order $order)
     {
         if ($order->status !== 'return_delivered' || $order->return_verified_at) {
-            return back()->with('error', 'Invalid return verification request.');
+            return response()->json(['success' => false, 'message' => 'Invalid return verification request.'], 422);
         }
 
-        DB::transaction(function () use ($order) {
-            $order->update(['return_verified_at' => now()]);
+        $validated = $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.order_item_id' => 'required|integer',
+            'items.*.good_qty' => 'required|integer|min:0',
+            'items.*.damaged_qty' => 'required|integer|min:0',
+            'return_notes' => 'nullable|string|max:5000',
+        ]);
 
-            // Stock Increment
-            foreach ($order->orderItems as $item) {
-                if ($item->product) {
-                    $item->product->increment('stock', $item->quantity);
+        try {
+            $totalGood = 0;
+            $totalDamaged = 0;
+
+            DB::transaction(function () use ($order, $validated, &$totalGood, &$totalDamaged) {
+                // Validate and update each item
+                foreach ($validated['items'] as $itemData) {
+                    $orderItem = $order->orderItems()->where('id', $itemData['order_item_id'])->first();
+
+                    if (!$orderItem) {
+                        throw new \InvalidArgumentException(
+                            "Item #{$itemData['order_item_id']} does not belong to this order."
+                        );
+                    }
+
+                    $goodQty = (int) $itemData['good_qty'];
+                    $damagedQty = (int) $itemData['damaged_qty'];
+
+                    if (($goodQty + $damagedQty) > $orderItem->quantity) {
+                        throw new \InvalidArgumentException(
+                            "Good ({$goodQty}) + Damaged ({$damagedQty}) exceeds ordered quantity ({$orderItem->quantity}) for item #{$orderItem->id}."
+                        );
+                    }
+
+                    // Update the order item with return quantities
+                    $orderItem->update([
+                        'returned_good_qty' => $goodQty,
+                        'returned_damaged_qty' => $damagedQty,
+                    ]);
+
+                    // Restock ONLY good items
+                    if ($goodQty > 0 && $orderItem->product) {
+                        $orderItem->product->increment('stock', $goodQty);
+                    }
+
+                    $totalGood += $goodQty;
+                    $totalDamaged += $damagedQty;
                 }
-            }
 
-            // NEW-FIN-05: Reverse ALL payment types (Order + Order Delivered), matching saleReturn() logic
-            $payments = \App\Models\Transaction::where(function ($q) use ($order) {
-                    $q->where(function ($q2) use ($order) {
-                        $q2->where('reference_type', SystemAccounts::REF_ORDER)
-                           ->where('reference_id', $order->id);
-                    })->orWhere(function ($q2) use ($order) {
-                        $q2->where('reference_type', SystemAccounts::REF_ORDER_DELIVERED)
-                           ->where('reference_id', $order->id);
-                    });
-                })
-                ->where('type', 'in')
-                ->get();
+                // NEW-FIN-05: Reverse ALL payment types (Order + Order Delivered), matching saleReturn() logic
+                $payments = \App\Models\Transaction::where(function ($q) use ($order) {
+                        $q->where(function ($q2) use ($order) {
+                            $q2->where('reference_type', SystemAccounts::REF_ORDER)
+                               ->where('reference_id', $order->id);
+                        })->orWhere(function ($q2) use ($order) {
+                            $q2->where('reference_type', SystemAccounts::REF_ORDER_DELIVERED)
+                               ->where('reference_id', $order->id);
+                        });
+                    })
+                    ->where('type', 'in')
+                    ->get();
 
-            foreach ($payments as $payment) {
-                \App\Models\Transaction::create([
-                    'account_id' => $payment->account_id,
-                    'type' => 'out',
-                    'amount' => $payment->amount,
-                    'reference_type' => $payment->reference_type,
-                    'reference_id' => $order->id,
-                    'date' => now(),
-                    'notes' => "Reversal for Returned Order #{$order->id}"
+                foreach ($payments as $payment) {
+                    \App\Models\Transaction::create([
+                        'account_id' => $payment->account_id,
+                        'type' => 'out',
+                        'amount' => $payment->amount,
+                        'reference_type' => $payment->reference_type,
+                        'reference_id' => $order->id,
+                        'date' => now(),
+                        'notes' => "Reversal for Returned Order #{$order->id}"
+                    ]);
+
+                    $account = \App\Models\Account::find($payment->account_id);
+                    if ($account) {
+                        // FIN-MED-02: Guard and log if balance would go negative
+                        if ($account->balance < $payment->amount) {
+                            Log::warning("Account '{$account->name}' balance going negative during return verification", [
+                                'account_id' => $account->id,
+                                'current_balance' => $account->balance,
+                                'deduction' => $payment->amount,
+                                'order_id' => $order->id,
+                            ]);
+                        }
+                        $account->decrement('balance', $payment->amount);
+                    }
+                }
+
+                // Also reverse Pathao party balance if applicable
+                $pathaoParty = \App\Models\Party::where('type', 'pathao')->first();
+                if ($pathaoParty) {
+                    $pathaoTxTotal = $payments->where('reference_type', SystemAccounts::REF_ORDER_DELIVERED)->sum('amount');
+                    if ($pathaoTxTotal > 0) {
+                        $pathaoParty->decrement('current_balance', $pathaoTxTotal);
+                    }
+                }
+
+                // Save return notes and mark as verified
+                $order->update([
+                    'return_verified_at' => now(),
+                    'return_notes' => $validated['return_notes'] ?? null,
                 ]);
 
-                $account = \App\Models\Account::find($payment->account_id);
-                if ($account) {
-                    // FIN-MED-02: Guard and log if balance would go negative
-                    if ($account->balance < $payment->amount) {
-                        Log::warning("Account '{$account->name}' balance going negative during return verification", [
-                            'account_id' => $account->id,
-                            'current_balance' => $account->balance,
-                            'deduction' => $payment->amount,
-                            'order_id' => $order->id,
-                        ]);
-                    }
-                    $account->decrement('balance', $payment->amount);
-                }
-            }
+                $order->logActivity('return_verified', [
+                    'reversed_payments_count' => $payments->count(),
+                    'total_good_qty' => $totalGood,
+                    'total_damaged_qty' => $totalDamaged,
+                ]);
+            });
 
-            // Also reverse Pathao party balance if applicable
-            $pathaoParty = \App\Models\Party::where('type', 'pathao')->first();
-            if ($pathaoParty) {
-                $pathaoTxTotal = $payments->where('reference_type', SystemAccounts::REF_ORDER_DELIVERED)->sum('amount');
-                if ($pathaoTxTotal > 0) {
-                    $pathaoParty->decrement('current_balance', $pathaoTxTotal);
-                }
-            }
-
-            $order->logActivity('return_verified', [
-                'reversed_payments_count' => $payments->count()
+            return response()->json([
+                'success' => true,
+                'message' => "Return verified. Restocked: {$totalGood} good items. Damaged: {$totalDamaged} items written off.",
             ]);
-        });
-
-        return back()->with('success', 'Return receipt verified. Stock updated and payments reversed (if any).');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            Log::error('Return verification failed', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['success' => false, 'message' => 'Return verification failed. Please try again.'], 422);
+        }
     }
 
     public function recordPayment(Request $request, Order $order)
