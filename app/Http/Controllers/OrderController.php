@@ -1242,6 +1242,32 @@ class OrderController extends Controller
                 'pathao_status' => $pathaoData['order_status'],
                 'pathao_status_updated_at' => now(),
             ]);
+
+            // BUG-FIX: Also transition local status when Pathao reports a terminal state
+            // This ensures delivered/returned orders leave the shipped list immediately
+            if ($order->status === 'shipped') {
+                $normalizedStatus = strtolower($pathaoData['order_status']);
+                $newLocalStatus = null;
+
+                if (in_array($normalizedStatus, ['delivered', 'successful'])) {
+                    $newLocalStatus = 'delivered';
+                } elseif (in_array($normalizedStatus, ['returned', 'return'])) {
+                    $newLocalStatus = 'return_delivered';
+                } elseif (in_array($normalizedStatus, ['cancelled', 'cancel', 'pickup cancel', 'pickup cancelled'])) {
+                    $newLocalStatus = 'rejected';
+                }
+
+                if ($newLocalStatus) {
+                    $orderService = app(OrderService::class);
+                    try {
+                        DB::transaction(function () use ($order, $newLocalStatus, $orderService) {
+                            $orderService->transitionStatus($order, $newLocalStatus);
+                        });
+                    } catch (\InvalidArgumentException $e) {
+                        Log::warning("Auto-transition failed for Order #{$order->id}: " . $e->getMessage());
+                    }
+                }
+            }
         }
 
         // Build response combining local + Pathao data
