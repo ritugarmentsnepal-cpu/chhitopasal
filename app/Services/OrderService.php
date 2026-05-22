@@ -59,7 +59,14 @@ class OrderService
             $this->recordDeliveryRevenue($order);
         }
 
-        $order->update(['status' => $newStatus]);
+        $updateData = ['status' => $newStatus];
+
+        // Record shipped_at timestamp when order transitions to shipped
+        if ($newStatus === 'shipped' && !$order->shipped_at) {
+            $updateData['shipped_at'] = now();
+        }
+
+        $order->update($updateData);
 
         // BUG-FIX: Clear dashboard cache so orders move between columns immediately
         Cache::forget('dashboard_pending');

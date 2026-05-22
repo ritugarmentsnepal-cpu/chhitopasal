@@ -32,6 +32,11 @@ class Order extends Model
         'return_notes',
         'remarks',
         'session_id',
+        'shipped_at',
+    ];
+
+    protected $casts = [
+        'shipped_at' => 'datetime',
     ];
 
     public function orderItems()

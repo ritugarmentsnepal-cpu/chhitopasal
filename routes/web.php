@@ -41,6 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/{order}/payment', [OrderController::class, 'recordPayment'])->name('orders.payment');
         Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
         Route::get('/orders/{order}/pathao-details', [OrderController::class, 'getPathaoDetails'])->middleware('throttle:10,1')->name('orders.pathaoDetails');
+        Route::get('/orders/reports/damage', [OrderController::class, 'damageReport'])->name('orders.damageReport');
     });
 
     // POS — permission:pos

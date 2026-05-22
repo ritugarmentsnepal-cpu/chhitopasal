@@ -117,6 +117,41 @@
                     </a>
                 @endforeach
             </div>
+
+            <!-- Shipped Date Sub-Filters -->
+            <div class="mb-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap mr-1 flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Shipped:
+                </span>
+                @php
+                    $shippedDateOptions = [
+                        '' => 'All Time',
+                        'today' => 'Today',
+                        'yesterday' => 'Yesterday',
+                        'this_week' => 'This Week',
+                        'this_month' => 'This Month',
+                    ];
+                    $currentShippedDateFilter = request('shipped_date_filter', '');
+                @endphp
+                @foreach($shippedDateOptions as $filterKey => $filterLabel)
+                    <a href="{{ request()->fullUrlWithQuery(['shipped_date_filter' => $filterKey ?: null]) }}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border
+                              {{ $currentShippedDateFilter === $filterKey ? 'bg-gray-900 text-white border-gray-900 shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50' }}">
+                        {{ $filterLabel }}
+                    </a>
+                @endforeach
+            </div>
+            @endif
+
+            @if($status === 'return_delivered')
+            <!-- Damage Report Link -->
+            <div class="mb-4 flex justify-end">
+                <a href="{{ route('orders.damageReport') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>
+                    Damage Report
+                </a>
+            </div>
             @endif
 
             <!-- Filter Bar -->
@@ -124,6 +159,9 @@
                 <input type="hidden" name="status" value="{{ $status }}">
                 @if(request('pathao_filter'))
                     <input type="hidden" name="pathao_filter" value="{{ request('pathao_filter') }}">
+                @endif
+                @if(request('shipped_date_filter'))
+                    <input type="hidden" name="shipped_date_filter" value="{{ request('shipped_date_filter') }}">
                 @endif
                 
                 <div class="flex-1 relative">
@@ -146,7 +184,7 @@
                 <button type="submit" class="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 transition active:scale-95 whitespace-nowrap">
                     Search
                 </button>
-                @if(request('search') || request('date_filter') || request('pathao_filter'))
+                @if(request('search') || request('date_filter') || request('pathao_filter') || request('shipped_date_filter'))
                     <a href="{{ route('orders.index', ['status' => $status]) }}" class="text-gray-500 hover:text-red-500 font-bold px-4 transition">Clear</a>
                 @endif
             </form>

@@ -53,6 +53,21 @@ class OrderController extends Controller
             }
         }
 
+        // Shipped date filter (filters by shipped_at timestamp for shipped and post-shipped tabs)
+        $shippedDateFilter = $request->get('shipped_date_filter');
+        if ($shippedDateFilter && in_array($status, ['shipped', 'delivered', 'return_delivered', 'failed', 'rejected'])) {
+            if ($shippedDateFilter === 'today') {
+                $query->whereDate('shipped_at', \Carbon\Carbon::today());
+            } elseif ($shippedDateFilter === 'yesterday') {
+                $query->whereDate('shipped_at', \Carbon\Carbon::yesterday());
+            } elseif ($shippedDateFilter === 'this_week') {
+                $query->whereBetween('shipped_at', [\Carbon\Carbon::now()->startOfWeek(), \Carbon\Carbon::now()->endOfWeek()]);
+            } elseif ($shippedDateFilter === 'this_month') {
+                $query->whereMonth('shipped_at', \Carbon\Carbon::now()->month)
+                      ->whereYear('shipped_at', \Carbon\Carbon::now()->year);
+            }
+        }
+
         // Pathao delivery status filter (for shipped and post-shipped tabs)
         $pathaoFilter = $request->get('pathao_filter');
         if ($pathaoFilter && in_array($status, ['shipped', 'delivered', 'return_delivered', 'failed', 'rejected'])) {
@@ -1222,6 +1237,44 @@ class OrderController extends Controller
             ]);
             return response()->json(['success' => false, 'message' => 'Return verification failed. Please try again.'], 422);
         }
+    }
+
+    /**
+     * Damage Report: Lists all returned orders with damaged items for tracking & write-off purposes.
+     */
+    public function damageReport(Request $request)
+    {
+        $query = OrderItem::with(['order', 'product'])
+            ->where('returned_damaged_qty', '>', 0)
+            ->whereHas('order', function ($q) {
+                $q->where('status', 'return_delivered')
+                  ->whereNotNull('return_verified_at');
+            });
+
+        // Date filter
+        if ($request->filled('from')) {
+            $query->whereHas('order', fn($q) => $q->whereDate('return_verified_at', '>=', $request->from));
+        }
+        if ($request->filled('to')) {
+            $query->whereHas('order', fn($q) => $q->whereDate('return_verified_at', '<=', $request->to));
+        }
+
+        $damagedItems = $query->latest('id')->paginate(50)->appends($request->query());
+
+        // Summary stats
+        $summaryQuery = OrderItem::where('returned_damaged_qty', '>', 0)
+            ->whereHas('order', fn($q) => $q->where('status', 'return_delivered')->whereNotNull('return_verified_at'));
+
+        $totalDamagedQty = (clone $summaryQuery)->sum('returned_damaged_qty');
+        $totalDamagedValue = (clone $summaryQuery)->get()->sum(fn($item) => $item->returned_damaged_qty * $item->price_at_purchase);
+        $totalDamagedOrders = (clone $summaryQuery)->distinct('order_id')->count('order_id');
+
+        return view('orders.damage-report', [
+            'damagedItems' => $damagedItems,
+            'totalDamagedQty' => $totalDamagedQty,
+            'totalDamagedValue' => $totalDamagedValue,
+            'totalDamagedOrders' => $totalDamagedOrders,
+        ]);
     }
 
     public function recordPayment(Request $request, Order $order)
