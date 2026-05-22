@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\SystemAccounts;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -59,6 +60,14 @@ class OrderService
         }
 
         $order->update(['status' => $newStatus]);
+
+        // BUG-FIX: Clear dashboard cache so orders move between columns immediately
+        Cache::forget('dashboard_pending');
+        Cache::forget('dashboard_pending_count');
+        Cache::forget('dashboard_confirmed');
+        Cache::forget('dashboard_confirmed_count');
+        Cache::forget('dashboard_shipped');
+        Cache::forget('dashboard_shipped_count');
     }
 
     /**
