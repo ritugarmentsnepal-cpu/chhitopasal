@@ -62,7 +62,7 @@ class OrderService
         $updateData = ['status' => $newStatus];
 
         // Record shipped_at timestamp when order transitions to shipped
-        if ($newStatus === 'shipped' && !$order->shipped_at) {
+        if ($newStatus === 'shipped') {
             $updateData['shipped_at'] = now();
         }
 
