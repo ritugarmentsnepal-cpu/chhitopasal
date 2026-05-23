@@ -97,6 +97,54 @@ class FacebookApiController extends Controller
         return response()->json(['success' => true]);
     }
 
+    // --- Posts & Comments ---
+
+    public function posts(Request $request, $pageId)
+    {
+        $page = FacebookPage::where('user_id', Auth::id())->where('page_id', $pageId)->firstOrFail();
+        $cursor = $request->query('cursor');
+        $data = $this->graphService->getPosts($page->access_token, $cursor);
+        return response()->json($data);
+    }
+
+    public function postComments(Request $request, $pageId, $postId)
+    {
+        $page = FacebookPage::where('user_id', Auth::id())->where('page_id', $pageId)->firstOrFail();
+        $cursor = $request->query('cursor');
+        $data = $this->graphService->getPostComments($postId, $page->access_token, $cursor);
+        return response()->json($data);
+    }
+
+    public function replyToComment(Request $request, $pageId, $commentId)
+    {
+        $request->validate(['message' => 'required|string']);
+        $page = FacebookPage::where('user_id', Auth::id())->where('page_id', $pageId)->firstOrFail();
+        $data = $this->graphService->replyToComment($commentId, $request->message, $page->access_token);
+        return response()->json($data);
+    }
+
+    public function hideComment(Request $request, $pageId, $commentId)
+    {
+        $request->validate(['is_hidden' => 'required|boolean']);
+        $page = FacebookPage::where('user_id', Auth::id())->where('page_id', $pageId)->firstOrFail();
+        $data = $this->graphService->hideComment($commentId, $request->is_hidden, $page->access_token);
+        return response()->json($data);
+    }
+
+    public function deleteComment($pageId, $commentId)
+    {
+        $page = FacebookPage::where('user_id', Auth::id())->where('page_id', $pageId)->firstOrFail();
+        $data = $this->graphService->deleteComment($commentId, $page->access_token);
+        return response()->json($data);
+    }
+
+    public function likeComment($pageId, $commentId)
+    {
+        $page = FacebookPage::where('user_id', Auth::id())->where('page_id', $pageId)->firstOrFail();
+        $data = $this->graphService->likeComment($commentId, $page->access_token);
+        return response()->json($data);
+    }
+
     // --- Saved Replies ---
 
     public function getSavedReplies()

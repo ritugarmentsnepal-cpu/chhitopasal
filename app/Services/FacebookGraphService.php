@@ -156,4 +156,69 @@ class FacebookGraphService
 
         return $response->json();
     }
+
+    // --- Comments & Posts ---
+
+    public function getPosts($pageToken, $after = null)
+    {
+        $params = [
+            'fields' => 'id,message,created_time,full_picture,attachments',
+            'limit' => 25,
+            'access_token' => $pageToken,
+        ];
+        if ($after) {
+            $params['after'] = $after;
+        }
+        $response = Http::get("{$this->baseUrl}/me/posts", $params);
+        return $response->json();
+    }
+
+    public function getPostComments($postId, $pageToken, $after = null)
+    {
+        $params = [
+            'fields' => 'id,message,created_time,from,is_hidden,user_likes,attachment,comments{id,message,created_time,from,is_hidden,user_likes,attachment}',
+            'limit' => 50,
+            'order' => 'reverse_chronological',
+            'access_token' => $pageToken,
+        ];
+        if ($after) {
+            $params['after'] = $after;
+        }
+        $response = Http::get("{$this->baseUrl}/{$postId}/comments", $params);
+        return $response->json();
+    }
+
+    public function replyToComment($commentId, $message, $pageToken)
+    {
+        $response = Http::post("{$this->baseUrl}/{$commentId}/comments", [
+            'message' => $message,
+            'access_token' => $pageToken,
+        ]);
+        return $response->json();
+    }
+
+    public function hideComment($commentId, $isHidden, $pageToken)
+    {
+        $response = Http::post("{$this->baseUrl}/{$commentId}", [
+            'is_hidden' => $isHidden ? 'true' : 'false',
+            'access_token' => $pageToken,
+        ]);
+        return $response->json();
+    }
+
+    public function deleteComment($commentId, $pageToken)
+    {
+        $response = Http::delete("{$this->baseUrl}/{$commentId}", [
+            'access_token' => $pageToken,
+        ]);
+        return $response->json();
+    }
+
+    public function likeComment($commentId, $pageToken)
+    {
+        $response = Http::post("{$this->baseUrl}/{$commentId}/likes", [
+            'access_token' => $pageToken,
+        ]);
+        return $response->json();
+    }
 }
