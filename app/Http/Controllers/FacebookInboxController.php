@@ -14,7 +14,8 @@ class FacebookInboxController extends Controller
     public function index()
     {
         $pages = FacebookPage::where('user_id', Auth::id())->get();
-        return view('facebook-inbox.index', compact('pages'));
+        $products = \App\Models\Product::where('stock', '>', 0)->get();
+        return view('facebook-inbox.index', compact('pages', 'products'));
     }
 
     public function login()

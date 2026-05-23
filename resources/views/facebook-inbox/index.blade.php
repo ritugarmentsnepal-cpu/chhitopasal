@@ -142,13 +142,18 @@
                             <input type="text" name="address" x-model="orderForm.address" required class="w-full border-gray-200 rounded-lg text-sm bg-gray-50 py-2">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">City</label>
-                            <input type="text" name="city" x-model="orderForm.city" class="w-full border-gray-200 rounded-lg text-sm bg-gray-50 py-2">
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Product *</label>
+                            <select name="product_id" x-model="orderForm.product_id" required class="w-full border-gray-200 rounded-lg text-sm bg-gray-50 py-2">
+                                <option value="">Select a product...</option>
+                                @foreach($products as $product)
+                                    <option value="{{ $product->id }}">{{ $product->name }} (Rs. {{ $product->price }})</option>
+                                @endforeach
+                            </select>
                         </div>
-                        
-                        <div class="border-t border-gray-100 pt-4 mt-2">
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Order Amount (Rs.) *</label>
-                            <input type="number" name="total_amount" x-model="orderForm.amount" required min="0" class="w-full border-gray-200 rounded-lg text-sm bg-gray-50 py-2 font-bold text-green-600">
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Quantity *</label>
+                            <input type="number" name="quantity" x-model="orderForm.quantity" required min="1" value="1" class="w-full border-gray-200 rounded-lg text-sm bg-gray-50 py-2 font-bold text-gray-900">
                         </div>
 
                         <div>
@@ -156,7 +161,7 @@
                             <textarea name="remarks" x-model="orderForm.remarks" rows="2" class="w-full border-gray-200 rounded-lg text-sm bg-gray-50 py-2" placeholder="e.g. 1x Red T-Shirt XL"></textarea>
                         </div>
 
-                        <button type="submit" class="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-black transition shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] active:scale-95">
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] active:scale-95">
                             Create Order
                         </button>
                     </div>
@@ -181,8 +186,8 @@
                     name: '',
                     phone: '',
                     address: '',
-                    city: '',
-                    amount: '',
+                    product_id: '',
+                    quantity: 1,
                     remarks: ''
                 },
 
