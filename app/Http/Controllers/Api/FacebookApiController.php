@@ -20,20 +20,22 @@ class FacebookApiController extends Controller
         $this->graphService = $graphService;
     }
 
-    public function conversations($pageId)
+    public function conversations(Request $request, $pageId)
     {
         $page = FacebookPage::where('user_id', Auth::id())->where('page_id', $pageId)->firstOrFail();
         
-        $data = $this->graphService->getConversations($page->access_token);
+        $cursor = $request->query('cursor');
+        $data = $this->graphService->getConversations($page->access_token, $cursor);
         
         return response()->json($data);
     }
 
-    public function messages($pageId, $threadId)
+    public function messages(Request $request, $pageId, $threadId)
     {
         $page = FacebookPage::where('user_id', Auth::id())->where('page_id', $pageId)->firstOrFail();
         
-        $data = $this->graphService->getMessages($threadId, $page->access_token);
+        $cursor = $request->query('cursor');
+        $data = $this->graphService->getMessages($threadId, $page->access_token, $cursor);
         
         return response()->json($data);
     }

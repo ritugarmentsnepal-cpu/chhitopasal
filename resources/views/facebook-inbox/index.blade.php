@@ -69,6 +69,14 @@
                         </template>
                     </button>
                 </template>
+
+                <!-- Load More Conversations -->
+                <template x-if="nextConversationCursor">
+                    <button @click="loadMoreConversations()" class="w-full p-3 text-sm text-blue-600 font-bold hover:bg-blue-50 rounded-xl transition flex justify-center items-center gap-2">
+                        <svg x-show="loadingMoreConversations" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        <span x-text="loadingMoreConversations ? 'Loading...' : 'Load older conversations'"></span>
+                    </button>
+                </template>
             </div>
         </div>
 
@@ -118,6 +126,17 @@
 
                     <!-- Messages -->
                     <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/50" id="chat-messages-container" @click="showEmojiPicker = false">
+                        
+                        <!-- Load More Messages -->
+                        <div class="flex justify-center pb-2">
+                            <template x-if="nextMessageCursor && !loadingMessages">
+                                <button @click="loadMoreMessages()" class="text-xs bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 font-bold px-4 py-2 rounded-full shadow-sm transition flex items-center gap-2">
+                                    <svg x-show="loadingMoreMessages" class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                    <span x-text="loadingMoreMessages ? 'Loading...' : 'Load older messages'"></span>
+                                </button>
+                            </template>
+                        </div>
+
                         <template x-if="loadingMessages">
                             <div class="flex justify-center py-4">
                                 <svg class="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
@@ -340,9 +359,13 @@
                 selectedPageId: '',
                 conversations: [],
                 loadingConversations: false,
+                loadingMoreConversations: false,
+                nextConversationCursor: null,
                 selectedConversation: null,
                 messages: [],
                 loadingMessages: false,
+                loadingMoreMessages: false,
+                nextMessageCursor: null,
                 newMessage: '',
                 sendingMessage: false,
                 searchQuery: '',
@@ -399,12 +422,18 @@
                     if (!this.selectedPageId) return;
                     this.loadingConversations = true;
                     this.conversations = [];
+                    this.nextConversationCursor = null;
                     this.selectedConversation = null;
                     try {
                         const res = await fetch(`/api/facebook/pages/${this.selectedPageId}/conversations`);
                         const data = await res.json();
                         if(data.data) {
                             this.conversations = data.data;
+                            if (data.paging && data.paging.cursors && data.paging.cursors.after) {
+                                this.nextConversationCursor = data.paging.cursors.after;
+                            } else {
+                                this.nextConversationCursor = null;
+                            }
                         }
                     } catch (err) {
                         console.error("Failed to fetch conversations", err);
@@ -413,10 +442,33 @@
                     }
                 },
 
+                async loadMoreConversations() {
+                    if (!this.selectedPageId || !this.nextConversationCursor || this.loadingMoreConversations) return;
+                    this.loadingMoreConversations = true;
+                    try {
+                        const res = await fetch(`/api/facebook/pages/${this.selectedPageId}/conversations?cursor=${this.nextConversationCursor}`);
+                        const data = await res.json();
+                        if(data.data) {
+                            this.conversations = [...this.conversations, ...data.data];
+                            // Check if there is next page. Facebook returns paging.next if there is more.
+                            if (data.paging && data.paging.cursors && data.paging.cursors.after && data.data.length > 0) {
+                                this.nextConversationCursor = data.paging.cursors.after;
+                            } else {
+                                this.nextConversationCursor = null;
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Failed to load more conversations", err);
+                    } finally {
+                        this.loadingMoreConversations = false;
+                    }
+                },
+
                 async selectConversation(conv) {
                     this.selectedConversation = conv;
                     this.messages = [];
                     this.loadingMessages = true;
+                    this.nextMessageCursor = null;
                     this.isStarred = false; // Reset state per convo
                     
                     try {
@@ -434,12 +486,51 @@
                         const data = await res.json();
                         if(data.data) {
                             this.messages = data.data;
+                            if (data.paging && data.paging.cursors && data.paging.cursors.after) {
+                                this.nextMessageCursor = data.paging.cursors.after;
+                            } else {
+                                this.nextMessageCursor = null;
+                            }
                             this.scrollToBottom();
                         }
                     } catch (err) {
                         console.error("Failed to fetch messages", err);
                     } finally {
                         this.loadingMessages = false;
+                    }
+                },
+
+                async loadMoreMessages() {
+                    if (!this.selectedConversation || !this.nextMessageCursor || this.loadingMoreMessages) return;
+                    this.loadingMoreMessages = true;
+                    
+                    try {
+                        // Store current scroll height
+                        const container = document.getElementById('chat-messages-container');
+                        const oldScrollHeight = container ? container.scrollHeight : 0;
+
+                        const res = await fetch(`/api/facebook/pages/${this.selectedPageId}/conversations/${this.selectedConversation.id}/messages?cursor=${this.nextMessageCursor}`);
+                        const data = await res.json();
+                        if(data.data) {
+                            this.messages = [...this.messages, ...data.data];
+                            
+                            if (data.paging && data.paging.cursors && data.paging.cursors.after && data.data.length > 0) {
+                                this.nextMessageCursor = data.paging.cursors.after;
+                            } else {
+                                this.nextMessageCursor = null;
+                            }
+
+                            // Restore scroll position so it doesn't jump
+                            setTimeout(() => {
+                                if (container) {
+                                    container.scrollTop = container.scrollHeight - oldScrollHeight;
+                                }
+                            }, 50);
+                        }
+                    } catch (err) {
+                        console.error("Failed to load more messages", err);
+                    } finally {
+                        this.loadingMoreMessages = false;
                     }
                 },
 

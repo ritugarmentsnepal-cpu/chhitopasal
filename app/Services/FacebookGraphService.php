@@ -23,12 +23,18 @@ class FacebookGraphService
     /**
      * Get conversations for a page.
      */
-    public function getConversations($pageToken)
+    public function getConversations($pageToken, $after = null)
     {
-        $response = Http::get("{$this->baseUrl}/me/conversations", [
+        $params = [
             'fields' => 'id,updated_time,unread_count,participants,messages.limit(1){message,created_time,from}',
+            'limit' => 50,
             'access_token' => $pageToken,
-        ]);
+        ];
+        if ($after) {
+            $params['after'] = $after;
+        }
+
+        $response = Http::get("{$this->baseUrl}/me/conversations", $params);
 
         return $response->json();
     }
@@ -36,12 +42,18 @@ class FacebookGraphService
     /**
      * Get messages for a specific thread.
      */
-    public function getMessages($threadId, $pageToken)
+    public function getMessages($threadId, $pageToken, $after = null)
     {
-        $response = Http::get("{$this->baseUrl}/{$threadId}/messages", [
-            'fields' => 'id,message,created_time,from',
+        $params = [
+            'fields' => 'id,message,created_time,from,attachments',
+            'limit' => 50,
             'access_token' => $pageToken,
-        ]);
+        ];
+        if ($after) {
+            $params['after'] = $after;
+        }
+
+        $response = Http::get("{$this->baseUrl}/{$threadId}/messages", $params);
 
         return $response->json();
     }
