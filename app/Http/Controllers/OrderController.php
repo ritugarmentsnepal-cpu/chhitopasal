@@ -100,6 +100,8 @@ class OrderController extends Controller
             'city' => 'nullable|string|max:100',
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
+            'remarks' => 'nullable|string|max:1000',
+            'source' => 'nullable|string',
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -123,10 +125,11 @@ class OrderController extends Controller
                 'customer_name' => $validated['customer_name'],
                 'customer_phone' => $validated['customer_phone'],
                 'address' => $validated['address'],
-                'city' => $validated['city'],
+                'city' => $validated['city'] ?? null,
                 'total_amount' => $totalAmount,
                 'status' => 'pending',
-                'source' => 'manual',
+                'source' => $validated['source'] ?? 'manual',
+                'remarks' => $validated['remarks'] ?? null,
             ]);
 
             $order->orderItems()->create([
