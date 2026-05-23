@@ -45,13 +45,16 @@
 
                 <template x-for="conv in conversations" :key="conv.id">
                     <button @click="selectConversation(conv)" 
-                            class="w-full text-left p-3 rounded-xl transition-all duration-200"
+                            class="w-full text-left p-3 rounded-xl transition-all duration-200 relative"
                             :class="selectedConversation?.id === conv.id ? 'bg-blue-50 border border-blue-100' : 'hover:bg-gray-100 border border-transparent'">
                         <div class="flex justify-between items-start mb-1">
-                            <span class="font-bold text-sm text-gray-900 truncate" x-text="getParticipantName(conv)"></span>
-                            <span class="text-[10px] text-gray-400 font-medium whitespace-nowrap ml-2" x-text="formatDate(conv.updated_time)"></span>
+                            <span class="text-sm truncate" :class="conv.unread_count > 0 ? 'font-black text-gray-900' : 'font-bold text-gray-700'" x-text="getParticipantName(conv)"></span>
+                            <span class="text-[10px] font-medium whitespace-nowrap ml-2" :class="conv.unread_count > 0 ? 'text-blue-600' : 'text-gray-400'" x-text="formatDate(conv.updated_time)"></span>
                         </div>
-                        <p class="text-xs text-gray-500 truncate" x-text="getLastMessageText(conv)"></p>
+                        <p class="text-xs truncate pr-4" :class="conv.unread_count > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'" x-text="getLastMessageText(conv)"></p>
+                        <template x-if="conv.unread_count > 0">
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 w-2.5 h-2.5 bg-blue-600 rounded-full"></div>
+                        </template>
                     </button>
                 </template>
             </div>
@@ -394,6 +397,16 @@
                     this.isStarred = false; // Reset state per convo
                     
                     try {
+                        // Mark as read immediately on UI side
+                        if (conv.unread_count > 0) {
+                            conv.unread_count = 0;
+                            // Make background API call to FB to mark as seen
+                            fetch(`/api/facebook/pages/${this.selectedPageId}/conversations/${conv.id}/mark-read`, {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+                            }).catch(e => console.error(e));
+                        }
+
                         const res = await fetch(`/api/facebook/pages/${this.selectedPageId}/conversations/${conv.id}/messages`);
                         const data = await res.json();
                         if(data.data) {

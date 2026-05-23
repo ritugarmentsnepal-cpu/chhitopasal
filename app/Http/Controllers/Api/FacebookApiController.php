@@ -82,6 +82,19 @@ class FacebookApiController extends Controller
         return response()->json(['success' => true, 'data' => $response, 'attachment_url' => $attachmentUrl]);
     }
 
+    public function markAsRead($pageId, $threadId)
+    {
+        $page = FacebookPage::where('user_id', Auth::id())->where('page_id', $pageId)->firstOrFail();
+        
+        $response = $this->graphService->markAsRead($threadId, $page->access_token);
+        
+        if (isset($response['error'])) {
+            return response()->json(['success' => false, 'error' => $response['error']], 400);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     // --- Saved Replies ---
 
     public function getSavedReplies()

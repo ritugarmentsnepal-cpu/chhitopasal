@@ -25,9 +25,8 @@ class FacebookGraphService
      */
     public function getConversations($pageToken)
     {
-        // fetch threads and the last message
         $response = Http::get("{$this->baseUrl}/me/conversations", [
-            'fields' => 'id,updated_time,participants,messages.limit(1){message,created_time,from}',
+            'fields' => 'id,updated_time,unread_count,participants,messages.limit(1){message,created_time,from}',
             'access_token' => $pageToken,
         ]);
 
@@ -99,6 +98,47 @@ class FacebookGraphService
         $response = Http::post("{$this->baseUrl}/me/messages", [
             'recipient' => ['id' => $recipientId],
             'message' => $messagePayload,
+            'access_token' => $pageToken,
+        ]);
+
+        return $response->json();
+    }
+
+    /**
+     * Mark a thread as read
+     */
+    public function markAsRead($threadId, $pageToken)
+    {
+        $threadResponse = Http::get("{$this->baseUrl}/{$threadId}", [
+            'fields' => 'participants',
+            'access_token' => $pageToken,
+        ]);
+        
+        $threadData = $threadResponse->json();
+        
+        $participants = $threadData['participants']['data'] ?? [];
+        $recipientId = null;
+        
+        $meResponse = Http::get("{$this->baseUrl}/me", [
+            'fields' => 'id',
+            'access_token' => $pageToken,
+        ]);
+        $meId = $meResponse->json()['id'] ?? null;
+        
+        foreach ($participants as $participant) {
+            if ($participant['id'] !== $meId) {
+                $recipientId = $participant['id'];
+                break;
+            }
+        }
+        
+        if (!$recipientId) {
+            return ['error' => 'Could not determine recipient ID'];
+        }
+
+        $response = Http::post("{$this->baseUrl}/me/messages", [
+            'recipient' => ['id' => $recipientId],
+            'sender_action' => 'mark_seen',
             'access_token' => $pageToken,
         ]);
 
