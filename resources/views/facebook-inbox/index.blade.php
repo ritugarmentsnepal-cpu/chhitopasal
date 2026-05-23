@@ -448,9 +448,7 @@
                 <p class="text-[10px] text-gray-500">Create an order from this chat</p>
             </div>
             <div class="p-4">
-                <form action="{{ route('orders.store') }}" method="POST" id="quick-order-form">
-                    @csrf
-                    <input type="hidden" name="source" value="facebook">
+                <form @submit.prevent="submitOrderForm" id="quick-order-form">
                     
                     <div class="space-y-4">
                         <div>
@@ -485,8 +483,9 @@
                             <textarea name="remarks" x-model="orderForm.remarks" rows="2" class="w-full border-gray-200 rounded-lg text-sm bg-gray-50 py-2" placeholder="e.g. 1x Red T-Shirt XL"></textarea>
                         </div>
 
-                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] active:scale-95">
-                            Create Order
+                        <button type="submit" :disabled="submittingOrder" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50">
+                            <svg x-show="submittingOrder" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            <span x-text="submittingOrder ? 'Creating...' : 'Create Order'"></span>
                         </button>
                     </div>
                 </form>
@@ -587,6 +586,7 @@
                     quantity: 1,
                     remarks: ''
                 },
+                submittingOrder: false,
 
                 get reversedMessages() {
                     return [...this.messages].reverse();
@@ -965,6 +965,53 @@
                 },
                 fillOrderCustomerFromName(name) {
                     if(name) this.orderForm.name = name;
+                },
+
+                async submitOrderForm() {
+                    if (this.submittingOrder) return;
+                    this.submittingOrder = true;
+
+                    try {
+                        const res = await fetch('{{ route('orders.store') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                customer_name: this.orderForm.name,
+                                customer_phone: this.orderForm.phone,
+                                address: this.orderForm.address,
+                                product_id: this.orderForm.product_id,
+                                quantity: this.orderForm.quantity,
+                                remarks: this.orderForm.remarks,
+                                source: 'facebook'
+                            })
+                        });
+
+                        const data = await res.json();
+                        
+                        if (res.ok && data.success) {
+                            this.showToast('Order created successfully!');
+                            // Reset form
+                            this.orderForm = {
+                                name: '',
+                                phone: '',
+                                address: '',
+                                product_id: '',
+                                quantity: 1,
+                                remarks: ''
+                            };
+                        } else {
+                            alert(data.message || 'Failed to create order. Please check all required fields.');
+                        }
+                    } catch (err) {
+                        console.error('Order submission error:', err);
+                        alert('An error occurred while creating the order.');
+                    } finally {
+                        this.submittingOrder = false;
+                    }
                 },
 
                 // --- Saved Replies Methods ---

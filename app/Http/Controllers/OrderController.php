@@ -140,6 +140,13 @@ class OrderController extends Controller
             ]);
         });
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true, 
+                'message' => 'Order created successfully from Quick Order!'
+            ]);
+        }
+
         return redirect()->route('orders.index', ['status' => 'pending'])->with('success', 'Order created manually.');
     }
 
