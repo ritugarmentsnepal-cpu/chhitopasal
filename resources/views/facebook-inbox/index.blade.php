@@ -27,6 +27,17 @@
                         No pages connected. Click "Connect Pages" to authenticate with Facebook.
                     </div>
                 @endif
+
+                <!-- Search Input -->
+                <div class="mt-3 relative">
+                    <input type="text" x-model="searchQuery" placeholder="Search name or message..." 
+                           class="w-full bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl text-sm py-2 pl-9 pr-3 transition">
+                    <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    
+                    <button x-show="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Conversations List -->
@@ -37,13 +48,14 @@
                     </div>
                 </template>
                 
-                <template x-if="!loadingConversations && conversations.length === 0 && selectedPageId">
+                <template x-if="!loadingConversations && filteredConversations.length === 0 && selectedPageId">
                     <div class="text-center p-8 text-gray-400 text-sm font-bold">
-                        No conversations found.
+                        <span x-show="!searchQuery">No conversations found.</span>
+                        <span x-show="searchQuery">No matches found for "<span x-text="searchQuery"></span>"</span>
                     </div>
                 </template>
 
-                <template x-for="conv in conversations" :key="conv.id">
+                <template x-for="conv in filteredConversations" :key="conv.id">
                     <button @click="selectConversation(conv)" 
                             class="w-full text-left p-3 rounded-xl transition-all duration-200 relative"
                             :class="selectedConversation?.id === conv.id ? 'bg-blue-50 border border-blue-100' : 'hover:bg-gray-100 border border-transparent'">
@@ -333,6 +345,7 @@
                 loadingMessages: false,
                 newMessage: '',
                 sendingMessage: false,
+                searchQuery: '',
                 
                 // Native Features State
                 isStarred: false,
@@ -361,6 +374,16 @@
 
                 get reversedMessages() {
                     return [...this.messages].reverse();
+                },
+
+                get filteredConversations() {
+                    if (!this.searchQuery.trim()) return this.conversations;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.conversations.filter(conv => {
+                        const name = this.getParticipantName(conv).toLowerCase();
+                        const lastMsg = this.getLastMessageText(conv).toLowerCase();
+                        return name.includes(q) || lastMsg.includes(q);
+                    });
                 },
 
                 init() {
