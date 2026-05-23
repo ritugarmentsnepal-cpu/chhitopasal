@@ -43,5 +43,10 @@ return [
         'password' => env('PATHAO_PASSWORD'),
         'store_id' => env('PATHAO_STORE_ID'),
     ],
+    'facebook' => [
+        'client_id' => env('FACEBOOK_APP_ID'),
+        'client_secret' => env('FACEBOOK_APP_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI', '/facebook/callback'),
+    ],
 
 ];

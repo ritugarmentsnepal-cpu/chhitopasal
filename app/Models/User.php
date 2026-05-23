@@ -28,6 +28,7 @@ class User extends Authenticatable
         'purchases'          => 'Purchases',
         'expenses'           => 'Expenses',
         'pos'                => 'Point of Sale',
+        'facebook_inbox'     => 'Facebook Inbox',
         'settings'           => 'System Settings',
         'users'              => 'Staff Management',
     ];
@@ -37,6 +38,7 @@ class User extends Authenticatable
         'Overview' => ['dashboard', 'analytics'],
         'E-Commerce' => ['orders', 'orders.delete', 'orders.bulk_upload', 'products', 'categories', 'customers'],
         'Fulfillment' => ['pathao'],
+        'Marketing' => ['facebook_inbox'],
         'Finance' => ['accounting', 'purchases', 'expenses', 'pos'],
         'Administration' => ['settings', 'users'],
     ];
@@ -46,16 +48,16 @@ class User extends Authenticatable
         'admin' => [
             'dashboard', 'analytics', 'orders', 'orders.delete', 'orders.bulk_upload',
             'products', 'categories', 'customers', 'pathao', 'accounting',
-            'purchases', 'expenses', 'pos', 'settings', 'users',
+            'purchases', 'expenses', 'pos', 'facebook_inbox', 'settings', 'users',
         ],
         'manager' => [
             'dashboard', 'orders', 'orders.delete', 'orders.bulk_upload',
             'products', 'categories', 'customers', 'pathao', 'accounting',
-            'purchases', 'expenses', 'pos',
+            'purchases', 'expenses', 'pos', 'facebook_inbox',
         ],
         'operational_staff' => [
             'dashboard', 'orders', 'orders.bulk_upload',
-            'products', 'categories', 'customers', 'pathao', 'pos',
+            'products', 'categories', 'customers', 'pathao', 'pos', 'facebook_inbox',
         ],
         'accountant' => [
             'dashboard', 'accounting', 'purchases', 'expenses',

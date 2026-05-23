@@ -150,6 +150,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/pathao/cities', [\App\Http\Controllers\PathaoManagerController::class, 'getCities'])->middleware('throttle:30,1');
     Route::get('/api/pathao/zones/{cityId}', [\App\Http\Controllers\PathaoManagerController::class, 'getZones'])->middleware('throttle:30,1');
     Route::get('/api/pathao/areas/{zoneId}', [\App\Http\Controllers\PathaoManagerController::class, 'getAreas'])->middleware('throttle:30,1');
+
+    // Facebook Inbox — permission:facebook_inbox
+    Route::middleware(['permission:facebook_inbox'])->group(function () {
+        Route::get('/facebook-inbox', [\App\Http\Controllers\FacebookInboxController::class, 'index'])->name('facebook-inbox.index');
+        Route::get('/facebook/login', [\App\Http\Controllers\FacebookInboxController::class, 'login'])->name('facebook.login');
+        Route::get('/facebook/callback', [\App\Http\Controllers\FacebookInboxController::class, 'callback'])->name('facebook.callback');
+        
+        Route::get('/api/facebook/pages/{pageId}/conversations', [\App\Http\Controllers\Api\FacebookApiController::class, 'conversations'])->name('api.facebook.conversations');
+        Route::get('/api/facebook/pages/{pageId}/conversations/{threadId}/messages', [\App\Http\Controllers\Api\FacebookApiController::class, 'messages'])->name('api.facebook.messages');
+        Route::post('/api/facebook/pages/{pageId}/conversations/{threadId}/messages', [\App\Http\Controllers\Api\FacebookApiController::class, 'sendMessage'])->name('api.facebook.sendMessage');
+    });
 });
 
 Route::middleware('auth')->group(function () {
@@ -163,3 +174,7 @@ require __DIR__.'/auth.php';
 
 // Storefront Analytics Tracking
 Route::post('/track-event', [\App\Http\Controllers\TrackEventController::class, 'store'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])->name('track.event');
+
+// Facebook Webhooks
+Route::get('/webhook/facebook', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'verify']);
+Route::post('/webhook/facebook', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'handle'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
