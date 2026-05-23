@@ -67,22 +67,42 @@
             </template>
 
             <template x-if="selectedConversation">
-                <div class="flex-1 flex flex-col h-full">
+                <div class="flex-1 flex flex-col h-full relative">
                     <!-- Chat Header -->
                     <div class="h-16 border-b border-gray-100 flex items-center px-6 bg-white shrink-0 shadow-sm z-10 justify-between">
                         <div class="font-black text-lg text-gray-900 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">
-                                <span x-text="getParticipantName(selectedConversation).charAt(0)"></span>
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm overflow-hidden">
+                                <img x-show="getParticipantAvatar(selectedConversation)" :src="getParticipantAvatar(selectedConversation)" class="w-full h-full object-cover">
+                                <span x-show="!getParticipantAvatar(selectedConversation)" x-text="getParticipantName(selectedConversation).charAt(0)"></span>
                             </div>
                             <span x-text="getParticipantName(selectedConversation)"></span>
                         </div>
-                        <button @click="fillOrderCustomer()" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg transition hidden md:block">
-                            Copy to Order Form
-                        </button>
+                        
+                        <!-- Header Actions (Native FB UI) -->
+                        <div class="flex items-center gap-2">
+                            <button @click="showToast('Conversation reported as spam')" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition" title="Spam/Report">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            </button>
+                            <button @click="showToast('Conversation deleted')" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                            <button @click="toggleStar()" class="p-2 transition rounded-lg" :class="isStarred ? 'text-yellow-400 hover:bg-yellow-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'" title="Star">
+                                <svg class="w-5 h-5" :fill="isStarred ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                            </button>
+                            <button @click="showToast('Marked as unread')" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition" title="Mark Unread">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </button>
+                            <button @click="showToast('Marked as done')" class="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition" title="Mark Done">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            </button>
+                            <button @click="fillOrderCustomer()" class="ml-2 text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg transition hidden md:block">
+                                Copy to Order Form
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Messages -->
-                    <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/50" id="chat-messages-container">
+                    <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/50" id="chat-messages-container" @click="showEmojiPicker = false">
                         <template x-if="loadingMessages">
                             <div class="flex justify-center py-4">
                                 <svg class="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
@@ -91,27 +111,119 @@
 
                         <template x-for="msg in reversedMessages" :key="msg.id">
                             <div class="flex flex-col" :class="msg.from.id === selectedPageId ? 'items-end' : 'items-start'">
-                                <div class="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm"
-                                     :class="msg.from.id === selectedPageId ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-white border border-gray-200 text-gray-900 rounded-bl-sm'">
-                                    <span x-text="msg.message" style="white-space: pre-wrap;"></span>
+                                <div class="flex gap-2 max-w-[75%]" :class="msg.from.id === selectedPageId ? 'flex-row-reverse' : ''">
+                                    
+                                    <!-- Avatar -->
+                                    <div class="w-6 h-6 rounded-full bg-gray-200 shrink-0 mt-1 flex items-center justify-center overflow-hidden">
+                                        <template x-if="msg.from.id === selectedPageId">
+                                            <span class="text-[10px] text-gray-500 font-bold" x-text="getSelectedPageName().charAt(0)"></span>
+                                        </template>
+                                        <template x-if="msg.from.id !== selectedPageId">
+                                            <span class="text-[10px] text-gray-500 font-bold" x-text="getParticipantName(selectedConversation).charAt(0)"></span>
+                                        </template>
+                                    </div>
+
+                                    <!-- Message Bubble -->
+                                    <div class="flex flex-col">
+                                        <div class="px-4 py-2.5 rounded-2xl text-sm"
+                                             :class="msg.from.id === selectedPageId ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'">
+                                            <template x-if="msg.message">
+                                                <span x-text="msg.message" style="white-space: pre-wrap;"></span>
+                                            </template>
+                                            <!-- Attachments (Native feature) -->
+                                            <template x-if="msg.attachments && msg.attachments.data && msg.attachments.data.length > 0">
+                                                <div class="mt-2 space-y-2">
+                                                    <template x-for="att in msg.attachments.data">
+                                                        <div>
+                                                            <template x-if="att.image_data">
+                                                                <img :src="att.image_data.url" class="rounded-lg max-w-full h-auto max-h-48">
+                                                            </template>
+                                                            <template x-if="!att.image_data">
+                                                                <a :href="att.file_url" target="_blank" class="flex items-center gap-2 bg-black/10 p-2 rounded-lg text-xs hover:bg-black/20">
+                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                                                                    Attachment
+                                                                </a>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <div class="flex items-center gap-1 mt-1" :class="msg.from.id === selectedPageId ? 'justify-end' : 'justify-start'">
+                                            <span class="text-[10px] text-gray-400 font-medium" x-text="formatDate(msg.created_time)"></span>
+                                            <template x-if="msg.from.id === selectedPageId">
+                                                <span class="text-[10px] text-gray-400 font-medium whitespace-nowrap">· Sent by <span x-text="getSelectedPageName()"></span></span>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="text-[10px] text-gray-400 mt-1 font-medium" x-text="formatDate(msg.created_time)"></span>
                             </div>
                         </template>
                     </div>
 
-                    <!-- Input -->
-                    <div class="p-4 bg-white border-t border-gray-100 shrink-0">
-                        <form @submit.prevent="sendMessage" class="flex gap-2">
-                            <input type="text" x-model="newMessage" placeholder="Type a reply..." 
-                                   class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500/20"
-                                   :disabled="sendingMessage">
-                            <button type="submit" :disabled="sendingMessage || !newMessage.trim()"
-                                    class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition disabled:opacity-50 flex items-center gap-2">
-                                <svg x-show="sendingMessage" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                                <span x-show="!sendingMessage">Send</span>
+                    <!-- Input Area -->
+                    <div class="p-3 bg-white border-t border-gray-100 shrink-0 relative">
+                        <!-- Uploaded File Preview -->
+                        <div x-show="selectedFile" class="mb-2 p-2 bg-gray-50 rounded-lg flex items-center justify-between border border-gray-200">
+                            <div class="flex items-center gap-2 truncate">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                                <span class="text-xs text-gray-700 font-medium" x-text="selectedFile ? selectedFile.name : ''"></span>
+                            </div>
+                            <button @click="clearFile()" class="text-gray-400 hover:text-red-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
+                        </div>
+
+                        <!-- Emoji Picker Popover -->
+                        <div x-show="showEmojiPicker" @click.away="showEmojiPicker = false" class="absolute bottom-full mb-2 left-10 bg-white border border-gray-200 shadow-xl rounded-xl p-2 z-50 flex flex-wrap gap-1 w-64 max-h-48 overflow-y-auto">
+                            <template x-for="emoji in emojis">
+                                <button @click="insertEmoji(emoji)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded text-lg transition" x-text="emoji"></button>
+                            </template>
+                        </div>
+
+                        <form @submit.prevent="sendMessage" class="flex flex-col gap-2">
+                            <div class="flex items-center gap-2">
+                                <!-- Action Icons -->
+                                <button type="button" @click="$refs.fileInput.click()" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition" title="Attach a file">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                                </button>
+                                <input type="file" x-ref="fileInput" @change="handleFileSelect" class="hidden">
+
+                                <button type="button" @click="showSavedRepliesModal = true" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition" title="Saved Replies">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                                </button>
+
+                                <button type="button" @click="showEmojiPicker = !showEmojiPicker" class="p-2 text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 rounded-full transition" title="Choose an emoji">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
+
+                                <!-- Text Input -->
+                                <input type="text" x-model="newMessage" placeholder="Type a reply..." 
+                                       class="flex-1 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500/20"
+                                       :disabled="sendingMessage">
+                                       
+                                <!-- Thumbs Up / Send -->
+                                <template x-if="!newMessage.trim() && !selectedFile">
+                                    <button type="button" @click="sendThumbsUp()" :disabled="sendingMessage" class="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition disabled:opacity-50" title="Send a Like">
+                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M2 10h3v10H2V10zm20.46 3.14c.48-.68.74-1.48.74-2.31 0-2.21-1.79-4-4-4h-5.26c.21-.57.36-1.19.36-1.83 0-2.36-1.57-4-3.48-4-.56 0-1.12.16-1.61.45l-.41.25c-.24.15-.36.43-.28.7l.55 1.95c.24.87.1 1.8-.39 2.54l-.45.69C7.8 8.08 7.37 8.5 6.8 8.8V20h11.16c1.37 0 2.58-.93 2.91-2.26l1.59-6.6zm-11.45-8.4l.2.12c1.33.81 1.76 2.38 1.15 3.86l-1.01 2.44h8.31c1.1 0 2 .9 2 2 0 .5-.2 1-.57 1.35l-1.6 1.6 1.25 1.25c.34.34.54.8.54 1.28 0 .48-.2 1-.57 1.35l-1.6 1.6 1.25 1.25c.34.34.54.8.54 1.28 0 1.1-.9 2-2 2H6.8c-.83 0-1.56-.47-1.88-1.18-.08-.18-.12-.38-.12-.59V8.8c0-.6.28-1.15.75-1.5l2.4-1.8c1.07-.81 2.33-1.67 2.33-3.2 0-.25-.04-.49-.1-.73z"/></svg>
+                                    </button>
+                                </template>
+                                
+                                <template x-if="newMessage.trim() || selectedFile">
+                                    <button type="submit" :disabled="sendingMessage"
+                                            class="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center w-10 h-10">
+                                        <svg x-show="sendingMessage" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                        <svg x-show="!sendingMessage" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                                    </button>
+                                </template>
+                            </div>
                         </form>
+                    </div>
+
+                    <!-- Toast Notification -->
+                    <div x-show="toastMessage" x-transition.opacity
+                         class="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg z-50">
+                        <span x-text="toastMessage"></span>
                     </div>
                 </div>
             </template>
@@ -124,7 +236,7 @@
                 <p class="text-[10px] text-gray-500">Create an order from this chat</p>
             </div>
             <div class="p-4">
-                <form action="{{ route('orders.store') }}" method="POST" id="quick-order-form" @submit="submitOrder">
+                <form action="{{ route('orders.store') }}" method="POST" id="quick-order-form">
                     @csrf
                     <input type="hidden" name="source" value="facebook">
                     
@@ -153,7 +265,7 @@
 
                         <div>
                             <label class="block text-xs font-bold text-gray-700 mb-1">Quantity *</label>
-                            <input type="number" name="quantity" x-model="orderForm.quantity" required min="1" value="1" class="w-full border-gray-200 rounded-lg text-sm bg-gray-50 py-2 font-bold text-gray-900">
+                            <input type="number" name="quantity" x-model="orderForm.quantity" required min="1" class="w-full border-gray-200 rounded-lg text-sm bg-gray-50 py-2 font-bold text-gray-900">
                         </div>
 
                         <div>
@@ -166,6 +278,42 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Saved Replies Modal -->
+        <div x-show="showSavedRepliesModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" style="display: none;">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]" @click.away="showSavedRepliesModal = false">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 class="font-black text-gray-900">Saved Replies</h3>
+                    <button @click="showSavedRepliesModal = false" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto p-4 space-y-2">
+                    <template x-if="savedReplies.length === 0 && !loadingReplies">
+                        <p class="text-sm text-gray-500 text-center py-4">No saved replies yet.</p>
+                    </template>
+                    <template x-for="reply in savedReplies" :key="reply.id">
+                        <div class="border border-gray-200 rounded-lg p-3 hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition relative group" @click="useSavedReply(reply)">
+                            <h4 class="font-bold text-sm text-gray-900 mb-1" x-text="reply.title"></h4>
+                            <p class="text-xs text-gray-500 line-clamp-2" x-text="reply.content"></p>
+                            <button @click.stop="deleteSavedReply(reply.id)" class="absolute top-2 right-2 p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition bg-white rounded-full">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="p-4 border-t border-gray-100 bg-gray-50">
+                    <h4 class="text-xs font-bold text-gray-700 mb-2">Create New</h4>
+                    <input type="text" x-model="newReplyTitle" placeholder="Title (e.g. Greeting)" class="w-full mb-2 border-gray-200 rounded-lg text-sm p-2">
+                    <textarea x-model="newReplyContent" placeholder="Message content..." class="w-full mb-2 border-gray-200 rounded-lg text-sm p-2" rows="2"></textarea>
+                    <button @click="saveNewReply()" :disabled="!newReplyTitle || !newReplyContent || savingReply" class="w-full bg-gray-900 text-white font-bold py-2 rounded-lg hover:bg-black transition disabled:opacity-50">
+                        <span x-text="savingReply ? 'Saving...' : 'Save Reply'"></span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -182,6 +330,23 @@
                 loadingMessages: false,
                 newMessage: '',
                 sendingMessage: false,
+                
+                // Native Features State
+                isStarred: false,
+                toastMessage: '',
+                showEmojiPicker: false,
+                selectedFile: null,
+                
+                // Saved Replies State
+                showSavedRepliesModal: false,
+                savedReplies: [],
+                loadingReplies: false,
+                savingReply: false,
+                newReplyTitle: '',
+                newReplyContent: '',
+
+                emojis: ['😀','😂','🥰','😎','🤔','👍','❤️','🔥','🎉','✨','✅','👋','🙏','🛒','📦'],
+                
                 orderForm: {
                     name: '',
                     phone: '',
@@ -192,26 +357,23 @@
                 },
 
                 get reversedMessages() {
-                    // Graph API returns messages newest first usually, we need them oldest first to display top-down
                     return [...this.messages].reverse();
                 },
 
                 init() {
-                    // Try to auto-select first page if exists
                     const select = document.querySelector('select[x-model="selectedPageId"]');
                     if(select && select.options.length > 1) {
                         this.selectedPageId = select.options[1].value;
                         this.fetchConversations();
                     }
+                    this.fetchSavedReplies();
                 },
 
                 async fetchConversations() {
                     if (!this.selectedPageId) return;
-                    
                     this.loadingConversations = true;
                     this.conversations = [];
                     this.selectedConversation = null;
-                    
                     try {
                         const res = await fetch(`/api/facebook/pages/${this.selectedPageId}/conversations`);
                         const data = await res.json();
@@ -229,6 +391,7 @@
                     this.selectedConversation = conv;
                     this.messages = [];
                     this.loadingMessages = true;
+                    this.isStarred = false; // Reset state per convo
                     
                     try {
                         const res = await fetch(`/api/facebook/pages/${this.selectedPageId}/conversations/${conv.id}/messages`);
@@ -244,21 +407,57 @@
                     }
                 },
 
+                handleFileSelect(e) {
+                    const file = e.target.files[0];
+                    if(file) {
+                        this.selectedFile = file;
+                    }
+                },
+
+                clearFile() {
+                    this.selectedFile = null;
+                    this.$refs.fileInput.value = '';
+                },
+
+                insertEmoji(emoji) {
+                    this.newMessage += emoji;
+                    this.showEmojiPicker = false;
+                    // Focus input
+                    const input = document.querySelector('input[x-model="newMessage"]');
+                    if(input) input.focus();
+                },
+
+                sendThumbsUp() {
+                    this.newMessage = '👍';
+                    this.sendMessage();
+                },
+
                 async sendMessage() {
-                    if(!this.newMessage.trim() || !this.selectedConversation) return;
+                    if((!this.newMessage.trim() && !this.selectedFile) || !this.selectedConversation) return;
                     
-                    const msgText = this.newMessage;
-                    this.newMessage = '';
                     this.sendingMessage = true;
+                    
+                    const formData = new FormData();
+                    formData.append('message', this.newMessage.trim());
+                    if(this.selectedFile) {
+                        formData.append('file', this.selectedFile);
+                    }
+
+                    // Save state for optimistic UI
+                    const msgText = this.newMessage.trim();
+                    const hasFile = !!this.selectedFile;
+                    
+                    // Clear input immediately for UX
+                    this.newMessage = '';
+                    this.clearFile();
 
                     try {
                         const res = await fetch(`/api/facebook/pages/${this.selectedPageId}/conversations/${this.selectedConversation.id}/messages`, {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                             },
-                            body: JSON.stringify({ message: msgText })
+                            body: formData
                         });
                         const data = await res.json();
                         
@@ -266,31 +465,111 @@
                             // Optimistically add message
                             this.messages.unshift({
                                 id: Date.now(),
-                                message: msgText,
+                                message: msgText + (hasFile ? '\n[File Attached]' : ''),
                                 created_time: new Date().toISOString(),
                                 from: { id: this.selectedPageId }
                             });
                             this.scrollToBottom();
                         } else {
                             alert("Failed to send message: " + (data.error || 'Unknown error'));
+                            this.newMessage = msgText; // restore
                         }
                     } catch (err) {
                         console.error("Failed to send message", err);
                         alert("Error sending message.");
+                        this.newMessage = msgText; // restore
                     } finally {
                         this.sendingMessage = false;
                     }
                 },
 
+                // --- Saved Replies Methods ---
+                async fetchSavedReplies() {
+                    try {
+                        const res = await fetch('/api/facebook/saved-replies');
+                        const data = await res.json();
+                        if(data.data) {
+                            this.savedReplies = data.data;
+                        }
+                    } catch (e) { console.error(e); }
+                },
+
+                async saveNewReply() {
+                    this.savingReply = true;
+                    try {
+                        const res = await fetch('/api/facebook/saved-replies', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                title: this.newReplyTitle,
+                                content: this.newReplyContent
+                            })
+                        });
+                        const data = await res.json();
+                        if(data.success) {
+                            this.savedReplies.push(data.data);
+                            this.newReplyTitle = '';
+                            this.newReplyContent = '';
+                        }
+                    } catch (e) { console.error(e); }
+                    this.savingReply = false;
+                },
+
+                async deleteSavedReply(id) {
+                    if(!confirm('Delete this saved reply?')) return;
+                    try {
+                        await fetch(`/api/facebook/saved-replies/${id}`, {
+                            method: 'DELETE',
+                            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+                        });
+                        this.savedReplies = this.savedReplies.filter(r => r.id !== id);
+                    } catch (e) { console.error(e); }
+                },
+
+                useSavedReply(reply) {
+                    this.newMessage = reply.content;
+                    this.showSavedRepliesModal = false;
+                    const input = document.querySelector('input[x-model="newMessage"]');
+                    if(input) input.focus();
+                },
+
+                // --- UI Helpers ---
+                toggleStar() {
+                    this.isStarred = !this.isStarred;
+                    if(this.isStarred) this.showToast('Conversation starred');
+                },
+
+                showToast(msg) {
+                    this.toastMessage = msg;
+                    setTimeout(() => { this.toastMessage = ''; }, 3000);
+                },
+
                 getParticipantName(conv) {
-                    if(!conv.participants || !conv.participants.data) return 'Unknown';
+                    if(!conv || !conv.participants || !conv.participants.data) return 'Unknown';
                     const other = conv.participants.data.find(p => p.id !== this.selectedPageId);
-                    return other ? other.name : 'Unknown';
+                    return (other && other.name) ? other.name : 'Unknown';
+                },
+
+                getParticipantAvatar(conv) {
+                    // Graph API doesn't return avatars by default for privacy, but we can generate an initial avatar.
+                    return null; // Fallback to initial
+                },
+                
+                getSelectedPageName() {
+                    const select = document.querySelector('select[x-model="selectedPageId"]');
+                    if(select && this.selectedPageId) {
+                        const option = select.querySelector(`option[value="${this.selectedPageId}"]`);
+                        return option ? option.innerText : 'Page';
+                    }
+                    return 'Page';
                 },
 
                 getLastMessageText(conv) {
-                    if(conv.messages && conv.messages.data && conv.messages.data.length > 0) {
-                        return conv.messages.data[0].message;
+                    if(conv && conv.messages && conv.messages.data && conv.messages.data.length > 0) {
+                        return conv.messages.data[0].message || '[Attachment]';
                     }
                     return '';
                 },
@@ -313,11 +592,6 @@
                     if(this.selectedConversation) {
                         this.orderForm.name = this.getParticipantName(this.selectedConversation);
                     }
-                },
-
-                submitOrder(e) {
-                    // You can add extra validation or AJAX submission here if needed
-                    // For now, it will submit normally as a standard form
                 }
             }
         }

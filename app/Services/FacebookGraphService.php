@@ -50,9 +50,8 @@ class FacebookGraphService
     /**
      * Send a message to a thread.
      */
-    public function sendMessage($threadId, $message, $pageToken)
+    public function sendMessage($threadId, $messageText, $pageToken, $attachmentUrl = null, $attachmentType = 'file')
     {
-        // First get the recipient id from the thread by fetching it
         $threadResponse = Http::get("{$this->baseUrl}/{$threadId}", [
             'fields' => 'participants',
             'access_token' => $pageToken,
@@ -60,21 +59,9 @@ class FacebookGraphService
         
         $threadData = $threadResponse->json();
         
-        // Find the customer's participant ID (the one that is not the page)
-        // Since we are sending as the page, we need the OTHER participant's ID.
-        // For simplicity in Graph API for messenger, if we have a thread ID, we can't reply directly to thread ID.
-        // We reply to a PSID (Page Scoped ID). 
-        // Let's extract PSID from participants.
-        $pageId = null; 
-        // It's better if we pass pageId or get it. 
-        // Actually, you CAN reply to a message via the /me/messages endpoint with recipient->id = PSID.
-        
-        // A better approach to send a message is to just use the thread's first message sender/recipient.
-        
         $participants = $threadData['participants']['data'] ?? [];
         $recipientId = null;
         
-        // We need to determine the page's own ID to exclude it. We can get it via /me
         $meResponse = Http::get("{$this->baseUrl}/me", [
             'fields' => 'id',
             'access_token' => $pageToken,
@@ -92,9 +79,26 @@ class FacebookGraphService
             return ['error' => 'Could not determine recipient ID'];
         }
 
+        $messagePayload = [];
+        if ($messageText) {
+            $messagePayload['text'] = $messageText;
+        }
+
+        if ($attachmentUrl) {
+            // Usually 'image', 'audio', 'video', or 'file'
+            // To support all file types, we default to 'file' unless we specifically know it's an image.
+            $messagePayload['attachment'] = [
+                'type' => $attachmentType,
+                'payload' => [
+                    'url' => $attachmentUrl,
+                    'is_reusable' => true
+                ]
+            ];
+        }
+
         $response = Http::post("{$this->baseUrl}/me/messages", [
             'recipient' => ['id' => $recipientId],
-            'message' => ['text' => $message],
+            'message' => $messagePayload,
             'access_token' => $pageToken,
         ]);
 

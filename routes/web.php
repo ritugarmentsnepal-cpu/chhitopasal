@@ -160,6 +160,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/api/facebook/pages/{pageId}/conversations', [\App\Http\Controllers\Api\FacebookApiController::class, 'conversations'])->name('api.facebook.conversations');
         Route::get('/api/facebook/pages/{pageId}/conversations/{threadId}/messages', [\App\Http\Controllers\Api\FacebookApiController::class, 'messages'])->name('api.facebook.messages');
         Route::post('/api/facebook/pages/{pageId}/conversations/{threadId}/messages', [\App\Http\Controllers\Api\FacebookApiController::class, 'sendMessage'])->name('api.facebook.sendMessage');
+        Route::get('/api/facebook/saved-replies', [\App\Http\Controllers\Api\FacebookApiController::class, 'getSavedReplies'])->name('api.facebook.savedReplies.index');
+        Route::post('/api/facebook/saved-replies', [\App\Http\Controllers\Api\FacebookApiController::class, 'storeSavedReply'])->name('api.facebook.savedReplies.store');
+        Route::delete('/api/facebook/saved-replies/{id}', [\App\Http\Controllers\Api\FacebookApiController::class, 'deleteSavedReply'])->name('api.facebook.savedReplies.destroy');
     });
 });
 
