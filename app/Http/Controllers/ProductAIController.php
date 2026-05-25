@@ -58,6 +58,11 @@ class ProductAIController extends Controller
             // We use anthropic/claude-sonnet-latest as the default model, but allow override from settings
             $model = setting('openrouter_model', env('OPENROUTER_MODEL', 'anthropic/claude-sonnet-latest'));
             
+            // Forcefully catch and replace the deprecated model in case it's stuck in their .env file or database
+            if ($model === 'anthropic/claude-3.5-sonnet') {
+                $model = 'anthropic/claude-sonnet-latest';
+            }
+            
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'HTTP-Referer' => url('/'),
