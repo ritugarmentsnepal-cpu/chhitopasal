@@ -21,7 +21,7 @@ class FacebookInboxController extends Controller
     public function login()
     {
         return Socialite::driver('facebook')
-            ->scopes(['pages_manage_metadata', 'pages_read_engagement', 'pages_messaging', 'pages_manage_posts'])
+            ->scopes(['pages_show_list', 'pages_manage_metadata', 'pages_read_engagement', 'pages_messaging', 'pages_manage_posts'])
             ->redirect();
     }
 

@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div x-data="facebookInbox()" x-init="init()" class="flex h-[calc(100vh-72px)] bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
+    <div x-data="facebookInbox('{{ $pages->count() > 0 ? $pages->first()->page_id : '' }}')" x-init="init()" class="flex h-[calc(100vh-72px)] bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
         
         <!-- Sidebar: Threads & Posts -->
         <div class="w-80 border-r border-gray-100 dark:border-gray-800 flex flex-col bg-gray-50 dark:bg-gray-900 shrink-0">
@@ -531,9 +531,9 @@
     </div>
 
     <script>
-        function facebookInbox() {
+        function facebookInbox(initialPageId) {
             return {
-                selectedPageId: '',
+                selectedPageId: initialPageId || '',
                 activeTab: 'messages', // 'messages' or 'comments'
                 searchQuery: '',
                 
@@ -612,9 +612,7 @@
                 },
 
                 init() {
-                    const select = document.querySelector('select[x-model="selectedPageId"]');
-                    if(select && select.options.length > 1) {
-                        this.selectedPageId = select.options[1].value;
+                    if (this.selectedPageId) {
                         this.fetchConversations();
                         this.fetchPosts();
                     }
