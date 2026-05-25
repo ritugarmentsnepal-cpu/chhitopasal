@@ -54,9 +54,15 @@
                         @endif
                     </a>
                     @if(Route::has('orders.bulkBatches'))
-                    <a href="{{ route('orders.bulkBatches') }}" class="flex items-center gap-3 py-2 rounded-xl font-bold text-xs transition-all {{ request()->routeIs('orders.bulkBatches') ? 'bg-mango/10 text-mango shadow-sm' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3 ml-8'" title="Bulk History">
+                    <a href="{{ route('orders.bulkBatches') }}" class="flex items-center gap-3 py-2 rounded-xl font-bold text-xs transition-all {{ request()->routeIs('orders.bulkBatches') ? 'bg-mango/10 text-mango shadow-sm' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3 ml-8'" title="Bulk Upload History">
                         <svg class="w-4 h-4 shrink-0 {{ request()->routeIs('orders.bulkBatches') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                        <span x-show="!sidebarCollapsed" x-transition.opacity>Bulk History</span>
+                        <span x-show="!sidebarCollapsed" x-transition.opacity>Upload History</span>
+                    </a>
+                    @endif
+                    @if(Route::has('orders.bulkShipments'))
+                    <a href="{{ route('orders.bulkShipments') }}" class="flex items-center gap-3 py-2 rounded-xl font-bold text-xs transition-all {{ request()->routeIs('orders.bulkShipments') ? 'bg-mango/10 text-mango shadow-sm' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3 ml-8'" title="Bulk Shipments">
+                        <svg class="w-4 h-4 shrink-0 {{ request()->routeIs('orders.bulkShipments') ? 'text-mango' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span x-show="!sidebarCollapsed" x-transition.opacity>Shipments History</span>
                     </a>
                     @endif
                     @endif

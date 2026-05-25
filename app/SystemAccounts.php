@@ -22,6 +22,7 @@ class SystemAccounts
     public const REF_PURCHASE = 'Purchase';
     public const REF_EXPENSE = 'Expense';
     public const REF_PATHAO_SETTLEMENT = 'Pathao Settlement';
+    public const REF_PAYROLL = 'Payroll';
 
     /**
      * Get the Main Cash account, or null if not found.

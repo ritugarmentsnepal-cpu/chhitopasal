@@ -22,7 +22,7 @@ class AccountingController extends Controller
         $this->requireFinancialAccess();
 
         $tab = $request->query('tab', 'dashboard');
-        $allowedTabs = ['dashboard', 'pos', 'invoices', 'returns', 'parties', 'purchases', 'expenses', 'banking', 'inventory', 'reports', 'activity'];
+        $allowedTabs = ['dashboard', 'pos', 'invoices', 'returns', 'parties', 'purchases', 'expenses', 'banking', 'inventory', 'reports', 'payroll', 'activity'];
         if (!in_array($tab, $allowedTabs)) {
             $tab = 'dashboard';
         }
@@ -84,6 +84,11 @@ class AccountingController extends Controller
             $data['inventory_logs'] = \App\Models\ActivityLog::with('user')
                                         ->where('model_type', \App\Models\Product::class)
                                         ->latest()->paginate(20);
+        } elseif ($tab === 'payroll') {
+            $data['employees'] = \App\Models\Employee::all();
+            $data['payrolls'] = \App\Models\Payroll::with('employee')->latest()->paginate(20);
+            $data['advances'] = \App\Models\EmployeeAdvance::with('employee')->whereNull('deducted_in_payroll_id')->get();
+            $data['accounts'] = \App\Models\Account::whereIn('type', ['cash', 'bank'])->get();
         } elseif ($tab === 'reports') {
             $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
             $endDate = $request->query('end_date', now()->toDateString());
@@ -949,5 +954,191 @@ class AccountingController extends Controller
         \Illuminate\Support\Facades\Log::warning('Account reconciliation discrepancies', $discrepancies);
 
         return back()->with('error', $msg);
+    // --- HR & PAYROLL METHODS ---
+
+    public function storeEmployee(Request $request)
+    {
+        $this->requireFinancialAccess();
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255',
+            'designation' => 'nullable|string|max:255',
+            'base_salary' => 'required|numeric|min:0',
+            'join_date' => 'nullable|date',
+            'status' => 'required|in:active,inactive',
+        ]);
+        \App\Models\Employee::create($validated);
+        return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Employee added successfully.');
+    }
+
+    public function storeAttendance(Request $request)
+    {
+        $this->requireFinancialAccess();
+        $validated = $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'date' => 'required|date',
+            'status' => 'required|in:present,absent,half_day,leave',
+            'notes' => 'nullable|string|max:500'
+        ]);
+        
+        \App\Models\Attendance::updateOrCreate(
+            ['employee_id' => $validated['employee_id'], 'date' => $validated['date']],
+            ['status' => $validated['status'], 'notes' => $validated['notes']]
+        );
+
+        return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Attendance recorded.');
+    }
+
+    public function storeAdvance(Request $request)
+    {
+        $this->requireFinancialAccess();
+        $validated = $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'amount' => 'required|numeric|min:1',
+            'date' => 'required|date',
+            'description' => 'nullable|string|max:500',
+            'account_id' => 'required|exists:accounts,id',
+        ]);
+
+        DB::transaction(function() use ($validated) {
+            $account = \App\Models\Account::findOrFail($validated['account_id']);
+            if ($account->balance < $validated['amount']) {
+                throw new \RuntimeException("Insufficient balance for advance payment.");
+            }
+
+            $advance = \App\Models\EmployeeAdvance::create([
+                'employee_id' => $validated['employee_id'],
+                'amount' => $validated['amount'],
+                'date' => $validated['date'],
+                'description' => $validated['description'],
+            ]);
+
+            \App\Models\Transaction::create([
+                'account_id' => $account->id,
+                'type' => 'out',
+                'amount' => $validated['amount'],
+                'reference_type' => \App\SystemAccounts::REF_PAYROLL,
+                'reference_id' => $advance->id,
+                'date' => $validated['date'],
+                'notes' => 'Salary Advance given to ' . $advance->employee->name,
+            ]);
+            $account->decrement('balance', $validated['amount']);
+        });
+
+        return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Advance recorded and deducted from account.');
+    }
+
+    public function generatePayroll(Request $request)
+    {
+        $this->requireFinancialAccess();
+        $validated = $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2000|max:2100',
+            'bonus' => 'nullable|numeric|min:0',
+            'incentives' => 'nullable|numeric|min:0',
+        ]);
+
+        $employee = \App\Models\Employee::findOrFail($validated['employee_id']);
+        
+        // Calculate absent deductions (Basic logic: (salary / 30) * absent_days + half_days * 0.5)
+        $attendances = \App\Models\Attendance::where('employee_id', $employee->id)
+            ->whereMonth('date', $validated['month'])
+            ->whereYear('date', $validated['year'])
+            ->get();
+        
+        $absentDays = $attendances->where('status', 'absent')->count();
+        $halfDays = $attendances->where('status', 'half_day')->count();
+        $totalAbsentEquiv = $absentDays + ($halfDays * 0.5);
+        
+        $dailyRate = $employee->base_salary / 30;
+        $absentDeductions = round($totalAbsentEquiv * $dailyRate, 2);
+
+        // Find pending advances
+        $pendingAdvances = \App\Models\EmployeeAdvance::where('employee_id', $employee->id)
+            ->whereNull('deducted_in_payroll_id')
+            ->get();
+        
+        $advanceDeductions = $pendingAdvances->sum('amount');
+        
+        $bonus = $validated['bonus'] ?? 0;
+        $incentives = $validated['incentives'] ?? 0;
+        
+        $netPayable = $employee->base_salary + $bonus + $incentives - $advanceDeductions - $absentDeductions;
+        if ($netPayable < 0) {
+            $netPayable = 0; // Prevent negative payroll if deductions exceed salary
+        }
+
+        DB::transaction(function() use ($validated, $employee, $bonus, $incentives, $advanceDeductions, $absentDeductions, $netPayable, $pendingAdvances) {
+            $payroll = \App\Models\Payroll::updateOrCreate(
+                ['employee_id' => $employee->id, 'month' => $validated['month'], 'year' => $validated['year']],
+                [
+                    'base_salary' => $employee->base_salary,
+                    'bonus' => $bonus,
+                    'incentives' => $incentives,
+                    'advance_deductions' => $advanceDeductions,
+                    'absent_deductions' => $absentDeductions,
+                    'net_payable' => $netPayable,
+                    'status' => 'unpaid',
+                ]
+            );
+
+            // Mark advances as deducted in this payroll
+            foreach ($pendingAdvances as $adv) {
+                $adv->update(['deducted_in_payroll_id' => $payroll->id]);
+            }
+        });
+
+        return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Payroll generated successfully.');
+    }
+
+    public function payPayroll(Request $request)
+    {
+        $this->requireFinancialAccess();
+        $validated = $request->validate([
+            'payroll_id' => 'required|exists:payrolls,id',
+            'account_id' => 'required|exists:accounts,id',
+            'date' => 'required|date',
+        ]);
+
+        $payroll = \App\Models\Payroll::with('employee')->findOrFail($validated['payroll_id']);
+        if ($payroll->status === 'paid') {
+            return back()->with('error', 'Payroll is already paid.');
+        }
+
+        DB::transaction(function() use ($payroll, $validated) {
+            $account = \App\Models\Account::findOrFail($validated['account_id']);
+            if ($account->balance < $payroll->net_payable) {
+                throw new \RuntimeException("Insufficient balance for payroll payment.");
+            }
+
+            $payroll->update([
+                'status' => 'paid',
+                'payment_date' => $validated['date'],
+            ]);
+
+            \App\Models\Transaction::create([
+                'account_id' => $account->id,
+                'type' => 'out',
+                'amount' => $payroll->net_payable,
+                'reference_type' => \App\SystemAccounts::REF_PAYROLL,
+                'reference_id' => $payroll->id,
+                'date' => $validated['date'],
+                'notes' => 'Salary paid to ' . $payroll->employee->name . " for {$payroll->month}/{$payroll->year}",
+            ]);
+            $account->decrement('balance', $payroll->net_payable);
+
+            // Create an Expense record for P&L
+            $salaryCat = \App\Models\ExpenseCategory::firstOrCreate(['name' => 'Salary & Wages']);
+            \App\Models\Expense::create([
+                'expense_category_id' => $salaryCat->id,
+                'amount' => $payroll->net_payable,
+                'date' => $validated['date'],
+                'description' => 'Salary paid to ' . $payroll->employee->name . " for {$payroll->month}/{$payroll->year}",
+            ]);
+        });
+
+        return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Payroll paid successfully.');
     }
 }

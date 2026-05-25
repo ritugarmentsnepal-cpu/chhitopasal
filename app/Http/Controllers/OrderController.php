@@ -705,8 +705,42 @@ class OrderController extends Controller
         ]);
     }
 
+    public function bulkShipments(Request $request)
+    {
+        $batches = Order::whereNotNull('bulk_ship_batch_id')
+            ->select('bulk_ship_batch_id')
+            ->selectRaw('MIN(updated_at) as shipped_at')
+            ->selectRaw('COUNT(*) as order_count')
+            ->selectRaw('SUM(total_amount) as total_amount')
+            ->groupBy('bulk_ship_batch_id')
+            ->orderByDesc('shipped_at')
+            ->paginate(20);
+
+        return view('orders.bulk_shipments', compact('batches'));
+    }
+
+    public function bulkShipmentPrint(Request $request, $batchId)
+    {
+        $orders = Order::with('orderItems.product')->where('bulk_ship_batch_id', $batchId)->get();
+        
+        if ($orders->isEmpty()) {
+            return redirect()->back()->with('error', 'No orders found for this shipment lot.');
+        }
+
+        $printMode = $request->input('print_mode', 'a4');
+
+        if ($printMode === 'thermal') {
+            return view('orders.bulk_print_thermal', compact('orders'));
+        }
+
+        return view('orders.bulk_print', compact('orders'));
+    }
+
     public function bulkShip(Request $request, PathaoService $pathao)
     {
+        // Increase time limit for processing many orders
+        set_time_limit(300);
+
         $validated = $request->validate([
             'order_ids' => 'required|array|min:1|max:500',
             'order_ids.*' => 'integer|exists:orders,id',
@@ -725,6 +759,7 @@ class OrderController extends Controller
         $failed = 0;
         $errors = [];
         $orderService = app(OrderService::class);
+        $batchId = (string) Str::uuid();
 
         // NEW-ARCH-01: Suppress logging for bulk ship
         Order::$suppressLogging = true;
@@ -745,8 +780,11 @@ class OrderController extends Controller
 
                     if ($result['success']) {
                         // NEW-FIN-03: Use OrderService for atomic stock deduction
-                        DB::transaction(function () use ($order, $result, $orderService) {
-                            $order->update(['pathao_consignment_id' => $result['consignment_id']]);
+                        DB::transaction(function () use ($order, $result, $orderService, $batchId) {
+                            $order->update([
+                                'pathao_consignment_id' => $result['consignment_id'],
+                                'bulk_ship_batch_id' => $batchId
+                            ]);
                             $orderService->transitionStatus($order, 'shipped');
                         });
                         $shipped++;

@@ -28,6 +28,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/bulk-print', [OrderController::class, 'bulkPrint'])->name('orders.bulkPrint');
         Route::post('/orders/bulk-delete', [OrderController::class, 'bulkDelete'])->name('orders.bulkDelete');
         Route::post('/orders/bulk-ship', [OrderController::class, 'bulkShip'])->name('orders.bulkShip');
+        Route::get('/orders/bulk-shipments', [OrderController::class, 'bulkShipments'])->name('orders.bulkShipments');
+        Route::get('/orders/bulk-shipments/{batchId}/print', [OrderController::class, 'bulkShipmentPrint'])->name('orders.bulkShipmentPrint');
         Route::post('/orders/bulk-status-update', [OrderController::class, 'bulkStatusUpdate'])->name('orders.bulkStatusUpdate');
 
         Route::post('/orders/{order}/ship', [OrderController::class, 'shipWithPathao'])->name('orders.ship');
@@ -85,6 +87,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/accounting/transfer', [\App\Http\Controllers\AccountingController::class, 'transferFunds'])->name('accounting.transferFunds');
         Route::get('/accounting/statement/{account}', [\App\Http\Controllers\AccountingController::class, 'accountStatement'])->name('accounting.statement');
         Route::get('/accounting/statement/{account}/export', [\App\Http\Controllers\AccountingController::class, 'exportStatement'])->middleware('throttle:5,1')->name('accounting.exportStatement');
+
+        // HR & Payroll
+        Route::post('/accounting/employees', [\App\Http\Controllers\AccountingController::class, 'storeEmployee'])->name('accounting.storeEmployee');
+        Route::post('/accounting/attendance', [\App\Http\Controllers\AccountingController::class, 'storeAttendance'])->name('accounting.storeAttendance');
+        Route::post('/accounting/advances', [\App\Http\Controllers\AccountingController::class, 'storeAdvance'])->name('accounting.storeAdvance');
+        Route::post('/accounting/payroll/generate', [\App\Http\Controllers\AccountingController::class, 'generatePayroll'])->name('accounting.generatePayroll');
+        Route::post('/accounting/payroll/pay', [\App\Http\Controllers\AccountingController::class, 'payPayroll'])->name('accounting.payPayroll');
     });
 
     // Expenses — permission:expenses
