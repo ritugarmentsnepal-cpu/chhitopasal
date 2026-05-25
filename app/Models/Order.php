@@ -23,6 +23,7 @@ class Order extends Model
         'status',
         'source',
         'bulk_batch_id',
+        'bulk_ship_batch_id',
         'pathao_consignment_id',
         'pathao_status',
         'pathao_status_updated_at',
