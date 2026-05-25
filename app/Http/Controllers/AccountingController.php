@@ -954,6 +954,8 @@ class AccountingController extends Controller
         \Illuminate\Support\Facades\Log::warning('Account reconciliation discrepancies', $discrepancies);
 
         return back()->with('error', $msg);
+    }
+
     // --- HR & PAYROLL METHODS ---
 
     public function storeEmployee(Request $request)
