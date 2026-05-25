@@ -63,6 +63,53 @@
         </form>
     </div>
 
+    {{-- OpenRouter AI Section --}}
+    <form method="POST" action="{{ route('settings.store') }}" class="mt-8">
+        @csrf
+        <input type="hidden" name="redirect_tab" value="integrations">
+        
+        <div class="bg-white dark:bg-gray-900 rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white">OpenRouter AI</h3>
+                    <p class="text-sm text-gray-500 font-medium">Power your product auto-generation using OpenRouter's API</p>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">API Key</label>
+                <input name="openrouter_api_key" type="password" value="{{ setting('openrouter_api_key') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors font-mono tracking-wider" placeholder="sk-or-v1-..." />
+                <p class="text-xs text-gray-500 mt-2">
+                    Get your API key from <a href="https://openrouter.ai/keys" target="_blank" class="text-indigo-600 font-bold hover:underline">openrouter.ai/keys</a>.
+                </p>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">AI Model</label>
+                <input name="openrouter_model" type="text" value="{{ setting('openrouter_model', 'anthropic/claude-3.5-sonnet') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors font-mono tracking-wider" />
+                <p class="text-xs text-gray-500 mt-2">
+                    Recommended: <code>anthropic/claude-3.5-sonnet</code>
+                </p>
+            </div>
+
+            @if(setting('openrouter_api_key'))
+                <div class="bg-green-50 text-green-700 px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mb-6 border border-green-100">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    OpenRouter API Key is configured and ready to use.
+                </div>
+            @endif
+
+            <div class="flex items-center justify-end pt-6 border-t border-gray-100">
+                <button type="submit" class="bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">
+                    Save AI Settings
+                </button>
+            </div>
+        </div>
+    </form>
+
     {{-- Analytics Section --}}
     <form method="POST" action="{{ route('settings.store') }}" class="mt-8">
         @csrf

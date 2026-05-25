@@ -1032,7 +1032,7 @@ class AccountingController extends Controller
             return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Advance recorded and deducted from account.');
         } catch (\Throwable $e) {
             \Log::error('Advance Payment Error: ' . $e->getMessage());
-            return back()->with('error', 'An error occurred while recording the advance.');
+            return back()->with('error', 'Advance error: ' . $e->getMessage());
         }
     }
 
@@ -1150,7 +1150,7 @@ class AccountingController extends Controller
             return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Payroll paid successfully.');
         } catch (\Throwable $e) {
             \Log::error('Payroll Payment Error: ' . $e->getMessage());
-            return back()->with('error', 'An error occurred while processing the payroll payment.');
+            return back()->with('error', 'Payroll error: ' . $e->getMessage());
         }
     }
 }

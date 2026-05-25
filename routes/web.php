@@ -52,6 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Products — permission:products
     Route::middleware(['permission:products'])->group(function () {
         Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index'])->name('products.index');
+        Route::post('/products/ai-generate', [\App\Http\Controllers\ProductAIController::class, 'generate'])->name('products.ai-generate');
         Route::post('/products', [\App\Http\Controllers\ProductController::class, 'store'])->name('products.store');
         Route::put('/products/{product}', [\App\Http\Controllers\ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [\App\Http\Controllers\ProductController::class, 'destroy'])->name('products.destroy');

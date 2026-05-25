@@ -104,14 +104,21 @@
                     <p class="text-sm text-gray-500 mt-1">Enter details for the new inventory item.</p>
                 </div>
                 
-                <div class="mb-5">
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Product Name</label>
-                    <input name="name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+                <div class="mb-5 relative">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Product Name</label>
+                        <button type="button" @click="generateDetails('add')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'add'">
+                            <span x-show="generatingAI && generatingMode === 'add'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
+                            <span x-show="!(generatingAI && generatingMode === 'add')">✨</span>
+                            <span x-text="generatingAI && generatingMode === 'add' ? 'Generating...' : 'AI Generate Details'"></span>
+                        </button>
+                    </div>
+                    <input name="name" id="add-name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required placeholder="Enter a rough name (e.g. Blue Shirt) then click AI Generate" />
                 </div>
 
                 <div class="mb-5">
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Description</label>
-                    <textarea name="description" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="3" required></textarea>
+                    <textarea name="description" id="add-desc" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
                 </div>
 
                 <div class="mb-5">
@@ -189,8 +196,8 @@
                     
                     <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
                         <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Primary Thumbnail Image (Required)</label>
-                        <p class="text-xs text-gray-500 mb-3">This is the main image shown on the grid.</p>
-                        <input type="file" name="image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" required accept="image/*">
+                        <p class="text-xs text-gray-500 mb-3">This is the main image shown on the grid. Select it before generating AI details for better results.</p>
+                        <input type="file" name="image" id="add-image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" required accept="image/*">
                     </div>
 
                     <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
@@ -231,14 +238,21 @@
                         </div>
 
                         <div class="p-8 max-h-[70vh] overflow-y-auto">
-                            <div class="mb-5">
-                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Product Name</label>
+                            <div class="mb-5 relative">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Product Name</label>
+                                    <button type="button" @click="generateDetails('edit')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'edit'">
+                                        <span x-show="generatingAI && generatingMode === 'edit'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
+                                        <span x-show="!(generatingAI && generatingMode === 'edit')">✨</span>
+                                        <span x-text="generatingAI && generatingMode === 'edit' ? 'Generating...' : 'AI Generate Details'"></span>
+                                    </button>
+                                </div>
                                 <input name="name" x-model="formData.name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
                             </div>
 
                             <div class="mb-5">
                                 <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Description</label>
-                                <textarea name="description" x-model="formData.description" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="3" required></textarea>
+                                <textarea name="description" x-model="formData.description" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
                             </div>
 
                             <div class="mb-5">
@@ -316,7 +330,8 @@
                                 
                                 <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
                                     <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Replace Thumbnail Image</label>
-                                    <input type="file" name="image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
+                                    <p class="text-xs text-gray-500 mb-3">If selected, this will be used for AI generation.</p>
+                                    <input type="file" name="image" id="edit-image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
                                 </div>
 
                                 <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
@@ -381,6 +396,67 @@
                 closeEditModal() {
                     this.editModalOpen = false;
                     setTimeout(() => { this.editingProduct = null; }, 300);
+                },
+
+                generatingAI: false,
+                generatingMode: null,
+                
+                generateDetails(mode) {
+                    let nameInput, descInput, fileInput;
+                    
+                    if (mode === 'add') {
+                        nameInput = document.getElementById('add-name');
+                        descInput = document.getElementById('add-desc');
+                        fileInput = document.getElementById('add-image');
+                    } else {
+                        nameInput = { value: this.formData.name };
+                        fileInput = document.getElementById('edit-image');
+                    }
+
+                    if (!nameInput.value || nameInput.value.trim() === '') {
+                        alert('Please enter a rough Product Name first before generating.');
+                        return;
+                    }
+                    
+                    let formData = new FormData();
+                    formData.append('name', nameInput.value.trim());
+                    formData.append('_token', '{{ csrf_token() }}');
+                    
+                    if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                        formData.append('image', fileInput.files[0]);
+                    }
+
+                    this.generatingAI = true;
+                    this.generatingMode = mode;
+
+                    fetch('{{ route("products.ai-generate") }}', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        this.generatingAI = false;
+                        this.generatingMode = null;
+                        
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
+                        
+                        if (mode === 'add') {
+                            nameInput.value = data.title;
+                            descInput.value = data.description;
+                        } else {
+                            this.formData.name = data.title;
+                            this.formData.description = data.description;
+                        }
+                    })
+                    .catch(err => {
+                        this.generatingAI = false;
+                        this.generatingMode = null;
+                        alert('An error occurred communicating with the server.');
+                        console.error(err);
+                    });
                 }
             }));
         });
