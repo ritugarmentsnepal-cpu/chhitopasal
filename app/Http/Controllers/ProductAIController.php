@@ -55,8 +55,8 @@ class ProductAIController extends Controller
         }
 
         try {
-            // We use anthropic/claude-3.5-sonnet as the default model, but allow override from settings
-            $model = setting('openrouter_model', env('OPENROUTER_MODEL', 'anthropic/claude-3.5-sonnet'));
+            // We use anthropic/claude-sonnet-latest as the default model, but allow override from settings
+            $model = setting('openrouter_model', env('OPENROUTER_MODEL', 'anthropic/claude-sonnet-latest'));
             
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
