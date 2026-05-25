@@ -1003,32 +1003,37 @@ class AccountingController extends Controller
             'account_id' => 'required|exists:accounts,id',
         ]);
 
-        DB::transaction(function() use ($validated) {
-            $account = \App\Models\Account::findOrFail($validated['account_id']);
-            if ($account->balance < $validated['amount']) {
-                throw new \RuntimeException("Insufficient balance for advance payment.");
-            }
+        try {
+            DB::transaction(function() use ($validated) {
+                $account = \App\Models\Account::findOrFail($validated['account_id']);
+                if ($account->balance < $validated['amount']) {
+                    throw new \RuntimeException("Insufficient balance for advance payment.");
+                }
 
-            $advance = \App\Models\EmployeeAdvance::create([
-                'employee_id' => $validated['employee_id'],
-                'amount' => $validated['amount'],
-                'date' => $validated['date'],
-                'description' => $validated['description'],
-            ]);
+                $advance = \App\Models\EmployeeAdvance::create([
+                    'employee_id' => $validated['employee_id'],
+                    'amount' => $validated['amount'],
+                    'date' => $validated['date'],
+                    'description' => $validated['description'],
+                ]);
 
-            \App\Models\Transaction::create([
-                'account_id' => $account->id,
-                'type' => 'out',
-                'amount' => $validated['amount'],
-                'reference_type' => \App\SystemAccounts::REF_PAYROLL,
-                'reference_id' => $advance->id,
-                'date' => $validated['date'],
-                'notes' => 'Salary Advance given to ' . $advance->employee->name,
-            ]);
-            $account->decrement('balance', $validated['amount']);
-        });
+                \App\Models\Transaction::create([
+                    'account_id' => $account->id,
+                    'type' => 'out',
+                    'amount' => $validated['amount'],
+                    'reference_type' => \App\SystemAccounts::REF_PAYROLL,
+                    'reference_id' => $advance->id,
+                    'date' => $validated['date'],
+                    'notes' => 'Salary Advance given to ' . $advance->employee->name,
+                ]);
+                $account->decrement('balance', $validated['amount']);
+            });
 
-        return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Advance recorded and deducted from account.');
+            return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Advance recorded and deducted from account.');
+        } catch (\Throwable $e) {
+            \Log::error('Advance Payment Error: ' . $e->getMessage());
+            return back()->with('error', 'An error occurred while recording the advance.');
+        }
     }
 
     public function generatePayroll(Request $request)
@@ -1109,38 +1114,43 @@ class AccountingController extends Controller
             return back()->with('error', 'Payroll is already paid.');
         }
 
-        DB::transaction(function() use ($payroll, $validated) {
-            $account = \App\Models\Account::findOrFail($validated['account_id']);
-            if ($account->balance < $payroll->net_payable) {
-                throw new \RuntimeException("Insufficient balance for payroll payment.");
-            }
+        try {
+            DB::transaction(function() use ($payroll, $validated) {
+                $account = \App\Models\Account::findOrFail($validated['account_id']);
+                if ($account->balance < $payroll->net_payable) {
+                    throw new \RuntimeException("Insufficient balance for payroll payment.");
+                }
 
-            $payroll->update([
-                'status' => 'paid',
-                'payment_date' => $validated['date'],
-            ]);
+                $payroll->update([
+                    'status' => 'paid',
+                    'payment_date' => $validated['date'],
+                ]);
 
-            \App\Models\Transaction::create([
-                'account_id' => $account->id,
-                'type' => 'out',
-                'amount' => $payroll->net_payable,
-                'reference_type' => \App\SystemAccounts::REF_PAYROLL,
-                'reference_id' => $payroll->id,
-                'date' => $validated['date'],
-                'notes' => 'Salary paid to ' . $payroll->employee->name . " for {$payroll->month}/{$payroll->year}",
-            ]);
-            $account->decrement('balance', $payroll->net_payable);
+                \App\Models\Transaction::create([
+                    'account_id' => $account->id,
+                    'type' => 'out',
+                    'amount' => $payroll->net_payable,
+                    'reference_type' => \App\SystemAccounts::REF_PAYROLL,
+                    'reference_id' => $payroll->id,
+                    'date' => $validated['date'],
+                    'notes' => 'Salary paid to ' . $payroll->employee->name . " for {$payroll->month}/{$payroll->year}",
+                ]);
+                $account->decrement('balance', $payroll->net_payable);
 
-            // Create an Expense record for P&L
-            $salaryCat = \App\Models\ExpenseCategory::firstOrCreate(['name' => 'Salary & Wages']);
-            \App\Models\Expense::create([
-                'expense_category_id' => $salaryCat->id,
-                'amount' => $payroll->net_payable,
-                'date' => $validated['date'],
-                'description' => 'Salary paid to ' . $payroll->employee->name . " for {$payroll->month}/{$payroll->year}",
-            ]);
-        });
+                // Create an Expense record for P&L
+                $salaryCat = \App\Models\ExpenseCategory::firstOrCreate(['name' => 'Salary & Wages']);
+                \App\Models\Expense::create([
+                    'expense_category_id' => $salaryCat->id,
+                    'amount' => $payroll->net_payable,
+                    'date' => $validated['date'],
+                    'description' => 'Salary paid to ' . $payroll->employee->name . " for {$payroll->month}/{$payroll->year}",
+                ]);
+            });
 
-        return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Payroll paid successfully.');
+            return redirect()->route('accounting.index', ['tab' => 'payroll'])->with('success', 'Payroll paid successfully.');
+        } catch (\Throwable $e) {
+            \Log::error('Payroll Payment Error: ' . $e->getMessage());
+            return back()->with('error', 'An error occurred while processing the payroll payment.');
+        }
     }
 }
