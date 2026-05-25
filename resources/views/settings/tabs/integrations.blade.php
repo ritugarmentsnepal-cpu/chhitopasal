@@ -89,9 +89,9 @@
 
             <div class="mb-6">
                 <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">AI Model</label>
-                <input name="openrouter_model" type="text" value="{{ setting('openrouter_model', 'anthropic/claude-sonnet-latest') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors font-mono tracking-wider" />
+                <input name="openrouter_model" type="text" value="{{ setting('openrouter_model', 'anthropic/claude-sonnet-4.6') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors font-mono tracking-wider" />
                 <p class="text-xs text-gray-500 mt-2">
-                    Recommended: <code>anthropic/claude-sonnet-latest</code>
+                    Recommended: <code>anthropic/claude-sonnet-4.6</code>
                 </p>
             </div>
 

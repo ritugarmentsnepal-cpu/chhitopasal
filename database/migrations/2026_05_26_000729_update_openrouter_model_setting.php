@@ -13,8 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         $setting = Setting::where('key', 'openrouter_model')->first();
-        if ($setting && $setting->value === 'anthropic/claude-3.5-sonnet') {
-            $setting->update(['value' => 'anthropic/claude-sonnet-latest']);
+        if ($setting && ($setting->value === 'anthropic/claude-3.5-sonnet' || $setting->value === 'anthropic/claude-sonnet-latest')) {
+            $setting->update(['value' => 'anthropic/claude-sonnet-4.6']);
         }
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         $setting = Setting::where('key', 'openrouter_model')->first();
-        if ($setting && $setting->value === 'anthropic/claude-sonnet-latest') {
+        if ($setting && $setting->value === 'anthropic/claude-sonnet-4.6') {
             $setting->update(['value' => 'anthropic/claude-3.5-sonnet']);
         }
     }
