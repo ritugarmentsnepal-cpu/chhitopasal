@@ -308,9 +308,15 @@
                 
                 <form method="POST" action="{{ route('pathao.settlement') }}" class="space-y-5">
                     @csrf
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Settlement Amount (Rs.)</label>
-                        <input type="number" name="amount" step="0.01" min="1" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 text-lg font-black transition-colors" required placeholder="e.g. 50000">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Net Deposited Amount (Rs.)</label>
+                            <input type="number" name="amount" step="0.01" min="0" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 text-lg font-black transition-colors" required placeholder="e.g. 45000">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Delivery Charges Taken (Rs.)</label>
+                            <input type="number" name="delivery_charge" step="0.01" min="0" class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 text-lg font-black text-red-600 transition-colors" placeholder="e.g. 5000">
+                        </div>
                     </div>
 
                     <div>

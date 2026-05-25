@@ -53,7 +53,8 @@ class PathaoManagerController extends Controller
     public function recordSettlement(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|numeric|min:0',
+            'delivery_charge' => 'nullable|numeric|min:0',
             'account_id' => 'required|exists:accounts,id',
             'date' => 'required|date',
             'reference' => 'nullable|string',
@@ -62,25 +63,60 @@ class PathaoManagerController extends Controller
 
         $pathaoParty = Party::where('type', 'pathao')->firstOrFail();
         $account = Account::findOrFail($request->account_id);
+        $clearingAccount = \App\SystemAccounts::pathaoClearingAccount();
 
-        // Record the money coming into our Bank/Cash
-        Transaction::create([
-            'account_id' => $account->id,
-            'party_id' => $pathaoParty->id,
-            'type' => 'in',
-            'amount' => $request->amount,
-            'reference_type' => \App\SystemAccounts::REF_PATHAO_SETTLEMENT,
-            'date' => $request->date,
-            'notes' => $request->notes ?: 'Bulk COD Settlement from Pathao'
-        ]);
+        $amount = (float) $request->amount;
+        $deliveryCharge = (float) ($request->delivery_charge ?: 0);
+        $totalSettled = $amount + $deliveryCharge;
 
-        // Increment our bank balance
-        $account->increment('balance', $request->amount);
+        if ($totalSettled <= 0) {
+            return back()->with('error', 'Total settled amount must be greater than zero.');
+        }
 
-        // Decrement Pathao's debt to us
-        $pathaoParty->decrement('current_balance', $request->amount);
+        \Illuminate\Support\Facades\DB::transaction(function() use ($amount, $deliveryCharge, $totalSettled, $account, $pathaoParty, $clearingAccount, $request) {
+            // 1. Record the money coming into our Bank/Cash (party_id is null so it doesn't double-count in party ledger)
+            if ($amount > 0) {
+                Transaction::create([
+                    'account_id' => $account->id,
+                    'party_id' => null,
+                    'type' => 'in',
+                    'amount' => $amount,
+                    'reference_type' => \App\SystemAccounts::REF_PATHAO_SETTLEMENT,
+                    'date' => $request->date,
+                    'notes' => $request->notes ?: 'Bulk COD Settlement from Pathao'
+                ]);
+                $account->increment('balance', $amount);
+            }
 
-        return back()->with('success', "Successfully recorded settlement of Rs. {$request->amount} from Pathao.");
+            // 2. Record the Delivery Expense
+            if ($deliveryCharge > 0) {
+                $cat = \App\Models\ExpenseCategory::firstOrCreate(['name' => 'Logistics & Shipping']);
+                \App\Models\Expense::create([
+                    'expense_category_id' => $cat->id,
+                    'amount' => $deliveryCharge,
+                    'date' => $request->date,
+                    'description' => 'Pathao Delivery Charges deducted from settlement'
+                ]);
+            }
+
+            // 3. Reconcile Pathao's Debt (Clearing Account & Party Ledger)
+            if ($clearingAccount) {
+                Transaction::create([
+                    'account_id' => $clearingAccount->id,
+                    'party_id' => $pathaoParty->id, // This links the credit to the Party Ledger
+                    'type' => 'out',
+                    'amount' => $totalSettled,
+                    'reference_type' => \App\SystemAccounts::REF_PATHAO_SETTLEMENT,
+                    'date' => $request->date,
+                    'notes' => 'Settlement reconciliation (clearing)'
+                ]);
+                $clearingAccount->decrement('balance', $totalSettled);
+            }
+
+            $pathaoParty->decrement('current_balance', $totalSettled);
+        });
+
+        return back()->with('success', "Successfully recorded settlement. Bank received Rs. {$amount}, fees deducted Rs. {$deliveryCharge}.");
     }
 
     public function getCities(PathaoService $pathao)
