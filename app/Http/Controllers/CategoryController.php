@@ -35,9 +35,15 @@ class CategoryController extends Controller
             $sizeOptions = array_values(array_filter($sizeOptions));
         }
 
+        $thumbnailPath = null;
+        if ($request->hasFile('thumbnail')) {
+            $thumbnailPath = $request->file('thumbnail')->store('categories/thumbnails', 'public');
+        }
+
         Category::create([
             'name' => $request->name,
             'slug' => Str::slug($request->name),
+            'thumbnail' => $thumbnailPath,
             'has_color_variants' => $request->boolean('has_color_variants'),
             'has_size_variants' => $request->boolean('has_size_variants'),
             'color_options' => $colorOptions,
@@ -67,14 +73,23 @@ class CategoryController extends Controller
             $sizeOptions = array_values(array_filter($sizeOptions));
         }
 
-        $category->update([
+        $data = [
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'has_color_variants' => $request->boolean('has_color_variants'),
             'has_size_variants' => $request->boolean('has_size_variants'),
             'color_options' => $colorOptions,
             'size_options' => $sizeOptions,
-        ]);
+        ];
+
+        if ($request->hasFile('thumbnail')) {
+            if ($category->thumbnail) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($category->thumbnail);
+            }
+            $data['thumbnail'] = $request->file('thumbnail')->store('categories/thumbnails', 'public');
+        }
+
+        $category->update($data);
         return back()->with('success', 'Category updated.');
     }
 

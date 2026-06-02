@@ -9,7 +9,7 @@ class Category extends Model
 {
     use HasFactory, \App\Traits\Loggable;
 
-    protected $fillable = ['name', 'slug', 'has_color_variants', 'has_size_variants', 'color_options', 'size_options'];
+    protected $fillable = ['name', 'slug', 'thumbnail', 'has_color_variants', 'has_size_variants', 'color_options', 'size_options'];
 
     protected $casts = [
         'has_color_variants' => 'boolean',

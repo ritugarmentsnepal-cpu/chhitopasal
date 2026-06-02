@@ -38,9 +38,18 @@
                 @foreach($categories as $category)
                     <div class="bg-white dark:bg-gray-900 rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-lg transition-shadow">
                         <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <h3 class="font-black text-xl text-gray-900 mb-1">{{ $category->name }}</h3>
-                                <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded-md">{{ $category->products_count }} Products</span>
+                            <div class="flex items-center gap-4">
+                                @if($category->thumbnail)
+                                    <img src="{{ asset('storage/' . $category->thumbnail) }}" alt="{{ $category->name }}" class="w-12 h-12 object-cover rounded-xl border border-gray-100">
+                                @else
+                                    <div class="w-12 h-12 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    </div>
+                                @endif
+                                <div>
+                                    <h3 class="font-black text-xl text-gray-900 mb-1">{{ $category->name }}</h3>
+                                    <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded-md">{{ $category->products_count }} Products</span>
+                                </div>
                             </div>
                             
                             <div class="flex items-center gap-2">
@@ -86,7 +95,7 @@
 
     <!-- Add Category Modal -->
     <x-modal name="add-category-modal" focusable>
-        <form method="POST" action="{{ route('categories.store') }}" class="p-8">
+        <form method="POST" action="{{ route('categories.store') }}" class="p-8" enctype="multipart/form-data">
             @csrf
             <div class="mb-8">
                 <h2 class="text-2xl font-black text-gray-900 dark:text-white">Add New Category</h2>
@@ -96,6 +105,11 @@
             <div class="mb-6">
                 <label for="name" class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category Name</label>
                 <input id="name" name="name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" placeholder="e.g. Clothing" required />
+            </div>
+
+            <div class="mb-6">
+                <label for="thumbnail" class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category Thumbnail</label>
+                <input id="thumbnail" name="thumbnail" type="file" accept="image/*" class="block w-full rounded-xl border border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 px-3 font-medium transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800" />
             </div>
 
             <!-- Variant Toggles -->
@@ -160,7 +174,7 @@
             
             <div x-show="editModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full">
                 
-                <form :action="`{{ url('categories') }}/${editingCategory?.id}`" method="POST">
+                <form :action="`{{ url('categories') }}/${editingCategory?.id}`" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     
@@ -173,6 +187,11 @@
                         <div class="mb-5">
                             <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category Name</label>
                             <input name="name" x-model="formData.name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Update Thumbnail</label>
+                            <input name="thumbnail" type="file" accept="image/*" class="block w-full rounded-xl border border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 px-3 font-medium transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800" />
                         </div>
 
                         <!-- Variant Toggles (Edit) -->
