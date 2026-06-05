@@ -155,6 +155,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['permission:pathao'])->group(function () {
         Route::get('/pathao', [\App\Http\Controllers\PathaoManagerController::class, 'index'])->name('pathao.index');
         Route::post('/pathao/settlement', [\App\Http\Controllers\PathaoManagerController::class, 'recordSettlement'])->name('pathao.settlement');
+        
+        // Reconciliation
+        Route::get('/pathao/reconcile', [\App\Http\Controllers\PathaoReconciliationController::class, 'index'])->name('pathao.reconcile.index');
+        Route::post('/pathao/reconcile/preview', [\App\Http\Controllers\PathaoReconciliationController::class, 'preview'])->name('pathao.reconcile.preview');
+        Route::post('/pathao/reconcile/process', [\App\Http\Controllers\PathaoReconciliationController::class, 'process'])->name('pathao.reconcile.process');
     });
 
     // Pathao API proxies (needed by orders too, so just auth-gated)

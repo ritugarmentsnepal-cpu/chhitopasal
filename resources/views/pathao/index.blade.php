@@ -5,10 +5,16 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-mango" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 Pathao Manager
             </h2>
-            <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'settlement-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:bg-gray-800 transition flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                Record COD Settlement
-            </button>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('pathao.reconcile.index') }}" class="bg-white border border-gray-200 text-gray-800 font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-50 transition flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                    Import Statement
+                </a>
+                <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'settlement-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:bg-gray-800 transition flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                    Manual Settlement
+                </button>
+            </div>
         </div>
     </x-slot>
 
@@ -49,6 +55,10 @@
                 </button>
                 <button @click="activeTab = 'ledger'" :class="{'bg-mango text-gray-900 shadow-sm': activeTab === 'ledger', 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50': activeTab !== 'ledger'}" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex-1 text-center">
                     Financial Ledger
+                </button>
+                <button @click="activeTab = 'disputes'" :class="{'bg-mango text-gray-900 shadow-sm': activeTab === 'disputes', 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100': activeTab !== 'disputes'}" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex-1 text-center flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    Disputes ({{ $disputedOrders->count() }})
                 </button>
             </div>
 
@@ -293,6 +303,62 @@
                             {{ $ledger->links() }}
                         </div>
                     @endif
+                </div>
+            </div>
+
+            <!-- Disputes Tab -->
+            <div x-show="activeTab === 'disputes'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-red-200 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 bg-red-50 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-black text-red-700 text-lg flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                Disputed Orders
+                            </h3>
+                            <p class="text-sm text-red-600">Orders that have financial discrepancies with Pathao statements.</p>
+                        </div>
+                    </div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+                                <th class="p-4 border-b border-gray-100">Order ID</th>
+                                <th class="p-4 border-b border-gray-100">Consignment ID</th>
+                                <th class="p-4 border-b border-gray-100">Expected COD</th>
+                                <th class="p-4 border-b border-gray-100">Status</th>
+                                <th class="p-4 border-b border-gray-100 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($disputedOrders as $order)
+                                <tr class="hover:bg-red-50/50 transition-colors">
+                                    <td class="p-4">
+                                        <div class="font-bold text-gray-900">#{{ $order->id }}</div>
+                                        <div class="text-xs text-gray-500">{{ $order->updated_at->format('M d, Y') }}</div>
+                                    </td>
+                                    <td class="p-4">
+                                        <div class="font-black text-gray-900">{{ $order->pathao_consignment_id }}</div>
+                                    </td>
+                                    <td class="p-4">
+                                        <div class="font-bold text-gray-900">Rs.{{ number_format($order->total_amount) }}</div>
+                                    </td>
+                                    <td class="p-4">
+                                        <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md bg-red-100 text-red-700">
+                                            Disputed
+                                        </span>
+                                    </td>
+                                    <td class="p-4 text-right">
+                                        <a href="{{ route('orders.show', $order) }}" target="_blank" class="text-blue-600 font-bold text-sm">View Order</a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="p-12 text-center text-gray-400">
+                                        <p class="font-bold">No disputed orders right now.</p>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

@@ -28,8 +28,15 @@ class PathaoManagerController extends Controller
         // 2. Deliveries (Shipped and Delivered orders)
         $deliveries = Order::whereIn('status', ['shipped', 'delivered', 'return_delivered'])
             ->whereNotNull('pathao_consignment_id')
+            ->where('pathao_disputed', false)
+            ->whereNull('pathao_settled_at')
             ->latest()
             ->paginate(20);
+
+        // 2b. Disputed Orders
+        $disputedOrders = Order::where('pathao_disputed', true)
+            ->latest()
+            ->get();
 
         // 3. Accounts for settlement
         $accounts = Account::all();
@@ -45,6 +52,7 @@ class PathaoManagerController extends Controller
             'deliveredCount', 
             'pendingFromPathao', 
             'deliveries', 
+            'disputedOrders',
             'ledger',
             'accounts'
         ));
