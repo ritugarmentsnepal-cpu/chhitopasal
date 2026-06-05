@@ -25,6 +25,7 @@ class PathaoWebhookController extends Controller
         if ($configuredSecret) {
             $providedSecret = $request->header('X-Webhook-Secret') 
                            ?? $request->header('X-PATHAO-Signature') 
+                           ?? $request->header('X-Pathao-Merchant-Webhook-Integration-Secret')
                            ?? $request->query('secret')
                            ?? $request->input('secret');
 
