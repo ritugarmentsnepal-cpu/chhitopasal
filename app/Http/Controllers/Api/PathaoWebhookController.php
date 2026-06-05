@@ -40,6 +40,13 @@ class PathaoWebhookController extends Controller
 
         Log::info('Pathao Webhook Received', $request->all());
 
+        // Handle Pathao's initial webhook test ping
+        if ($request->input('event') === 'webhook_integration') {
+            return response()->json(['status' => 'success', 'message' => 'Integration verified'])
+                             ->setStatusCode(202)
+                             ->header('X-Pathao-Merchant-Webhook-Integration-Secret', $configuredSecret);
+        }
+
         $consignmentId = $request->input('consignment_id');
         $orderStatus = $request->input('order_status');
         
@@ -82,7 +89,9 @@ class PathaoWebhookController extends Controller
                 'pathao_status_updated_at' => now(),
             ]);
 
-            return response()->json(['status' => 'success'], 200);
+            return response()->json(['status' => 'success'])
+                             ->setStatusCode(202)
+                             ->header('X-Pathao-Merchant-Webhook-Integration-Secret', $configuredSecret);
 
         } catch (\Exception $e) {
             Log::error("Pathao Webhook Processing Error: " . $e->getMessage(), [
