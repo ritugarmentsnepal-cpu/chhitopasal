@@ -99,6 +99,31 @@
         </div>
     </div>
 
+    <!-- Company Profile Details -->
+    <div class="bg-white dark:bg-gray-900 rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-8">
+        <h3 class="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
+            Company Profile Page Details
+        </h3>
+        
+        <div class="space-y-5">
+            <div>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Company Introduction (About Us)</label>
+                <textarea name="company_intro" rows="4" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" placeholder="Write a futuristic, engaging introduction about your company...">{{ setting('company_intro') }}</textarea>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Order Contact Number</label>
+                    <input name="order_contact_number" type="text" value="{{ setting('order_contact_number') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" placeholder="+977 98..." />
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Complain Contact Number</label>
+                    <input name="complain_contact_number" type="text" value="{{ setting('complain_contact_number') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" placeholder="+977 98..." />
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="flex justify-end sticky bottom-8">
         <button type="submit" class="bg-gray-900 text-white font-bold py-4 px-10 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition text-lg">
             Save Frontend Settings

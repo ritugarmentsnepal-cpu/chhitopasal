@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/company-profile', [HomeController::class, 'companyProfile'])->name('company.profile');
 Route::get('/product/{slug}', [HomeController::class, 'show'])->name('product.show');
 Route::post('/checkout', [\App\Http\Controllers\OrderController::class, 'storeWeb'])->middleware('throttle:5,1')->name('checkout.web');
 
@@ -53,6 +54,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['permission:products'])->group(function () {
         Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index'])->name('products.index');
         Route::post('/products/ai-generate', [\App\Http\Controllers\ProductAIController::class, 'generate'])->name('products.ai-generate');
+        Route::post('/products/ai-generate-thumbnails', [\App\Http\Controllers\ProductAIController::class, 'generateThumbnails'])->name('products.ai-generate-thumbnails');
         Route::post('/products', [\App\Http\Controllers\ProductController::class, 'store'])->name('products.store');
         Route::put('/products/{product}', [\App\Http\Controllers\ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [\App\Http\Controllers\ProductController::class, 'destroy'])->name('products.destroy');
@@ -200,3 +202,6 @@ Route::post('/track-event', [\App\Http\Controllers\TrackEventController::class, 
 // Facebook Webhooks
 Route::get('/webhook/facebook', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'verify']);
 Route::post('/webhook/facebook', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'handle'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+// Pathao Webhook
+Route::post('/webhook/pathao', [\App\Http\Controllers\Api\PathaoWebhookController::class, 'handle'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);

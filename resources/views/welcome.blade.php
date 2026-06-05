@@ -11,6 +11,11 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url('/') }}">
     <link rel="canonical" href="{{ url('/') }}">
+    
+    <!-- PWA / Mobile App Meta Tags -->
+    <meta name="theme-color" content="#FF4C4C">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     @if(setting('store_favicon'))
         <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . setting('store_favicon')) }}">
     @else
@@ -74,7 +79,7 @@
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ setting('facebook_pixel_id') }}&ev=PageView&noscript=1"/></noscript>
     @endif
 </head>
-<body class="antialiased bg-gray-50 text-gray-800 font-sans" x-data="shopData()">
+<body class="antialiased bg-gray-50 text-gray-800 font-sans pb-20 md:pb-0" x-data="shopData()">
 
     <!-- Toast Notification -->
     <div x-show="toastVisible" x-cloak 
@@ -112,7 +117,7 @@
             <nav class="hidden md:flex items-center gap-8 font-medium">
                 <a href="#" class="px-4 py-1.5 rounded-full transition-colors text-sm font-bold" :class="scrolled ? 'bg-primary text-white' : 'bg-white/20 text-white hover:bg-white/30'">Home</a>
                 <a href="#shop" class="transition-colors text-sm" :class="scrolled ? 'text-gray-600 hover:text-primary' : 'text-white/80 hover:text-white'">Shop</a>
-                <a href="#about" class="transition-colors text-sm" :class="scrolled ? 'text-gray-600 hover:text-primary' : 'text-white/80 hover:text-white'">About Us</a>
+                <a href="{{ route('company.profile') }}" class="transition-colors text-sm" :class="scrolled ? 'text-gray-600 hover:text-primary' : 'text-white/80 hover:text-white'">Company</a>
             </nav>
 
             <!-- Actions -->
@@ -142,48 +147,49 @@
         </div>
     </header>
 
-    <!-- Mobile Header -->
-    <header class="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md px-4 py-3 flex items-center justify-between">
-        <a href="{{ route('home') }}" class="flex items-center gap-2">
-            @if(setting('store_logo'))
-                <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-8 w-auto object-contain">
-            @else
-                <span class="text-xl font-bold font-display text-gray-900">
-                    {{ setting('store_name', 'Chhito Pasal') }}
-                </span>
-            @endif
-        </a>
-        <div class="flex items-center gap-4">
-            <button @click="mobileSearchOpen = !mobileSearchOpen" class="text-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            </button>
-            <button @click="toggleCart()" class="relative text-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 -right-2 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white text-[10px] font-black flex items-center justify-center"></span>
-            </button>
+    <!-- Mobile App Header -->
+    <header class="md:hidden fixed top-0 left-0 right-0 z-50 bg-white shadow-sm pb-3 pt-safe">
+        <div class="px-4 py-2 flex items-center justify-between">
+            <a href="{{ route('home') }}" class="flex items-center gap-2">
+                @if(setting('store_logo'))
+                    <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-7 w-auto object-contain">
+                @else
+                    <span class="text-xl font-bold font-display text-gray-900">
+                        {{ setting('store_name', 'Chhito Pasal') }}
+                    </span>
+                @endif
+            </a>
+            <div class="flex items-center gap-3">
+                <button @click="toggleCart()" class="relative text-gray-800 bg-gray-50 p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                    <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 -right-1 w-4 h-4 bg-[#FF4C4C] text-white rounded-full border border-white text-[9px] font-black flex items-center justify-center"></span>
+                </button>
+            </div>
+        </div>
+        <!-- Persistent Search Bar -->
+        <div class="px-4 mt-1">
+            <div class="relative">
+                <input type="text" x-model="searchQuery" placeholder="Search for products..." class="w-full border-gray-100 rounded-xl py-2 pl-10 pr-4 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-[#FF4C4C] focus:border-transparent text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
         </div>
     </header>
 
-    <!-- Mobile Search -->
-    <div x-show="mobileSearchOpen" x-collapse class="md:hidden fixed top-16 left-0 right-0 z-40 px-4 py-3 bg-gray-50 border-b border-gray-200 shadow-sm" x-cloak>
-        <div class="relative">
-            <input type="text" x-model="searchQuery" placeholder="Search products..." class="w-full border-transparent rounded-full py-2.5 pl-10 pr-4 bg-white shadow-sm text-gray-900 focus:ring-2 focus:ring-[#FF4C4C] text-sm" x-ref="mobileSearch" @keydown.escape="mobileSearchOpen = false">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3.5 top-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-        </div>
-    </div>
-
-    <!-- Mobile Hero Banner -->
-    <section class="md:hidden pt-[72px] px-4 pb-4">
-        <div class="bg-gradient-to-tr from-pink-300 via-pink-200 to-pink-50 rounded-[2rem] p-6 relative overflow-hidden shadow-sm h-40 flex flex-col justify-center border border-white">
-            <!-- Decorative circle -->
-            <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-white/40 rounded-full blur-xl pointer-events-none"></div>
+    <!-- Mobile Hero Banner Widget -->
+    <section class="md:hidden pt-[115px] px-4 pb-4">
+        <div class="bg-[#FF4C4C] rounded-2xl relative overflow-hidden shadow-md h-44 flex flex-col justify-center">
+            <div class="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
+            <img src="{{ asset('storage/artifacts/hero_woman_red_1780421907868.png') }}" class="absolute right-[-20px] bottom-0 h-[110%] object-contain z-10 opacity-90 drop-shadow-lg">
             
-            <h1 class="text-2xl font-black leading-tight text-gray-900 mb-2 relative z-10 w-[70%]">
-                Tired of basic looks?
-            </h1>
-            <p class="text-[11px] font-bold text-gray-600 relative z-10 max-w-[60%] leading-tight bg-white/50 w-fit px-3 py-1.5 rounded-full">
-                Get <span class="text-pink-600">20% off</span> on premium
-            </p>
+            <div class="relative z-20 px-6 w-[65%]">
+                <span class="inline-block bg-white/20 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2">Exclusive</span>
+                <h1 class="text-xl font-display font-black leading-tight text-white mb-3">
+                    Style that Speaks
+                </h1>
+                <a href="#shop" @click="document.getElementById('shop').scrollIntoView({behavior: 'smooth'})" class="inline-flex items-center justify-center bg-white text-[#FF4C4C] text-[11px] font-black px-4 py-2 rounded-full shadow-lg active:scale-95 transition-transform">
+                    Shop Now <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                </a>
+            </div>
         </div>
     </section>
 
@@ -264,29 +270,25 @@
         </div>
 
         <!-- Product Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 stagger-grid">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8 stagger-grid">
             <template x-for="(product, index) in filteredProducts" :key="product.id">
                 <!-- Outer Card Container -->
-                <article class="bg-white md:bg-[#FF4C4C] rounded-[1.5rem] md:rounded-[2.5rem] p-3 md:p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 md:hover:-translate-y-2 flex flex-col group cursor-pointer relative border border-gray-100 md:border-none" @click="window.location.href = '{{ url('product') }}/' + product.slug">
+                <article class="bg-white md:bg-[#FF4C4C] rounded-2xl md:rounded-[2.5rem] p-0 md:p-1.5 shadow-sm md:shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 md:hover:-translate-y-2 flex flex-col group cursor-pointer relative border border-gray-100 md:border-none overflow-hidden" @click="window.location.href = '{{ url('product') }}/' + product.slug">
                     
                     <!-- Badge (Simulated New/Hot) -->
-                    <div x-show="index % 3 === 0" class="absolute top-4 right-4 md:top-6 md:right-6 z-20">
-                        <span class="bg-[#fbcfe8] text-pink-700 md:bg-[#FF4C4C] md:text-white text-[10px] md:text-[10px] font-black uppercase w-8 h-8 md:w-auto md:h-auto md:px-3 md:py-1 rounded-full shadow-sm md:shadow-md md:border md:border-white/20 flex flex-col items-center justify-center leading-none">
-                            <span class="text-xs md:hidden">95</span>
-                            <span class="text-[8px] opacity-70 md:hidden">pts</span>
-                            <span class="hidden md:inline">New</span>
+                    <div x-show="index % 3 === 0" class="absolute top-2 right-2 md:top-6 md:right-6 z-20">
+                        <span class="bg-[#FF4C4C] text-white text-[10px] md:text-[10px] font-black uppercase px-2 py-0.5 md:px-3 md:py-1 rounded-full shadow-sm md:shadow-md md:border md:border-white/20 flex flex-col items-center justify-center leading-none">
+                            <span>New</span>
                         </span>
                     </div>
-                    <div x-show="index % 5 === 0" class="absolute top-4 right-4 md:top-6 md:left-6 z-20">
-                        <span class="bg-[#c7d2fe] text-indigo-700 md:bg-yellow-400 md:text-gray-900 text-[10px] font-black uppercase w-8 h-8 md:w-auto md:h-auto md:px-2 md:py-1 rounded-full shadow-sm md:shadow-md md:border md:border-white/50 flex flex-col items-center justify-center leading-none">
-                            <span class="text-xs md:hidden">86</span>
-                            <span class="text-[8px] opacity-70 md:hidden">pts</span>
-                            <span class="hidden md:inline">-20%</span>
+                    <div x-show="index % 5 === 0" class="absolute top-2 left-2 md:top-6 md:left-6 z-20">
+                        <span class="bg-yellow-400 text-gray-900 text-[10px] font-black uppercase px-2 py-0.5 md:px-2 md:py-1 rounded-full shadow-sm md:shadow-md md:border md:border-white/50 flex flex-col items-center justify-center leading-none">
+                            <span>-20%</span>
                         </span>
                     </div>
                     
-                    <!-- Inner Image Container (Does not fill entire card) -->
-                    <div class="relative bg-transparent md:bg-white rounded-[1rem] md:rounded-[2rem] overflow-hidden w-full aspect-square md:aspect-[4/5] flex items-center justify-center p-2 md:p-6 transition-all duration-300 md:group-hover:bg-white/95 mb-2 md:mb-0">
+                    <!-- Inner Image Container -->
+                    <div class="relative bg-gray-50 md:bg-white md:rounded-[2rem] overflow-hidden w-full aspect-square md:aspect-[4/5] flex items-center justify-center p-4 md:p-6 transition-all duration-300 md:group-hover:bg-white/95">
                         <img :src="'{{ asset('storage') }}/' + product.image_path" :alt="product.name" class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-sm md:drop-shadow-lg" loading="lazy" x-on:error="$el.src='https://via.placeholder.com/300?text=No+Image'">
                         
                         <!-- Hover Action Button inside image area -->
@@ -298,13 +300,19 @@
                         </div>
                     </div>
                     
-                    <!-- Text Content (Sits in the red card background) -->
-                    <div class="p-1 md:p-5 text-center flex flex-col items-center justify-between flex-grow">
-                        <div class="w-full flex flex-col items-center">
-                            <h3 class="font-display font-bold text-gray-900 md:text-white text-[13px] md:text-lg line-clamp-2 md:line-clamp-1 mb-1 leading-tight" x-text="product.name"></h3>
-                            <p class="text-gray-400 md:text-white/80 text-[10px] md:text-xs font-medium md:uppercase md:tracking-wider line-clamp-1 mb-3" x-text="product.category ? product.category.name : 'Accessories'"></p>
+                    <!-- Text Content -->
+                    <div class="p-3 md:p-5 flex flex-col flex-grow relative">
+                        <div class="w-full flex flex-col mb-4 md:items-center">
+                            <h3 class="font-display font-bold text-gray-900 md:text-white text-[13px] md:text-lg line-clamp-2 md:line-clamp-1 mb-1 leading-snug" x-text="product.name"></h3>
+                            <p class="text-gray-400 md:text-white/80 text-[10px] md:text-xs font-medium md:uppercase md:tracking-wider line-clamp-1" x-text="product.category ? product.category.name : 'Accessories'"></p>
                         </div>
-                        <span class="text-gray-900 md:text-white font-black text-sm md:text-lg md:px-6 md:py-1.5 md:bg-white/20 md:backdrop-blur-md rounded-full md:shadow-inner md:border md:border-white/20" x-text="'NPR ' + product.price.toLocaleString()"></span>
+                        <div class="mt-auto flex justify-between items-center md:justify-center">
+                            <span class="text-gray-900 md:text-white font-black text-sm md:text-lg md:px-6 md:py-1.5 md:bg-white/20 md:backdrop-blur-md rounded-full md:shadow-inner md:border md:border-white/20" x-text="'NPR ' + product.price.toLocaleString()"></span>
+                            <!-- Mobile Quick Add Button -->
+                            <button @click.stop.prevent="triggerAddToCart(product)" class="md:hidden w-8 h-8 rounded-full bg-[#FF4C4C] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                            </button>
+                        </div>
                     </div>
                 </article>
             </template>
@@ -328,7 +336,7 @@
                         $bgColors = ['bg-pink-100/80', 'bg-yellow-100/80', 'bg-gray-200/80', 'bg-orange-100/80'];
                         $bgColor = $bgColors[$index % count($bgColors)];
                     @endphp
-                    <div class="{{ $bgColor }} rounded-l-full rounded-r-3xl md:rounded-r-full shadow-sm overflow-hidden flex items-center p-1.5 pr-4 md:pr-6 cursor-pointer hover:shadow-md transition-all hover:scale-[1.02] gap-3 md:gap-4 group border border-white" @click="activeCategory = '{{ $category->slug }}'; document.getElementById('shop').scrollIntoView({behavior: 'smooth'})">
+                    <div class="{{ $bgColor }} rounded-2xl md:rounded-full shadow-sm overflow-hidden flex items-center p-2 pr-4 md:pr-6 cursor-pointer hover:shadow-md transition-all hover:scale-[1.02] gap-3 md:gap-4 group border border-white" @click="activeCategory = '{{ $category->slug }}'; document.getElementById('shop').scrollIntoView({behavior: 'smooth'})">
                         <div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden shrink-0 bg-white flex items-center justify-center">
                             @if($category->thumbnail)
                                 <img src="{{ asset('storage/' . $category->thumbnail) }}" alt="{{ $category->name }}" class="w-full h-full object-cover">
@@ -400,7 +408,7 @@
 
 
     <!-- 6. Footer -->
-    <footer id="about" class="bg-white border-t border-gray-100 pt-10 md:pt-16 pb-24 md:pb-8">
+    <footer id="about" class="hidden md:block bg-white border-t border-gray-100 pt-10 md:pt-16 pb-24 md:pb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <!-- Desktop Footer Layout -->
@@ -645,32 +653,7 @@
         </div>
     </div>
 
-    <!-- Floating Bottom Navigation Bar (Mobile only) -->
-    <nav class="fixed bottom-4 left-4 right-4 z-40 md:hidden bg-[#18181b] rounded-full shadow-2xl px-5 py-3">
-        <div class="flex items-center justify-between">
-            <!-- Home -->
-            <a href="{{ route('home') }}" class="flex flex-col items-center gap-1 text-white opacity-100 hover:opacity-100 transition-opacity">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-            </a>
-            <!-- Categories -->
-            <a href="#categories" class="flex flex-col items-center gap-1 text-white/50 hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-            </a>
-            <!-- Center Prominent Button -->
-            <button @click="document.getElementById('shop').scrollIntoView({behavior: 'smooth'})" class="w-12 h-12 bg-[#8b5cf6] rounded-full flex items-center justify-center text-white shadow-lg shadow-[#8b5cf6]/40 transform -translate-y-2 border-[3px] border-[#18181b] active:scale-95 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-            </button>
-            <!-- Cart -->
-            <button @click="toggleCart()" class="flex flex-col items-center gap-1 text-white/50 hover:text-white transition-colors relative">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 -right-1 bg-yellow-400 text-gray-900 text-[9px] font-black min-w-[16px] h-[16px] rounded-full flex items-center justify-center border-2 border-[#18181b]"></span>
-            </button>
-            <!-- Search/Profile -->
-            <button @click="mobileSearchOpen = !mobileSearchOpen; $nextTick(() => { if(mobileSearchOpen) $refs.mobileSearch?.focus() })" class="flex flex-col items-center gap-1 text-white/50 hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            </button>
-        </div>
-    </nav>
+
 
     <!-- The Cart Modal Overlay -->
     <div x-show="cartOpen" x-cloak class="fixed inset-0 z-50" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
@@ -1144,5 +1127,32 @@
             }
         }
     </script>
+
+    <!-- Floating Bottom Navigation Bar (Mobile only) -->
+    <nav class="fixed bottom-4 left-4 right-4 z-40 md:hidden bg-[#18181b] rounded-full shadow-2xl px-5 py-3" x-data="{ activeNav: 'home' }">
+        <div class="flex items-center justify-between">
+            <!-- Home -->
+            <a href="#" @click.prevent="activeNav = 'home'; window.scrollTo({top:0, behavior:'smooth'})" class="flex flex-col items-center gap-1 transition-opacity" :class="activeNav === 'home' ? 'text-white opacity-100' : 'text-white/50 hover:text-white'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            </a>
+            <!-- Categories -->
+            <a href="#shop" @click="activeNav = 'category'; document.getElementById('shop').scrollIntoView({behavior: 'smooth'})" class="flex flex-col items-center gap-1 transition-colors" :class="activeNav === 'category' ? 'text-white opacity-100' : 'text-white/50 hover:text-white'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+            </a>
+            <!-- Center Prominent Button -->
+            <button @click="document.getElementById('shop').scrollIntoView({behavior: 'smooth'})" class="w-12 h-12 bg-[#8b5cf6] rounded-full flex items-center justify-center text-white shadow-lg shadow-[#8b5cf6]/40 transform -translate-y-2 border-[3px] border-[#18181b] active:scale-95 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+            </button>
+            <!-- Cart -->
+            <button @click="activeNav = 'cart'; toggleCart()" class="flex flex-col items-center gap-1 transition-colors relative" :class="activeNav === 'cart' ? 'text-white opacity-100' : 'text-white/50 hover:text-white'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 -right-1 bg-yellow-400 text-gray-900 text-[9px] font-black min-w-[16px] h-[16px] rounded-full flex items-center justify-center border-2 border-[#18181b]"></span>
+            </button>
+            <!-- Company Profile -->
+            <a href="{{ route('company.profile') }}" @click="activeNav = 'profile'" class="flex flex-col items-center gap-1 transition-colors" :class="activeNav === 'profile' ? 'text-white opacity-100' : 'text-white/50 hover:text-white'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            </a>
+        </div>
+    </nav>
 </body>
 </html>

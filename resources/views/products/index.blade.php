@@ -194,10 +194,24 @@
                 <div class="space-y-4 mb-8">
                     <h3 class="font-bold text-gray-900 border-b border-gray-100 pb-2">Media Assets</h3>
                     
-                    <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Primary Thumbnail Image (Required)</label>
-                        <p class="text-xs text-gray-500 mb-3">This is the main image shown on the grid. Select it before generating AI details for better results.</p>
-                        <input type="file" name="image" id="add-image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" required accept="image/*">
+                    <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 relative">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Primary Thumbnail Image (Required)</label>
+                            <button type="button" @click="generateAIThumbnails('add')" class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingThumbnails && generatingThumbnailMode === 'add'">
+                                <span x-show="generatingThumbnails && generatingThumbnailMode === 'add'" class="animate-spin inline-block w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full"></span>
+                                <span x-show="!(generatingThumbnails && generatingThumbnailMode === 'add')">✨</span>
+                                <span x-text="(generatingThumbnails && generatingThumbnailMode === 'add') ? 'Generating...' : 'Enhance with AI'"></span>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3">This is the main image shown on the grid. Select a raw image, then click Enhance with AI.</p>
+                        
+                        <input type="hidden" name="ai_thumbnail_url" id="ai_image_url_add">
+                        <div id="add_thumbnail_preview_container" style="display:none;" class="mb-3 relative inline-block">
+                            <img id="add_thumbnail_preview" src="" class="h-24 w-24 object-cover rounded-xl shadow-sm border border-gray-200">
+                            <button type="button" onclick="document.getElementById('ai_image_url_add').value=''; document.getElementById('add_thumbnail_preview_container').style.display='none';" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-600">&times;</button>
+                        </div>
+
+                        <input type="file" name="image" id="add-image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
                     </div>
 
                     <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
@@ -328,9 +342,23 @@
                                 <h3 class="font-bold text-gray-900 border-b border-gray-100 pb-2">Update Media</h3>
                                 <p class="text-xs text-gray-500 mb-3">Uploading new files will replace the existing ones. Leave blank to keep existing files.</p>
                                 
-                                <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
-                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Replace Thumbnail Image</label>
-                                    <p class="text-xs text-gray-500 mb-3">If selected, this will be used for AI generation.</p>
+                                <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 relative">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Replace Thumbnail Image</label>
+                                        <button type="button" @click="generateAIThumbnails('edit')" class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingThumbnails && generatingThumbnailMode === 'edit'">
+                                            <span x-show="generatingThumbnails && generatingThumbnailMode === 'edit'" class="animate-spin inline-block w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full"></span>
+                                            <span x-show="!(generatingThumbnails && generatingThumbnailMode === 'edit')">✨</span>
+                                            <span x-text="(generatingThumbnails && generatingThumbnailMode === 'edit') ? 'Generating...' : 'Enhance with AI'"></span>
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mb-3">Select a new raw image and enhance it, or just upload directly.</p>
+                                    
+                                    <input type="hidden" name="ai_thumbnail_url" id="ai_image_url_edit">
+                                    <div id="edit_thumbnail_preview_container" style="display:none;" class="mb-3 relative inline-block">
+                                        <img id="edit_thumbnail_preview" src="" class="h-24 w-24 object-cover rounded-xl shadow-sm border border-gray-200">
+                                        <button type="button" onclick="document.getElementById('ai_image_url_edit').value=''; document.getElementById('edit_thumbnail_preview_container').style.display='none';" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-600">&times;</button>
+                                    </div>
+
                                     <input type="file" name="image" id="edit-image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
                                 </div>
 
@@ -351,6 +379,35 @@
                             <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition" onclick="this.disabled=true; this.innerText='Updating...'; this.form.submit();">Update Product</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Thumbnail Selection Modal -->
+        <div x-show="thumbnailModalOpen" x-cloak class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div x-show="thumbnailModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" @click="thumbnailModalOpen = false"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                
+                <div x-show="thumbnailModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl w-full">
+                    
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                        <h3 class="text-xl font-black text-gray-900">Select AI Generated Thumbnail</h3>
+                        <button type="button" @click="thumbnailModalOpen = false" class="text-gray-400 hover:text-gray-900"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                    </div>
+
+                    <div class="p-8 bg-gray-100">
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            <template x-for="(url, index) in generatedThumbnails" :key="index">
+                                <div @click="selectThumbnail(url, generatingThumbnailMode)" class="bg-white p-2 rounded-2xl cursor-pointer hover:ring-4 hover:ring-purple-500 transition-all shadow-sm group relative aspect-[4/5]">
+                                    <img :src="url" class="w-full h-full object-cover rounded-xl" alt="AI Generated Option">
+                                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-xl">
+                                        <span class="text-white font-bold px-3 py-1 bg-purple-600 rounded-full text-xs shadow-lg">Select</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -396,6 +453,64 @@
                 closeEditModal() {
                     this.editModalOpen = false;
                     setTimeout(() => { this.editingProduct = null; }, 300);
+                },
+
+                generatingThumbnails: false,
+                generatingThumbnailMode: null,
+                generatedThumbnails: [],
+                thumbnailModalOpen: false,
+
+                generateAIThumbnails(mode) {
+                    let fileInput = mode === 'add' ? document.getElementById('add-image') : document.getElementById('edit-image');
+                    if (!fileInput.files || fileInput.files.length === 0) {
+                        alert('Please select a raw image file first to generate AI variations.');
+                        return;
+                    }
+                    
+                    let formData = new FormData();
+                    formData.append('_token', '{{ csrf_token() }}');
+                    formData.append('image', fileInput.files[0]);
+                    
+                    this.generatingThumbnails = true;
+                    this.generatingThumbnailMode = mode;
+                    
+                    fetch('{{ route("products.ai-generate-thumbnails") }}', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        this.generatingThumbnails = false;
+                        
+                        if (data.error) {
+                            this.generatingThumbnailMode = null;
+                            alert(data.error);
+                            return;
+                        }
+                        
+                        this.generatedThumbnails = data.urls;
+                        this.thumbnailModalOpen = true;
+                    })
+                    .catch(err => {
+                        this.generatingThumbnails = false;
+                        this.generatingThumbnailMode = null;
+                        alert('An error occurred communicating with the AI server.');
+                        console.error(err);
+                    });
+                },
+
+                selectThumbnail(url, mode) {
+                    if (mode === 'add') {
+                        document.getElementById('ai_image_url_add').value = url;
+                        document.getElementById('add_thumbnail_preview').src = url;
+                        document.getElementById('add_thumbnail_preview_container').style.display = 'block';
+                    } else {
+                        document.getElementById('ai_image_url_edit').value = url;
+                        document.getElementById('edit_thumbnail_preview').src = url;
+                        document.getElementById('edit_thumbnail_preview_container').style.display = 'block';
+                    }
+                    this.thumbnailModalOpen = false;
+                    this.generatingThumbnailMode = null;
                 },
 
                 generatingAI: false,

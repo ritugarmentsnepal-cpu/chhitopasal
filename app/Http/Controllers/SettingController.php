@@ -42,7 +42,7 @@ class SettingController extends Controller
             'store_name', 'hero_title', 'hero_subtitle', 'hero_cta', 'meta_description',
             'contact_email', 'contact_phone', 'contact_address',
             'facebook_url', 'instagram_url', 'tiktok_url',
-            'company_name', 'company_phone',
+            'company_name', 'company_phone', 'company_intro', 'order_contact_number', 'complain_contact_number',
             // ERP
             'delivery_charge_inside', 'delivery_charge_outside',
             'default_cash_account', 'invoice_terms', 'invoice_footer',

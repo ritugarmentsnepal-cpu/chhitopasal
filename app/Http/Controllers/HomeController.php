@@ -28,4 +28,10 @@ class HomeController extends Controller
         $settings = Setting::pluck('value', 'key')->toArray();
         return view('product.show', compact('product', 'products', 'settings'));
     }
+
+    public function companyProfile()
+    {
+        $settings = Setting::pluck('value', 'key')->toArray();
+        return view('company-profile', compact('settings'));
+    }
 }

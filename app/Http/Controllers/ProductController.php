@@ -32,7 +32,8 @@ class ProductController extends Controller
             'cost_price' => 'nullable|numeric|min:0',
             'weight_grams' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:2048', // Thumbnail
+            'image' => 'required_without:ai_thumbnail_url|image|mimes:jpeg,png,jpg,webp,gif|max:5120', // Thumbnail
+            'ai_thumbnail_url' => 'nullable|url',
             'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
             'video' => 'nullable|mimes:mp4,webm,mov|max:10240', // Max 10MB video
             'bundles' => 'nullable|array',
@@ -42,7 +43,21 @@ class ProductController extends Controller
             'size_options' => 'nullable|string|max:500',
         ]);
 
-        $imagePath = $request->file('image')->store('products/thumbnails', 'public');
+        $imagePath = null;
+        if (!empty($validated['ai_thumbnail_url'])) {
+            try {
+                $contents = file_get_contents($validated['ai_thumbnail_url']);
+                if ($contents) {
+                    $name = 'products/thumbnails/' . Str::random(40) . '.jpg';
+                    Storage::disk('public')->put($name, $contents);
+                    $imagePath = $name;
+                }
+            } catch (\Exception $e) {}
+        }
+        
+        if (!$imagePath && $request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products/thumbnails', 'public');
+        }
 
         $additionalImages = [];
         if ($request->hasFile('additional_images')) {
@@ -90,7 +105,8 @@ class ProductController extends Controller
             'cost_price' => 'nullable|numeric|min:0',
             'weight_grams' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
+            'ai_thumbnail_url' => 'nullable|url',
             'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
             'video' => 'nullable|mimes:mp4,webm,mov|max:10240',
             'bundles' => 'nullable|array',
@@ -113,7 +129,19 @@ class ProductController extends Controller
             'size_options' => !empty($validated['size_options']) ? array_map('trim', explode(',', $validated['size_options'])) : null,
         ];
 
-        if ($request->hasFile('image')) {
+        if (!empty($validated['ai_thumbnail_url'])) {
+            try {
+                $contents = file_get_contents($validated['ai_thumbnail_url']);
+                if ($contents) {
+                    if ($product->image_path) {
+                        Storage::disk('public')->delete($product->image_path);
+                    }
+                    $name = 'products/thumbnails/' . Str::random(40) . '.jpg';
+                    Storage::disk('public')->put($name, $contents);
+                    $data['image_path'] = $name;
+                }
+            } catch (\Exception $e) {}
+        } elseif ($request->hasFile('image')) {
             if ($product->image_path) {
                 Storage::disk('public')->delete($product->image_path);
             }

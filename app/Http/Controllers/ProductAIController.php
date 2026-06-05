@@ -120,4 +120,128 @@ class ProductAIController extends Controller
             return response()->json(['error' => 'An unexpected error occurred while generating AI details.'], 500);
         }
     }
+
+    public function generateThumbnails(Request $request)
+    {
+        if (!auth()->user()->hasPermission('products')) {
+            return response()->json(['error' => 'Access Denied'], 403);
+        }
+
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        $apiKey = setting('openrouter_api_key', env('OPENROUTER_API_KEY'));
+        if (empty($apiKey)) {
+            return response()->json(['error' => 'OpenRouter API Key is not configured.'], 500);
+        }
+
+        $imageFile = $request->file('image');
+        $mimeType = $imageFile->getMimeType();
+        
+        // Optimize image size to speed up the API request upload
+        $sourcePath = $imageFile->getRealPath();
+        list($width, $height, $type) = getimagesize($sourcePath);
+        $maxWidth = 800;
+        if ($width > $maxWidth) {
+            $newWidth = $maxWidth;
+            $newHeight = intval($height * ($maxWidth / $width));
+            $thumb = imagecreatetruecolor($newWidth, $newHeight);
+            
+            if ($type == IMAGETYPE_JPEG) {
+                $source = imagecreatefromjpeg($sourcePath);
+                imagecopyresampled($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                ob_start();
+                imagejpeg($thumb, null, 80);
+                $imageData = ob_get_clean();
+                imagedestroy($source);
+            } elseif ($type == IMAGETYPE_PNG) {
+                $source = imagecreatefrompng($sourcePath);
+                imagecopyresampled($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                ob_start();
+                imagepng($thumb, null, 8);
+                $imageData = ob_get_clean();
+                imagedestroy($source);
+            } elseif ($type == IMAGETYPE_WEBP) {
+                $source = imagecreatefromwebp($sourcePath);
+                imagecopyresampled($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                ob_start();
+                imagewebp($thumb, null, 80);
+                $imageData = ob_get_clean();
+                imagedestroy($source);
+            } else {
+                $imageData = file_get_contents($sourcePath);
+            }
+            imagedestroy($thumb);
+            $base64Image = base64_encode($imageData);
+        } else {
+            $base64Image = base64_encode(file_get_contents($sourcePath));
+        }
+
+        $model = setting('openrouter_image_model', env('OPENROUTER_IMAGE_MODEL', 'openai/gpt-5-image')); // Valid image generation model
+
+        try {
+            // Reduced to 3 concurrent requests to prevent long timeouts and slow generation
+            $responses = \Illuminate\Support\Facades\Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($apiKey, $model, $mimeType, $base64Image) {
+                $reqs = [];
+                for ($i = 1; $i <= 3; $i++) {
+                    $reqs[] = $pool->withHeaders([
+                        'Authorization' => 'Bearer ' . $apiKey,
+                        'HTTP-Referer' => url('/'),
+                        'X-Title' => 'Chhito Pasal',
+                        'Content-Type' => 'application/json'
+                    ])
+                    ->timeout(60)
+                    ->post('https://openrouter.ai/api/v1/chat/completions', [
+                        'model' => $model,
+                        'messages' => [
+                            [
+                                'role' => 'user',
+                                'content' => [
+                                    [
+                                        'type' => 'text',
+                                        'text' => 'Generate a professional, high-quality e-commerce product thumbnail based on this image. Place the product on a clean studio background or highly aesthetic matching background. Ensure it looks exactly like a high-end product photo. Variation ' . $i
+                                    ],
+                                    [
+                                        'type' => 'image_url',
+                                        'image_url' => [
+                                            'url' => "data:{$mimeType};base64,{$base64Image}"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'modalities' => ['image']
+                    ]);
+                }
+                return $reqs;
+            });
+
+            $urls = [];
+            foreach ($responses as $response) {
+                if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
+                    $content = $response->json('choices.0.message.content', '');
+                    // Extract URL or base64 from markdown if formatted as ![image](url)
+                    if (preg_match('/!\[.*?\]\((.*?)\)/', $content, $matches)) {
+                        $urls[] = $matches[1];
+                    } else {
+                        // Fallback to raw content assuming it might be a direct URL or base64 string
+                        $urls[] = trim($content);
+                    }
+                } else {
+                    Log::error('OpenRouter Image Generation Failed: ' . ($response instanceof \Illuminate\Http\Client\Response ? $response->body() : 'Pool error'));
+                }
+            }
+
+            if (empty($urls)) {
+                return response()->json(['error' => 'Failed to generate thumbnails. Ensure your OpenRouter API key is valid and the selected model supports image generation.'], 500);
+            }
+
+            return response()->json(['urls' => array_slice($urls, 0, 3)]);
+
+        } catch (\Exception $e) {
+            Log::error('Product AI Thumbnail Generation Exception: ' . $e->getMessage());
+            return response()->json(['error' => 'An unexpected error occurred while generating AI thumbnails.'], 500);
+        }
+    }
 }
