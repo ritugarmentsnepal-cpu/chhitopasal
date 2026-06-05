@@ -764,6 +764,7 @@ class OrderController extends Controller
         // NEW-ARCH-01: Suppress logging for bulk ship
         Order::$suppressLogging = true;
         Transaction::$suppressLogging = true;
+        Product::$suppressLogging = true;
         try {
             foreach ($orders as $order) {
                 if (!$order->pathao_city_id || !$order->pathao_zone_id) {
@@ -800,6 +801,7 @@ class OrderController extends Controller
         } finally {
             Order::$suppressLogging = false;
             Transaction::$suppressLogging = false;
+            Product::$suppressLogging = false;
         }
 
         $message = "Shipped: {$shipped}";
@@ -969,6 +971,8 @@ class OrderController extends Controller
 
     public function masterSyncPathao()
     {
+        set_time_limit(180); // Sync can take up to 60s for 30 orders × 2s delay each
+
         // MED-05: Cooldown lock to prevent Pathao API flooding
         $lockKey = 'pathao_master_sync_lock';
         if (\Illuminate\Support\Facades\Cache::has($lockKey)) {
@@ -1039,6 +1043,7 @@ class OrderController extends Controller
         ]);
 
         // ORD-03: Wrap entire edit in a transaction for atomicity
+        try {
         DB::transaction(function () use ($order, $validated) {
 
         $orderTotal = 0;
@@ -1071,9 +1076,12 @@ class OrderController extends Controller
                             }
                             $newProduct = Product::find($newProductId);
                             if ($newProduct) {
-                                Product::where('id', $newProductId)
+                                $affected = Product::where('id', $newProductId)
                                     ->where('stock', '>=', $newQty)
                                     ->decrement('stock', $newQty);
+                                if ($affected === 0) {
+                                    throw new \RuntimeException("Insufficient stock for {$newProduct->name} (need {$newQty}, have {$newProduct->stock}).");
+                                }
                             }
                         } else {
                             // Same product, check quantity diff
@@ -1081,9 +1089,13 @@ class OrderController extends Controller
                                 $difference = $newQty - $oldQty;
                                 if ($difference > 0) {
                                     // Need more stock — use atomic guard
-                                    Product::where('id', $orderItem->product_id)
+                                    $affected = Product::where('id', $orderItem->product_id)
                                         ->where('stock', '>=', $difference)
                                         ->decrement('stock', $difference);
+                                    if ($affected === 0) {
+                                        $productName = $orderItem->product->name ?? 'Product';
+                                        throw new \RuntimeException("Insufficient stock for {$productName} (need {$difference} more, have {$orderItem->product->fresh()->stock}).");
+                                    }
                                 } else {
                                     // Returning stock — safe to increment
                                     $orderItem->product->increment('stock', abs($difference));
@@ -1110,10 +1122,13 @@ class OrderController extends Controller
                 $processedItemIds[] = $newItem->id;
 
                 if ($isStockDeducted && $newProduct) {
-                                    Product::where('id', $newProductId)
-                                        ->where('stock', '>=', $newQty)
-                                        ->decrement('stock', $newQty);
-                                }
+                    $affected = Product::where('id', $newProductId)
+                        ->where('stock', '>=', $newQty)
+                        ->decrement('stock', $newQty);
+                    if ($affected === 0) {
+                        throw new \RuntimeException("Insufficient stock for {$newProduct->name} (need {$newQty}, have {$newProduct->stock}).");
+                    }
+                }
             }
         }
 
@@ -1144,7 +1159,9 @@ class OrderController extends Controller
             $orderService->transitionStatus($order, $validated['status']);
             $order->refresh();
         } elseif (!empty($validated['confirm_order']) && $order->status === 'pending') {
-            $updateData['status'] = 'confirmed';
+            $orderService = app(OrderService::class);
+            $orderService->transitionStatus($order, 'confirmed');
+            $order->refresh();
         }
 
         $order->update($updateData);
@@ -1154,6 +1171,9 @@ class OrderController extends Controller
         ]);
 
         }); // end DB::transaction
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', 'Order updated successfully.');
     }
@@ -1403,7 +1423,8 @@ class OrderController extends Controller
 
             // BUG-FIX: Also transition local status when Pathao reports a terminal state
             // This ensures delivered/returned orders leave the shipped list immediately
-            if ($order->status === 'shipped') {
+            $nonTerminalStatuses = ['shipped', 'delivered', 'failed'];
+            if (in_array($order->status, $nonTerminalStatuses)) {
                 $normalizedStatus = strtolower($pathaoData['order_status']);
                 $newLocalStatus = null;
 
@@ -1444,7 +1465,7 @@ class OrderController extends Controller
                 'payment_status' => $order->payment_status,
                 'pathao_consignment_id' => $order->pathao_consignment_id,
                 'created_at' => $order->created_at->format('M d, Y g:i A'),
-                'shipped_date' => $order->updated_at->format('M d, Y'),
+                'shipped_date' => ($order->shipped_at ?? $order->updated_at)->format('M d, Y'),
                 'items' => $order->orderItems->map(fn($item) => [
                     'name' => $item->product->name ?? 'Unknown Product',
                     'quantity' => $item->quantity,

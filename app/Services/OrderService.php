@@ -69,6 +69,15 @@ class OrderService
         $order->update($updateData);
 
         // BUG-FIX: Clear dashboard cache so orders move between columns immediately
+        $this->clearDashboardCache();
+    }
+
+    /**
+     * Clear dashboard cache. Call after status transitions.
+     * For bulk operations, call once after the loop instead of per-order.
+     */
+    public function clearDashboardCache(): void
+    {
         Cache::forget('dashboard_pending');
         Cache::forget('dashboard_pending_count');
         Cache::forget('dashboard_confirmed');

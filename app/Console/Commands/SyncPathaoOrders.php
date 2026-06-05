@@ -19,7 +19,7 @@ class SyncPathaoOrders extends Command
     /**
      * The console command description.
      */
-    protected $description = 'Automatically sync shipped orders with Pathao tracking status';
+    protected $description = 'Sync shipped and recently-delivered orders with Pathao tracking status';
 
     /**
      * INT-01: Uses OrderService instead of OrderController for CLI-safe execution.
@@ -36,14 +36,21 @@ class SyncPathaoOrders extends Command
 
         // Sync stalest orders first — prioritize orders that haven't been checked recently
         $orders = Order::with('orderItems.product')
-            ->where('status', 'shipped')
+            ->where(function ($q) {
+                $q->where('status', 'shipped')
+                  ->orWhere(function ($q2) {
+                      // Catch late returns: check delivered orders for up to 14 days
+                      $q2->where('status', 'delivered')
+                         ->where('updated_at', '>=', now()->subDays(14));
+                  });
+            })
             ->whereNotNull('pathao_consignment_id')
             ->orderBy('pathao_status_updated_at', 'asc')
             ->orderBy('updated_at', 'asc')
             ->limit($maxPerRun)
             ->get();
 
-        $this->info("Found {$orders->count()} shipped orders to sync (max {$maxPerRun} per run).");
+        $this->info("Found {$orders->count()} orders to sync (shipped + recently-delivered, max {$maxPerRun} per run).");
 
         foreach ($orders as $order) {
             try {
@@ -84,11 +91,12 @@ class SyncPathaoOrders extends Command
                 }
 
                 if ($newLocalStatus && $newLocalStatus !== $order->status) {
+                    $oldStatus = $order->status;
                     DB::transaction(function () use ($order, $newLocalStatus, $orderService) {
                         $orderService->transitionStatus($order, $newLocalStatus);
                     });
 
-                    $this->info("Updated Order #{$order->id} from {$order->status} to {$newLocalStatus}.");
+                    $this->info("Updated Order #{$order->id} from {$oldStatus} to {$newLocalStatus}.");
                     $count++;
                 }
 
