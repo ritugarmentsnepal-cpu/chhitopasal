@@ -65,84 +65,6 @@
                 @endforeach
             </div>
 
-            @if(in_array($status, ['shipped', 'delivered', 'return_delivered', 'failed', 'rejected']))
-            <!-- Pathao Delivery Status Sub-Filters -->
-            <div class="mb-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap mr-1 flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-                    Pathao:
-                </span>
-                @php
-                    $allPathaoFilters = [
-                        '' => ['label' => 'All', 'dot' => 'bg-gray-400'],
-                        'awaiting_pickup' => ['label' => 'Awaiting Pickup', 'dot' => 'bg-yellow-400'],
-                        'Picked' => ['label' => 'Picked Up', 'dot' => 'bg-blue-400'],
-                        'In Transit' => ['label' => 'In Transit', 'dot' => 'bg-indigo-500'],
-                        'At Hub' => ['label' => 'At Hub', 'dot' => 'bg-purple-500'],
-                        'Out for Delivery' => ['label' => 'Out for Delivery', 'dot' => 'bg-orange-500'],
-                        'Delivered' => ['label' => 'Delivered', 'dot' => 'bg-green-500'],
-                        'Return' => ['label' => 'Returned', 'dot' => 'bg-red-500'],
-                        'Cancel' => ['label' => 'Cancelled', 'dot' => 'bg-gray-500'],
-                    ];
-
-                    $pathaoFilters = ['' => $allPathaoFilters['']];
-                    
-                    if ($status === 'shipped') {
-                        $pathaoFilters += [
-                            'awaiting_pickup' => $allPathaoFilters['awaiting_pickup'],
-                            'Picked' => $allPathaoFilters['Picked'],
-                            'In Transit' => $allPathaoFilters['In Transit'],
-                            'At Hub' => $allPathaoFilters['At Hub'],
-                            'Out for Delivery' => $allPathaoFilters['Out for Delivery']
-                        ];
-                    } elseif ($status === 'delivered') {
-                        $pathaoFilters += ['Delivered' => $allPathaoFilters['Delivered']];
-                    } elseif ($status === 'return_delivered') {
-                        $pathaoFilters += ['Return' => $allPathaoFilters['Return']];
-                    } elseif (in_array($status, ['failed', 'rejected'])) {
-                        $pathaoFilters += [
-                            'Cancel' => $allPathaoFilters['Cancel'],
-                            'Return' => $allPathaoFilters['Return']
-                        ];
-                    }
-
-                    $currentPathaoFilter = request('pathao_filter', '');
-                @endphp
-                @foreach($pathaoFilters as $filterKey => $filterData)
-                    <a href="{{ request()->fullUrlWithQuery(['pathao_filter' => $filterKey ?: null]) }}"
-                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border
-                              {{ $currentPathaoFilter === $filterKey ? 'bg-gray-900 text-white border-gray-900 shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50' }}">
-                        <span class="w-2 h-2 rounded-full {{ $filterData['dot'] }} {{ $currentPathaoFilter === $filterKey ? 'ring-2 ring-white/40' : '' }}"></span>
-                        {{ $filterData['label'] }}
-                    </a>
-                @endforeach
-            </div>
-
-            <!-- Shipped Date Sub-Filters -->
-            <div class="mb-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap mr-1 flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    Shipped:
-                </span>
-                @php
-                    $shippedDateOptions = [
-                        '' => 'All Time',
-                        'today' => 'Today',
-                        'yesterday' => 'Yesterday',
-                        'this_week' => 'This Week',
-                        'this_month' => 'This Month',
-                    ];
-                    $currentShippedDateFilter = request('shipped_date_filter', '');
-                @endphp
-                @foreach($shippedDateOptions as $filterKey => $filterLabel)
-                    <a href="{{ request()->fullUrlWithQuery(['shipped_date_filter' => $filterKey ?: null]) }}"
-                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border
-                              {{ $currentShippedDateFilter === $filterKey ? 'bg-gray-900 text-white border-gray-900 shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50' }}">
-                        {{ $filterLabel }}
-                    </a>
-                @endforeach
-            </div>
-            @endif
 
             @if($status === 'return_delivered')
             <!-- Damage Report Link -->
@@ -155,6 +77,7 @@
             @endif
 
             <!-- Filter Bar -->
+            @if($status !== 'shipped')
             <form method="GET" action="{{ route('orders.index') }}" class="mb-6 flex gap-4 items-center bg-white p-3 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
                 <input type="hidden" name="status" value="{{ $status }}">
                 @if(request('pathao_filter'))
@@ -188,6 +111,7 @@
                     <a href="{{ route('orders.index', ['status' => $status]) }}" class="text-gray-500 hover:text-red-500 font-bold px-4 transition">Clear</a>
                 @endif
             </form>
+            @endif
 
             <!-- Orders Table -->
             <div class="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
