@@ -21,6 +21,20 @@ class PathaoWebhookController extends Controller
     {
         $configuredSecret = config('services.pathao.webhook_secret');
         
+        Log::info('Pathao Webhook Received', $request->all());
+
+        // Handle Pathao's initial webhook test ping FIRST, before security checks
+        if ($request->input('event') === 'webhook_integration') {
+            // If config is cached/empty, fallback to the requested header or env
+            $secretToReturn = $configuredSecret 
+                              ?: $request->header('X-Pathao-Merchant-Webhook-Integration-Secret') 
+                              ?: 'f3992ecc-59da-4cbe-a049-a13da2018d51';
+
+            return response()->json(['status' => 'success', 'message' => 'Integration verified'])
+                             ->setStatusCode(202)
+                             ->header('X-Pathao-Merchant-Webhook-Integration-Secret', $secretToReturn);
+        }
+        
         // Very basic security: if a secret is configured, ensure it matches either a header or a query param.
         if ($configuredSecret) {
             $providedSecret = $request->header('X-Webhook-Secret') 
@@ -38,19 +52,10 @@ class PathaoWebhookController extends Controller
             }
         }
 
-        Log::info('Pathao Webhook Received', $request->all());
-
-        // Handle Pathao's initial webhook test ping
-        if ($request->input('event') === 'webhook_integration') {
-            return response()->json(['status' => 'success', 'message' => 'Integration verified'])
-                             ->setStatusCode(202)
-                             ->header('X-Pathao-Merchant-Webhook-Integration-Secret', $configuredSecret);
-        }
-
         $consignmentId = $request->input('consignment_id');
         $orderStatus = $request->input('order_status');
         
-        if (!$consignmentId || !$orderStatus) {
+        if (!$consignmentId || (!$orderStatus && !in_array(strtolower($request->input('event')), ['webhook_integration']))) {
             return response()->json(['message' => 'Invalid payload: missing consignment_id or order_status'], 400);
         }
 
