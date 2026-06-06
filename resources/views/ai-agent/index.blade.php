@@ -414,11 +414,16 @@
                             <h4 class="font-black text-gray-900">AI Agent Status</h4>
                             <p class="text-sm text-gray-500 font-bold">Enable or disable the AI agent globally</p>
                         </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="hidden" name="ai_agent_enabled" value="0">
-                            <input type="checkbox" name="ai_agent_enabled" value="1" class="sr-only peer" {{ $settings['ai_agent_enabled'] ? 'checked' : '' }}>
-                            <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
-                        </label>
+                        <div x-data="{ enabled: {{ $settings['ai_agent_enabled'] ? 'true' : 'false' }} }" class="flex items-center">
+                            <input type="hidden" name="ai_agent_enabled" :value="enabled ? '1' : '0'">
+                            <button type="button" @click="enabled = !enabled"
+                                :class="enabled ? 'bg-gray-900' : 'bg-gray-300'"
+                                class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2">
+                                <span :class="enabled ? 'translate-x-8' : 'translate-x-1'"
+                                    class="inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 ease-in-out shadow-sm">
+                                </span>
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Model --}}

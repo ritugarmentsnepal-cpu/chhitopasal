@@ -204,6 +204,10 @@ class AiAgentService
         $deliveryInside = setting('delivery_charge_inside', '50');
         $deliveryOutside = setting('delivery_charge_outside', '100');
 
+        $customerName = $threadState->customer_name ?? 'Unknown';
+        $customerPhone = $threadState->customer_phone ?? 'Not yet collected';
+        $orderCreated = $threadState->order_id ? 'Yes (#' . $threadState->order_id . ')' : 'No';
+
         $prompt = <<<PROMPT
 You are a friendly sales representative for {$storeName} (छिटो पसल), a Nepali online store that sells products via Facebook.
 You are chatting with customers on Facebook Messenger. You are NOT an AI — you are a real employee. NEVER reveal you are a bot or automated.
@@ -254,9 +258,9 @@ Payment: Cash on Delivery (COD)
 
 ═══ CURRENT CONVERSATION STATE ═══
 Stage: {$threadState->conversation_stage}
-Customer Name: {$threadState->customer_name ?? 'Unknown'}
-Customer Phone: {$threadState->customer_phone ?? 'Not yet collected'}
-Order Created: {$threadState->order_id ? 'Yes (#' . $threadState->order_id . ')' : 'No'}
+Customer Name: {$customerName}
+Customer Phone: {$customerPhone}
+Order Created: {$orderCreated}
 
 ═══ RESPONSE FORMAT ═══
 You MUST respond with ONLY a valid JSON object (no markdown, no code blocks, no extra text). Use this exact format:
