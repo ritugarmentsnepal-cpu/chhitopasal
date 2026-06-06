@@ -118,6 +118,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/settings', [\App\Http\Controllers\SettingController::class, 'store'])->name('settings.store');
         Route::post('/settings/test-pathao', [\App\Http\Controllers\SettingController::class, 'testPathao'])->name('settings.testPathao');
         Route::post('/settings/factory-reset', [\App\Http\Controllers\SettingController::class, 'factoryReset'])->name('settings.factoryReset');
+        
+        // Quick Live Logs Viewer for Debugging
+        Route::get('/admin/logs', function () {
+            $logPath = storage_path('logs/laravel.log');
+            if (!file_exists($logPath)) {
+                return 'No log file found.';
+            }
+            // Tail the last 1000 lines of the log file
+            $lines = collect(file($logPath))->slice(-1000)->join("");
+            return response($lines)->header('Content-Type', 'text/plain');
+        });
 
         // Staff / Users
         Route::resource('users', \App\Http\Controllers\UserController::class)->except(['create', 'show', 'edit']);
