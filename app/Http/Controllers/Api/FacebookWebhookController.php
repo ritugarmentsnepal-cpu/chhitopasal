@@ -168,8 +168,9 @@ class FacebookWebhookController extends Controller
             );
         }
 
-        // Dispatch the AI reply job to the queue
-        ProcessAiReply::dispatch(
+        // Dispatch the AI reply job to run immediately AFTER sending the 200 OK to Facebook.
+        // This eliminates the need for a background queue daemon on CloudPanel FPM.
+        ProcessAiReply::dispatchAfterResponse(
             $pageId,
             $senderId,
             $messageText,
