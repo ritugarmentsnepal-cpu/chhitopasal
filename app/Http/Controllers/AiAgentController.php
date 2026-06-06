@@ -168,9 +168,19 @@ class AiAgentController extends Controller
     {
         try {
             $basePath = base_path();
-            // This runs the artisan command in the background, ignoring hangups
-            $command = "nohup php {$basePath}/artisan queue:work --daemon > /dev/null 2>&1 &";
-            exec($command);
+            
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Windows background process
+                pclose(popen("start /B php {$basePath}/artisan queue:work > NUL 2> NUL", "r"));
+            } else {
+                // Linux/Mac/CloudPanel background process (Fully detached)
+                $phpPath = PHP_BINDIR . '/php';
+                if (!file_exists($phpPath)) {
+                    $phpPath = 'php'; // Fallback
+                }
+                $command = "nohup {$phpPath} {$basePath}/artisan queue:work > /dev/null 2>&1 < /dev/null &";
+                exec($command);
+            }
             
             return redirect()->back()
                 ->with('success', 'AI Agent Real-Time Queue Daemon started successfully! The AI will now process messages instantly in the background.');
