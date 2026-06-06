@@ -163,6 +163,15 @@ class AiAgentService
         // Add the current incoming message
         $messages[] = ['role' => 'user', 'content' => $messageText];
 
+        // Sanitize all messages to ensure valid UTF-8 encoding before json_encode
+        $messages = array_map(function ($msg) {
+            if (isset($msg['content'])) {
+                // Remove invalid UTF-8 characters to prevent json_encode failures
+                $msg['content'] = mb_convert_encoding($msg['content'], 'UTF-8', 'UTF-8');
+            }
+            return $msg;
+        }, $messages);
+
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
