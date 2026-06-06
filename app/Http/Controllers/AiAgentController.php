@@ -174,6 +174,7 @@ class AiAgentController extends Controller
      */
     public function testAgent(Request $request)
     {
+        set_time_limit(120);
         $request->validate(['message' => 'required|string|max:500']);
 
         $agentService = app(AiAgentService::class);

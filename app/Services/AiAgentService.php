@@ -179,7 +179,7 @@ class AiAgentService
                 'X-Title' => 'Chhito Pasal AI Agent',
                 'Content-Type' => 'application/json',
             ])
-            ->timeout(30)
+            ->timeout(90)
             ->post('https://openrouter.ai/api/v1/chat/completions', [
                 'model' => $model,
                 'messages' => $messages,

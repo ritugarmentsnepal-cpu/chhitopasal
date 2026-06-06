@@ -24,6 +24,7 @@ class FacebookWebhookController extends Controller
 
     public function handle(Request $request)
     {
+        set_time_limit(120);
         $payload = $request->all();
         
         Log::info('Facebook Webhook Received', ['payload' => $payload]);
