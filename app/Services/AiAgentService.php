@@ -33,9 +33,10 @@ class AiAgentService
         }
 
         // Check working hours (Nepal time = UTC+5:45)
-        if (!$this->isWithinWorkingHours()) {
-            return;
-        }
+        // Temporarily disabled so AI runs 24/7
+        // if (!$this->isWithinWorkingHours()) {
+        //     return;
+        // }
 
         // Get or create thread state
         $threadState = AiThreadState::getOrCreate($pageId, $threadId, $senderName);
