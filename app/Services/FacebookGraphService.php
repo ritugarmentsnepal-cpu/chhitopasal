@@ -21,6 +21,19 @@ class FacebookGraphService
     }
 
     /**
+     * Subscribe the App to a Page's webhooks.
+     */
+    public function subscribePageToWebhooks($pageId, $pageToken)
+    {
+        $response = Http::post("{$this->baseUrl}/{$pageId}/subscribed_apps", [
+            'subscribed_fields' => 'messages,messaging_postbacks,messaging_optins,message_deliveries,message_reads',
+            'access_token' => $pageToken,
+        ]);
+
+        return $response->json();
+    }
+
+    /**
      * Get conversations for a page.
      */
     public function getConversations($pageToken, $after = null)

@@ -48,6 +48,13 @@ class FacebookInboxController extends Controller
                             'access_token' => $pageData['access_token'],
                         ]
                     );
+
+                    // Subscribe the App to this Page's webhooks
+                    try {
+                        $graphService->subscribePageToWebhooks($pageData['id'], $pageData['access_token']);
+                    } catch (\Exception $e) {
+                        Log::error('AI Agent: Failed to subscribe page to webhooks', ['page_id' => $pageData['id'], 'error' => $e->getMessage()]);
+                    }
                 }
             }
             
