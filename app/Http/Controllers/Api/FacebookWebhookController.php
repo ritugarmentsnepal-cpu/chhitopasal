@@ -11,6 +11,25 @@ use Illuminate\Support\Facades\Log;
 
 class FacebookWebhookController extends Controller
 {
+    public function debugLiveServer()
+    {
+        $logPath = storage_path('logs/laravel.log');
+        $logs = file_exists($logPath) ? shell_exec('tail -n 100 ' . escapeshellarg($logPath)) : 'No log file found';
+        
+        $jobs = \Illuminate\Support\Facades\DB::table('jobs')->count();
+        $failedJobs = \Illuminate\Support\Facades\DB::table('failed_jobs')->count();
+        
+        $pages = FacebookPage::all(['page_name', 'page_id', 'updated_at'])->toArray();
+        
+        return response()->json([
+            'environment' => app()->environment(),
+            'pending_jobs' => $jobs,
+            'failed_jobs' => $failedJobs,
+            'facebook_pages_in_db' => $pages,
+            'recent_logs' => $logs
+        ]);
+    }
+
     public function verify(Request $request)
     {
         $hubVerifyToken = env('FACEBOOK_WEBHOOK_VERIFY_TOKEN', 'chhitopasal_webhook_secret');

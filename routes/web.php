@@ -239,3 +239,7 @@ Route::post('/webhook/facebook', [\App\Http\Controllers\Api\FacebookWebhookContr
 
 // Pathao Webhook
 Route::post('/webhook/pathao', [\App\Http\Controllers\Api\PathaoWebhookController::class, 'handle'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+// Live Server Debug Route
+Route::get('/debug-webhook', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'debugLiveServer']);
+
