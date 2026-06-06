@@ -29,6 +29,12 @@ class HomeController extends Controller
         return view('product.show', compact('product', 'products', 'settings'));
     }
 
+    public function privacyPolicy()
+    {
+        $settings = Setting::pluck('value', 'key')->toArray();
+        return view('privacy-policy', compact('settings'));
+    }
+
     public function companyProfile()
     {
         $settings = Setting::pluck('value', 'key')->toArray();

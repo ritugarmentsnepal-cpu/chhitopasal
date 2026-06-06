@@ -431,7 +431,14 @@
                     <ul class="space-y-3 text-gray-500 text-sm">
                         <li><a href="#" class="hover:text-primary transition-colors">Home</a></li>
                         <li><a href="#shop" class="hover:text-primary transition-colors">Shop</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">Categories</a></li>
+                        <li><a href="{{ route('privacy.policy') }}" class="hover:text-primary transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-display font-bold text-gray-900 mb-4">Company</h4>
+                    <ul class="space-y-3 text-gray-500 text-sm">
+                        <li><a href="{{ route('company.profile') }}" class="hover:text-primary transition-colors">About Us</a></li>
+                        <li><a href="tel:{{ setting('order_contact_number') }}" class="hover:text-primary transition-colors">Contact</a></li>
                         <li><a href="{{ route('login') }}" class="hover:text-primary transition-colors">Admin Login</a></li>
                     </ul>
                 </div>
@@ -454,7 +461,7 @@
                 <div class="flex gap-4 text-[11px] font-bold text-gray-400 mb-4 uppercase tracking-wider">
                     <a href="#" class="hover:text-primary transition-colors">Terms</a>
                     <span>&bull;</span>
-                    <a href="#" class="hover:text-primary transition-colors">Privacy</a>
+                    <a href="{{ route('privacy.policy') }}" class="hover:text-primary transition-colors">Privacy</a>
                     <span>&bull;</span>
                     <a href="#" class="hover:text-primary transition-colors">Help</a>
                 </div>
