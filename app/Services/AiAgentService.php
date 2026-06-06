@@ -76,7 +76,7 @@ class AiAgentService
             // Generate AI response
             $aiResponse = $this->generateResponse($threadState, $messageText, $conversationHistory);
 
-            if (empty($aiResponse) || empty($aiResponse['reply'])) {
+            if (empty($aiResponse) || empty($aiResponse['messages'])) {
                 Log::warning('AI Agent: Empty response generated', ['thread_id' => $threadId]);
                 return;
             }
@@ -88,31 +88,42 @@ class AiAgentService
                 return;
             }
 
-            // Add a human-like typing delay
-            $delay = (int) setting('ai_agent_response_delay', 5);
-            if ($delay > 0) {
-                sleep(min($delay, 15)); // Cap at 15 seconds
+            // Send each message in the array
+            foreach ($aiResponse['messages'] as $index => $messageContent) {
+                if (empty(trim($messageContent))) continue;
+                
+                // Add a human-like typing delay
+                $delay = (int) setting('ai_agent_response_delay', 5);
+                if ($delay > 0) {
+                    sleep(min($delay, 15)); // Cap at 15 seconds
+                }
+
+                // Send the reply via Facebook Graph API
+                $sendResult = $this->graphService->sendMessage($threadId, $messageContent, $page->access_token);
+
+                if (isset($sendResult['error'])) {
+                    Log::error('AI Agent: Failed to send message', ['error' => $sendResult['error'], 'thread_id' => $threadId]);
+                    continue; // try next message
+                }
+
+                // Log the AI's outgoing message
+                AiConversationLog::create([
+                    'page_id' => $pageId,
+                    'thread_id' => $threadId,
+                    'sender_id' => $pageId,
+                    'sender_name' => $page->page_name ?? 'Page',
+                    'is_page_reply' => true,
+                    'message' => $messageContent,
+                    'facebook_message_id' => $sendResult['message_id'] ?? ('ai_' . uniqid() . '_' . time()),
+                    'sent_at' => now(),
+                ]);
             }
 
-            // Send the reply via Facebook Graph API
-            $sendResult = $this->graphService->sendMessage($threadId, $aiResponse['reply'], $page->access_token);
-
-            if (isset($sendResult['error'])) {
-                Log::error('AI Agent: Failed to send message', ['error' => $sendResult['error'], 'thread_id' => $threadId]);
-                return;
+            // Handle optional image attachment
+            if (!empty($aiResponse['attachment_url'])) {
+                sleep(1); // Short pause before sending image
+                $this->graphService->sendMessage($threadId, null, $page->access_token, $aiResponse['attachment_url'], 'image');
             }
-
-            // Log the AI's outgoing message
-            AiConversationLog::create([
-                'page_id' => $pageId,
-                'thread_id' => $threadId,
-                'sender_id' => $pageId,
-                'sender_name' => $page->page_name ?? 'Page',
-                'is_page_reply' => true,
-                'message' => $aiResponse['reply'],
-                'facebook_message_id' => $sendResult['message_id'] ?? ('ai_' . uniqid() . '_' . time()),
-                'sent_at' => now(),
-            ]);
 
             // Handle phone number detection → create lead order
             if (!empty($aiResponse['detected_phone']) && !$threadState->order_id) {
@@ -158,7 +169,7 @@ class AiAgentService
 
         $aiResponse = $this->generateResponse($threadState, $instruction, $conversationHistory);
 
-        if (empty($aiResponse) || empty($aiResponse['reply'])) {
+        if (empty($aiResponse) || empty($aiResponse['messages'])) {
             Log::warning('AI Agent: Empty follow-up generated', ['thread_id' => $threadState->thread_id]);
             return;
         }
@@ -166,23 +177,27 @@ class AiAgentService
         $page = FacebookPage::where('page_id', $threadState->page_id)->first();
         if (!$page) return;
 
-        $sendResult = $this->graphService->sendMessage($threadState->thread_id, $aiResponse['reply'], $page->access_token);
+        foreach ($aiResponse['messages'] as $messageContent) {
+            if (empty(trim($messageContent))) continue;
+            
+            $sendResult = $this->graphService->sendMessage($threadState->thread_id, $messageContent, $page->access_token);
 
-        if (isset($sendResult['error'])) {
-            Log::error('AI Agent: Failed to send follow-up', ['error' => $sendResult['error']]);
-            return;
+            if (isset($sendResult['error'])) {
+                Log::error('AI Agent: Failed to send follow-up', ['error' => $sendResult['error']]);
+                continue;
+            }
+
+            \App\Models\AiConversationLog::create([
+                'page_id' => $threadState->page_id,
+                'thread_id' => $threadState->thread_id,
+                'sender_id' => $threadState->page_id,
+                'sender_name' => $page->page_name ?? 'Page',
+                'is_page_reply' => true,
+                'message' => $messageContent,
+                'facebook_message_id' => $sendResult['message_id'] ?? ('ai_followup_' . uniqid()),
+                'sent_at' => now(),
+            ]);
         }
-
-        \App\Models\AiConversationLog::create([
-            'page_id' => $threadState->page_id,
-            'thread_id' => $threadState->thread_id,
-            'sender_id' => $threadState->page_id,
-            'sender_name' => $page->page_name ?? 'Page',
-            'is_page_reply' => true,
-            'message' => $aiResponse['reply'],
-            'facebook_message_id' => $sendResult['message_id'] ?? ('ai_followup_' . uniqid()),
-            'sent_at' => now(),
-        ]);
 
         $threadState->update([
             'followup_count' => $followUpCount,
@@ -276,7 +291,7 @@ class AiAgentService
         
         $phonePrompt = $customerPhone !== 'Not yet collected' 
             ? "- We already have the customer's phone number. DO NOT ask for it again." 
-            : "- VERY IMPORTANT: You MUST append this exact phrase at the end of EVERY message: 'number dinus call aaxua order ko lagi' (Translate it to Devanagari if they are typing in Devanagari). Do not forget this!";
+            : "- Our primary goal is to get the customer's phone number to place the order. Naturally ask them for their phone number (e.g., 'number dinus call aauxa order ko lagi'). You can append it to your message, or send it as a separate text in the `messages` array. Do not ask forcefully if they are just browsing, but ask when they show interest in a product.";
 
         $prompt = <<<PROMPT
 You are a friendly sales representative for {$storeName} (छिटो पसल), a Nepali online store. 
@@ -295,7 +310,6 @@ You are chatting with a customer on Facebook Messenger. You are a real employee,
 - DO NOT push the price in every single message. It is illogical. Only mention the price if they ask for it, or if you are introducing a product for the first time.
 
 ═══ MAIN OBJECTIVE: PHONE NUMBER ═══
-- Our primary goal is to get the customer's phone number to place the order.
 {$phonePrompt}
 
 ═══ BUSINESS INFO ═══
@@ -303,7 +317,7 @@ Store: {$storeName}
 Contact: {$companyPhone}
 Delivery: Inside Valley Rs. {$deliveryInside}, Outside Rs. {$deliveryOutside} (Cash on Delivery)
 
-═══ PRODUCT CATALOG ═══
+═══ PRODUCT CATALOG (Includes Image URLs) ═══
 {$this->buildProductCatalog()}
 
 ═══ KNOWLEDGE BASE ═══
@@ -317,8 +331,10 @@ Order: {$orderCreated}
 
 ═══ RESPONSE FORMAT ═══
 You MUST respond with ONLY a valid JSON object. Example:
-{"reply": "your text here", "detected_phone": null, "is_complaint": false, "complaint_category": null, "complaint_summary": null}
+{"messages": ["Namaste hajur! Yo tshirt available cha.", "Order garna ko lagi number dinus call aauxa."], "attachment_url": "https://example.com/image.jpg", "detected_phone": null, "is_complaint": false, "complaint_category": null, "complaint_summary": null}
 
+- "messages": An array of 1 to 3 string messages to send. Separate your thoughts naturally instead of sending one huge paragraph.
+- "attachment_url": If the customer asks for a photo or video, provide the exact Image URL from the catalog. Otherwise null.
 - "detected_phone": Extract Nepali phone number if provided (e.g. 98xxxxxxxx). Else null.
 - "is_complaint": true if they are complaining. Else false.
 - "complaint_category": e.g., "late_delivery", "wrong_product", "refund", "other".
@@ -370,6 +386,10 @@ PROMPT;
                     $bundleTexts[] = "{$bundle['qty']}-Pack: Rs. {$bundle['price']}";
                 }
                 $line .= " | Bundles: " . implode(', ', $bundleTexts);
+            }
+
+            if ($product->image_path) {
+                $line .= " | Image URL: " . asset('storage/' . $product->image_path);
             }
 
             if (!empty($product->description)) {
@@ -497,19 +517,26 @@ PROMPT;
 
         $parsed = json_decode($content, true);
 
-        if (json_last_error() === JSON_ERROR_NONE && isset($parsed['reply'])) {
-            // Validate and normalize phone number
-            if (!empty($parsed['detected_phone'])) {
-                $parsed['detected_phone'] = $this->normalizePhoneNumber($parsed['detected_phone']);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            // Support old "reply" format as fallback
+            if (isset($parsed['reply']) && !isset($parsed['messages'])) {
+                $parsed['messages'] = [$parsed['reply']];
             }
-            return $parsed;
+            if (isset($parsed['messages'])) {
+                // Validate and normalize phone number
+                if (!empty($parsed['detected_phone'])) {
+                    $parsed['detected_phone'] = $this->normalizePhoneNumber($parsed['detected_phone']);
+                }
+                return $parsed;
+            }
         }
 
-        // Fallback: treat the entire content as a reply
+        // Fallback: treat the entire content as a single message
         Log::warning('AI Agent: Response was not valid JSON, using as plain text', ['content' => substr($content, 0, 200)]);
         
         return [
-            'reply' => $content,
+            'messages' => [$content],
+            'attachment_url' => null,
             'detected_phone' => $this->extractPhoneNumber($originalMessage),
             'is_complaint' => false,
             'complaint_category' => null,
