@@ -29,6 +29,13 @@ class FacebookWebhookController extends Controller
 
     public function debugLiveServer()
     {
+        // Force process any pending jobs synchronously to bypass daemon issues
+        try {
+            \Illuminate\Support\Facades\Artisan::call('queue:work', ['--stop-when-empty' => true]);
+        } catch (\Exception $e) {
+            // ignore
+        }
+
         $logPath = storage_path('logs/laravel.log');
         $logs = file_exists($logPath) ? shell_exec('tail -n 100 ' . escapeshellarg($logPath)) : 'No log file found';
         
