@@ -163,6 +163,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/pathao/reconcile/process', [\App\Http\Controllers\PathaoReconciliationController::class, 'process'])->name('pathao.reconcile.process');
     });
 
+    // Rider Comments Inbox - accessible to all authenticated users
+    Route::get('/rider-comments', [\App\Http\Controllers\RiderCommentController::class, 'index'])->name('rider_comments.index');
+    Route::post('/rider-comments/{comment}/reply', [\App\Http\Controllers\RiderCommentController::class, 'reply'])->name('rider_comments.reply');
+    Route::post('/rider-comments/{comment}/assign', [\App\Http\Controllers\RiderCommentController::class, 'assign'])->name('rider_comments.assign');
+    Route::post('/rider-comments/{comment}/tag', [\App\Http\Controllers\RiderCommentController::class, 'tag'])->name('rider_comments.tag');
+    Route::post('/rider-comments/{comment}/resolve', [\App\Http\Controllers\RiderCommentController::class, 'markResolved'])->name('rider_comments.resolve');
+    Route::get('/api/rider-comments/unread-count', [\App\Http\Controllers\RiderCommentController::class, 'unreadCount'])->name('api.rider_comments.unreadCount');
+
     // Pathao API proxies (needed by orders too, so just auth-gated)
     // ARCH-05: Add rate limiting to API proxy routes
     Route::get('/api/pathao/cities', [\App\Http\Controllers\PathaoManagerController::class, 'getCities'])->middleware('throttle:30,1');

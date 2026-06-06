@@ -54,8 +54,9 @@ class PathaoWebhookController extends Controller
 
         $consignmentId = $request->input('consignment_id');
         $orderStatus = $request->input('order_status');
+        $eventLower = strtolower($request->input('event') ?? '');
         
-        if (!$consignmentId || (!$orderStatus && !in_array(strtolower($request->input('event')), ['webhook_integration']))) {
+        if (!$consignmentId || (!$orderStatus && !in_array($eventLower, ['webhook_integration', 'issue']))) {
             return response()->json(['message' => 'Invalid payload: missing consignment_id or order_status'], 400);
         }
 
@@ -65,6 +66,20 @@ class PathaoWebhookController extends Controller
         if (!$order) {
             Log::warning("Pathao Webhook: Order not found for consignment_id: {$consignmentId}");
             return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        if ($eventLower === 'issue') {
+            $issueId = $request->input('issue_id') ?? $request->input('id');
+            $commentText = $request->input('issue_description') ?? $request->input('reason') ?? $request->input('comment') ?? json_encode($request->all());
+
+            \App\Models\RiderComment::updateOrCreate(
+                ['order_id' => $order->id, 'pathao_issue_id' => $issueId],
+                ['rider_comment' => $commentText, 'status' => 'unread']
+            );
+
+            return response()->json(['status' => 'success'])
+                             ->setStatusCode(202)
+                             ->header('X-Pathao-Merchant-Webhook-Integration-Secret', $configuredSecret);
         }
 
         try {

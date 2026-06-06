@@ -303,5 +303,36 @@ class PathaoService
         }
         return null;
     }
+
+    /**
+     * Reply to an issue in Pathao.
+     * Note: This hits the generic issue reply endpoint. 
+     */
+    public function replyToIssue($issueId, $replyText): array
+    {
+        try {
+            $payload = [
+                'issue_id' => $issueId,
+                'reply' => $replyText,
+                'status' => 'resolved' // assuming replying marks it as resolved, or could be dynamic
+            ];
+
+            $response = $this->authenticatedRequest(
+                'post',
+                "{$this->baseUrl}/aladdin/api/v1/issues/{$issueId}/reply",
+                $payload,
+                ['Accept' => 'application/json']
+            );
+            
+            if ($response->successful()) {
+                return ['success' => true];
+            }
+
+            return ['success' => false, 'error' => $response->json('message') ?? 'Failed to reply to Pathao issue'];
+        } catch (Exception $e) {
+            Log::error("Failed to reply to Pathao issue {$issueId}: " . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }
 
