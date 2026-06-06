@@ -452,11 +452,12 @@ class OrderController extends Controller
         $header = array_shift($rows); // Remove header
         
         $successCount = 0;
+        $batchId = (string) \Illuminate\Support\Str::uuid();
 
         // NEW-FIN-04 + NEW-ARCH-01: Wrap in transaction, suppress logging for bulk
         Order::$suppressLogging = true;
         try {
-            DB::transaction(function () use ($rows, &$successCount) {
+            DB::transaction(function () use ($rows, $batchId, &$successCount) {
                 foreach ($rows as $row) {
                     if (empty($row[0]) || empty($row[4])) continue;
                     
@@ -497,6 +498,7 @@ class OrderController extends Controller
                         'total_amount' => $itemTotal,
                         'status' => 'pending',
                         'source' => 'csv',
+                        'bulk_batch_id' => $batchId,
                     ]);
                     
                     $order->orderItems()->create([
@@ -640,6 +642,22 @@ class OrderController extends Controller
             ->paginate(20);
 
         return view('orders.bulk_batches', compact('batches'));
+    }
+
+    public function bulkBatchShow($batchId)
+    {
+        $batchOrders = Order::with('orderItems.product')
+            ->where('bulk_batch_id', $batchId)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        if ($batchOrders->isEmpty()) {
+            return redirect()->route('orders.bulkBatches')->with('error', 'Batch not found or empty.');
+        }
+
+        $batchDate = $batchOrders->first()->created_at;
+
+        return view('orders.bulk_batch_show', compact('batchOrders', 'batchId', 'batchDate'));
     }
 
     public function bulkPrint(Request $request)
