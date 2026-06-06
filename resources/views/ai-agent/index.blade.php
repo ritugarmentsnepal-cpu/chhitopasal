@@ -402,14 +402,14 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <form action="{{ route('settings.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="redirect_tab" value="integrations">
+                <input type="hidden" name="redirect_url" value="{{ route('ai-agent.index', ['tab' => 'settings']) }}">
                 <div class="p-6 border-b border-gray-100">
                     <h3 class="font-black text-xl text-gray-900">AI Agent Settings</h3>
                     <p class="text-sm font-bold text-gray-500">Configure your AI agent behavior</p>
                 </div>
                 <div class="p-6 space-y-6">
                     {{-- Master Toggle --}}
-                    <div class="flex items-center justify-between bg-gray-50 rounded-xl p-4">
+                    <div class="flex items-center justify-between bg-gray-50 rounded-xl p-4 border border-gray-200">
                         <div>
                             <h4 class="font-black text-gray-900">AI Agent Status</h4>
                             <p class="text-sm text-gray-500 font-bold">Enable or disable the AI agent globally</p>
@@ -417,7 +417,7 @@
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="hidden" name="ai_agent_enabled" value="0">
                             <input type="checkbox" name="ai_agent_enabled" value="1" class="sr-only peer" {{ $settings['ai_agent_enabled'] ? 'checked' : '' }}>
-                            <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-600"></div>
+                            <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
                         </label>
                     </div>
 

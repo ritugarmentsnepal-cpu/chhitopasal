@@ -83,6 +83,10 @@ class SettingController extends Controller
         // Clear cached settings so changes take effect immediately
         clear_settings_cache();
 
+        if ($request->has('redirect_url')) {
+            return redirect($request->input('redirect_url'))->with('success', 'Settings updated successfully.');
+        }
+
         return redirect()->route('settings.index', ['tab' => $tab])->with('success', 'Settings updated successfully.');
     }
     

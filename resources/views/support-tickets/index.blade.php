@@ -126,9 +126,9 @@
                                 </div>
                                 <div class="flex justify-end gap-2">
                                     @if($ticket->status !== 'resolved')
-                                        <a href="{{ route('support-tickets.resolve', $ticket) }}" onclick="event.preventDefault(); document.getElementById('resolve-{{ $ticket->id }}').submit();" class="bg-green-100 text-green-700 font-bold px-5 py-2 rounded-xl hover:bg-green-200 transition text-sm">
+                                        <button type="submit" form="resolve-{{ $ticket->id }}" class="bg-green-100 text-green-700 font-bold px-5 py-2 rounded-xl hover:bg-green-200 transition text-sm">
                                             ✅ Quick Resolve
-                                        </a>
+                                        </button>
                                     @endif
                                     <button type="submit" class="bg-gray-900 text-white font-black px-5 py-2 rounded-xl hover:bg-gray-800 transition text-sm">Update Ticket</button>
                                 </div>
