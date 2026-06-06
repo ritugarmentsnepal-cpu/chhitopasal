@@ -37,6 +37,29 @@ class FacebookApiController extends Controller
         $cursor = $request->query('cursor');
         $data = $this->graphService->getMessages($threadId, $page->access_token, $cursor);
         
+        // Inject AI badge information
+        if (isset($data['data']) && is_array($data['data'])) {
+            $messageIds = array_column($data['data'], 'id');
+            $aiMessageIds = \App\Models\AiConversationLog::whereIn('facebook_message_id', $messageIds)
+                ->where('is_page_reply', true)
+                ->where('facebook_message_id', 'LIKE', 'm_%') // Facebook message IDs start with m_
+                ->pluck('facebook_message_id')
+                ->toArray();
+                
+            // Also check by content fallback since previously we didn't save message_id correctly
+            $aiMessagesContent = \App\Models\AiConversationLog::where('thread_id', $threadId)
+                ->where('is_page_reply', true)
+                ->pluck('message')
+                ->toArray();
+
+            foreach ($data['data'] as &$msg) {
+                $msg['is_ai'] = in_array($msg['id'] ?? '', $aiMessageIds);
+                if (!$msg['is_ai'] && isset($msg['message']) && in_array($msg['message'], $aiMessagesContent)) {
+                    $msg['is_ai'] = true;
+                }
+            }
+        }
+        
         return response()->json($data);
     }
 

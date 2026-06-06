@@ -96,6 +96,22 @@
                         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('facebook-inbox.*') ? 'text-white' : 'text-gray-400' }}" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                         <span x-show="!sidebarCollapsed" x-transition.opacity>Facebook Inbox</span>
                     </a>
+                    <a href="{{ route('ai-agent.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('ai-agent.*') ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="AI Agent">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('ai-agent.*') ? 'text-white' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        <span x-show="!sidebarCollapsed" x-transition.opacity>AI Agent</span>
+                    </a>
+                    <a href="{{ route('support-tickets.index') }}" class="flex items-center justify-between py-2.5 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('support-tickets.*') ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Support Tickets">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('support-tickets.*') ? 'text-white' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
+                            <span x-show="!sidebarCollapsed" x-transition.opacity>Support Tickets</span>
+                        </div>
+                        @php
+                            $openTickets = \App\Models\SupportTicket::where('status', 'open')->count();
+                        @endphp
+                        @if($openTickets > 0)
+                            <span x-show="!sidebarCollapsed" class="bg-red-500 text-white py-0.5 px-2 rounded-full text-[10px] font-black">{{ $openTickets }}</span>
+                        @endif
+                    </a>
                 </div>
             </div>
             @endif

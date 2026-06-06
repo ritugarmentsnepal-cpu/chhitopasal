@@ -172,6 +172,46 @@
                             
                             <!-- Header Actions -->
                             <div class="flex items-center gap-2">
+                                <!-- AI Agent Status -->
+                                <div class="flex items-center gap-1 mr-2" x-data="{ aiStatus: null, loading: false }" x-init="
+                                    if(selectedConversation) {
+                                        fetch('/api/facebook/threads/' + encodeURIComponent(selectedConversation.id) + '/ai-status')
+                                        .then(r => r.json()).then(d => aiStatus = d).catch(() => {});
+                                    }
+                                " x-effect="
+                                    if(selectedConversation) {
+                                        fetch('/api/facebook/threads/' + encodeURIComponent(selectedConversation.id) + '/ai-status')
+                                        .then(r => r.json()).then(d => aiStatus = d).catch(() => {});
+                                    }
+                                ">
+                                    <template x-if="aiStatus && aiStatus.exists">
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1"
+                                                  :class="aiStatus.human_takeover ? 'bg-gray-100 text-gray-600' : 'bg-purple-100 text-purple-700'">
+                                                <span x-text="aiStatus.human_takeover ? '👤 Human' : '🤖 AI Active'"></span>
+                                            </span>
+                                            <template x-if="!aiStatus.human_takeover">
+                                                <button @click="
+                                                    loading = true;
+                                                    fetch('/api/facebook/threads/' + encodeURIComponent(selectedConversation.id) + '/ai-takeover', {method:'POST', headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'}})
+                                                    .then(r => r.json()).then(() => { aiStatus.human_takeover = true; loading = false; showToast('AI paused — you are now in control'); })
+                                                " class="text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold px-2.5 py-1 rounded-lg transition" :disabled="loading">
+                                                    Take Over
+                                                </button>
+                                            </template>
+                                            <template x-if="aiStatus.human_takeover">
+                                                <button @click="
+                                                    loading = true;
+                                                    fetch('/api/facebook/threads/' + encodeURIComponent(selectedConversation.id) + '/ai-resume', {method:'POST', headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'}})
+                                                    .then(r => r.json()).then(() => { aiStatus.human_takeover = false; loading = false; showToast('AI agent resumed for this conversation'); })
+                                                " class="text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 font-bold px-2.5 py-1 rounded-lg transition" :disabled="loading">
+                                                    Resume AI
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+
                                 <button @click="showToast('Conversation reported as spam')" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition" title="Spam/Report">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                                 </button>
@@ -210,9 +250,13 @@
                             <template x-for="msg in reversedMessages" :key="msg.id">
                                 <div class="flex flex-col" :class="msg.from.id === selectedPageId ? 'items-end' : 'items-start'">
                                     <div class="flex gap-2 max-w-[75%]" :class="msg.from.id === selectedPageId ? 'flex-row-reverse' : ''">
-                                        <div class="w-6 h-6 rounded-full bg-gray-200 shrink-0 mt-1 flex items-center justify-center overflow-hidden">
-                                            <template x-if="msg.from.id === selectedPageId">
+                                        <div class="w-6 h-6 rounded-full shrink-0 mt-1 flex items-center justify-center overflow-hidden"
+                                             :class="msg.is_ai ? 'bg-purple-100 text-purple-600' : 'bg-gray-200'">
+                                            <template x-if="msg.from.id === selectedPageId && !msg.is_ai">
                                                 <span class="text-[10px] text-gray-500 font-bold" x-text="getSelectedPageName().charAt(0)"></span>
+                                            </template>
+                                            <template x-if="msg.is_ai">
+                                                <span class="text-xs" title="Sent by AI">🤖</span>
                                             </template>
                                             <template x-if="msg.from.id !== selectedPageId">
                                                 <span class="text-[10px] text-gray-500 font-bold" x-text="getParticipantName(selectedConversation).charAt(0)"></span>
@@ -221,7 +265,7 @@
 
                                         <div class="flex flex-col">
                                             <div class="px-4 py-2.5 rounded-2xl text-sm"
-                                                 :class="msg.from.id === selectedPageId ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'">
+                                                 :class="msg.from.id === selectedPageId ? (msg.is_ai ? 'bg-purple-600 text-white rounded-tr-sm' : 'bg-blue-600 text-white rounded-tr-sm') : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'">
                                                 <template x-if="msg.message">
                                                     <span x-text="msg.message" style="white-space: pre-wrap;"></span>
                                                 </template>
@@ -245,8 +289,11 @@
                                             </div>
                                             <div class="flex items-center gap-1 mt-1" :class="msg.from.id === selectedPageId ? 'justify-end' : 'justify-start'">
                                                 <span class="text-[10px] text-gray-400 font-medium" x-text="formatDate(msg.created_time)"></span>
-                                                <template x-if="msg.from.id === selectedPageId">
+                                                <template x-if="msg.from.id === selectedPageId && !msg.is_ai">
                                                     <span class="text-[10px] text-gray-400 font-medium whitespace-nowrap">· Sent by <span x-text="getSelectedPageName()"></span></span>
+                                                </template>
+                                                <template x-if="msg.is_ai">
+                                                    <span class="text-[10px] text-purple-400 font-bold whitespace-nowrap flex items-center gap-0.5">· <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> AI Agent</span>
                                                 </template>
                                             </div>
                                         </div>
@@ -617,9 +664,32 @@
                         this.fetchPosts();
                     }
                     this.fetchSavedReplies();
+
+                    // Poll for new messages in active thread every 5 seconds
+                    setInterval(() => {
+                        this.pollNewMessages();
+                    }, 5000);
                 },
 
                 // --- Messages Methods ---
+                async pollNewMessages() {
+                    if (!this.selectedPageId || !this.selectedConversation) return;
+                    try {
+                        const res = await fetch(`/api/facebook/pages/${this.selectedPageId}/conversations/${this.selectedConversation.id}/messages`);
+                        const data = await res.json();
+                        if (data.data && data.data.length > 0) {
+                            const existingIds = new Set(this.messages.map(m => m.id));
+                            const newMsgs = data.data.filter(m => !existingIds.has(m.id));
+                            if (newMsgs.length > 0) {
+                                this.messages = [...newMsgs, ...this.messages];
+                                setTimeout(() => this.scrollToBottom(), 100);
+                            }
+                        }
+                    } catch (err) {
+                        // Silent fail for polling
+                    }
+                },
+
                 async fetchConversations() {
                     if (!this.selectedPageId) return;
                     this.loadingConversations = true;

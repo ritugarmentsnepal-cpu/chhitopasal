@@ -157,6 +157,19 @@ class FacebookGraphService
         return $response->json();
     }
 
+    /**
+     * Get a user's public profile (name, profile picture) using their PSID
+     */
+    public function getUserProfile(string $psid, string $pageToken)
+    {
+        $response = Http::get("{$this->baseUrl}/{$psid}", [
+            'fields' => 'first_name,last_name,name,profile_pic',
+            'access_token' => $pageToken,
+        ]);
+
+        return $response->json();
+    }
+
     // --- Comments & Posts ---
 
     public function getPosts($pageToken, $after = null)

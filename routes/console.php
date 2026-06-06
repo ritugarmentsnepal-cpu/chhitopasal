@@ -21,3 +21,7 @@ use Illuminate\Support\Facades\Schedule;
 
 // AUTO-02: Prune old activity logs daily (keep 90 days)
 Schedule::command('logs:prune --days=90')->daily();
+
+// AI-01: Daily incremental sync of Facebook conversations for AI training
+Schedule::command('facebook:sync-conversations')->dailyAt('03:00')->withoutOverlapping();
+

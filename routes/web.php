@@ -198,6 +198,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/api/facebook/saved-replies', [\App\Http\Controllers\Api\FacebookApiController::class, 'getSavedReplies'])->name('api.facebook.savedReplies.index');
         Route::post('/api/facebook/saved-replies', [\App\Http\Controllers\Api\FacebookApiController::class, 'storeSavedReply'])->name('api.facebook.savedReplies.store');
         Route::delete('/api/facebook/saved-replies/{id}', [\App\Http\Controllers\Api\FacebookApiController::class, 'deleteSavedReply'])->name('api.facebook.savedReplies.destroy');
+
+        // AI Agent Training Page
+        Route::get('/ai-agent', [\App\Http\Controllers\AiAgentController::class, 'index'])->name('ai-agent.index');
+        Route::post('/ai-agent/knowledge', [\App\Http\Controllers\AiAgentController::class, 'storeKnowledge'])->name('ai-agent.storeKnowledge');
+        Route::delete('/ai-agent/knowledge/{id}', [\App\Http\Controllers\AiAgentController::class, 'deleteKnowledge'])->name('ai-agent.deleteKnowledge');
+        Route::post('/ai-agent/knowledge/{id}/toggle', [\App\Http\Controllers\AiAgentController::class, 'toggleKnowledge'])->name('ai-agent.toggleKnowledge');
+        Route::post('/ai-agent/sync', [\App\Http\Controllers\AiAgentController::class, 'syncConversations'])->name('ai-agent.sync');
+        Route::get('/api/ai-agent/stats', [\App\Http\Controllers\AiAgentController::class, 'getTrainingStats'])->name('api.ai-agent.stats');
+        Route::post('/api/ai-agent/test', [\App\Http\Controllers\AiAgentController::class, 'testAgent'])->name('api.ai-agent.test');
+
+        // AI Thread Controls (used from FB inbox)
+        Route::post('/api/facebook/threads/{threadId}/ai-takeover', [\App\Http\Controllers\AiAgentController::class, 'takeover'])->name('api.ai-agent.takeover');
+        Route::post('/api/facebook/threads/{threadId}/ai-resume', [\App\Http\Controllers\AiAgentController::class, 'resume'])->name('api.ai-agent.resume');
+        Route::get('/api/facebook/threads/{threadId}/ai-status', [\App\Http\Controllers\AiAgentController::class, 'status'])->name('api.ai-agent.status');
+
+        // Support Tickets
+        Route::get('/support-tickets', [\App\Http\Controllers\SupportTicketController::class, 'index'])->name('support-tickets.index');
+        Route::post('/support-tickets/{ticket}/update', [\App\Http\Controllers\SupportTicketController::class, 'update'])->name('support-tickets.update');
+        Route::post('/support-tickets/{ticket}/resolve', [\App\Http\Controllers\SupportTicketController::class, 'resolve'])->name('support-tickets.resolve');
     });
 });
 
