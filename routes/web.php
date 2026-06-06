@@ -243,3 +243,6 @@ Route::post('/webhook/pathao', [\App\Http\Controllers\Api\PathaoWebhookControlle
 // Live Server Debug Route
 Route::get('/debug-webhook', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'debugLiveServer']);
 
+
+Route::get('/force-subscribe', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'forceSubscribe']);
+

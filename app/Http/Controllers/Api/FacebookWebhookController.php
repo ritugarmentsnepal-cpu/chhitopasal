@@ -11,6 +11,22 @@ use Illuminate\Support\Facades\Log;
 
 class FacebookWebhookController extends Controller
 {
+    public function forceSubscribe()
+    {
+        $pages = \App\Models\FacebookPage::all();
+        $graphService = app(\App\Services\FacebookGraphService::class);
+        $results = [];
+        foreach ($pages as $page) {
+            try {
+                $response = $graphService->subscribePageToWebhooks($page->page_id, $page->access_token);
+                $results[$page->page_id] = $response;
+            } catch (\Exception $e) {
+                $results[$page->page_id] = 'Error: ' . $e->getMessage();
+            }
+        }
+        return response()->json(['status' => 'Forced subscription attempted', 'results' => $results]);
+    }
+
     public function debugLiveServer()
     {
         $logPath = storage_path('logs/laravel.log');
