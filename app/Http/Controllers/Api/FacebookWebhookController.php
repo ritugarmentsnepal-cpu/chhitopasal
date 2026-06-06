@@ -45,10 +45,18 @@ class FacebookWebhookController extends Controller
         $pages = \App\Models\FacebookPage::all(['page_name', 'page_id', 'updated_at'])->toArray();
         
         // Check AiAgentService conditions
-        $agentService = app(\App\Services\AiAgentService::class);
+        $isWithinWorkingHours = false;
+        try {
+            $start = (int) setting('ai_agent_working_hours_start', 8);
+            $end = (int) setting('ai_agent_working_hours_end', 22);
+            $now = now()->timezone('Asia/Kathmandu');
+            $hour = (int) $now->format('H');
+            $isWithinWorkingHours = ($hour >= $start && $hour < $end);
+        } catch (\Exception $e) {}
+
         $conditions = [
             'ai_agent_enabled_setting' => setting('ai_agent_enabled', false),
-            'is_within_working_hours' => $agentService->isWithinWorkingHours(),
+            'is_within_working_hours' => $isWithinWorkingHours,
             'current_time_nepal' => now()->timezone('Asia/Kathmandu')->format('Y-m-d H:i:s'),
             'openrouter_api_key_set' => !empty(setting('openrouter_api_key')),
         ];
