@@ -42,13 +42,23 @@ class FacebookWebhookController extends Controller
         $jobs = \Illuminate\Support\Facades\DB::table('jobs')->count();
         $failedJobs = \Illuminate\Support\Facades\DB::table('failed_jobs')->count();
         
-        $pages = FacebookPage::all(['page_name', 'page_id', 'updated_at'])->toArray();
+        $pages = \App\Models\FacebookPage::all(['page_name', 'page_id', 'updated_at'])->toArray();
+        
+        // Check AiAgentService conditions
+        $agentService = app(\App\Services\AiAgentService::class);
+        $conditions = [
+            'ai_agent_enabled_setting' => setting('ai_agent_enabled', false),
+            'is_within_working_hours' => $agentService->isWithinWorkingHours(),
+            'current_time_nepal' => now()->timezone('Asia/Kathmandu')->format('Y-m-d H:i:s'),
+            'openrouter_api_key_set' => !empty(setting('openrouter_api_key')),
+        ];
         
         return response()->json([
             'environment' => app()->environment(),
             'pending_jobs' => $jobs,
             'failed_jobs' => $failedJobs,
             'facebook_pages_in_db' => $pages,
+            'ai_logic_conditions' => $conditions,
             'recent_logs' => $logs
         ]);
     }
