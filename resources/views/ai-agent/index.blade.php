@@ -485,6 +485,20 @@
                 </div>
             </form>
         </div>
+
+        {{-- AI Real-Time Daemon Section --}}
+        <div class="bg-white dark:bg-gray-900 rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mt-8">
+            <h3 class="text-xl font-black text-gray-900 mb-2">Real-Time AI Processing</h3>
+            <p class="text-gray-500 font-medium mb-6">If your AI model takes too long to reply and hits the server timeout, start the background daemon to process messages instantly without timing out.</p>
+            
+            <form method="POST" action="{{ route('ai-agent.startDaemon') }}">
+                @csrf
+                <button type="submit" class="bg-indigo-600 text-white font-black py-3 px-8 rounded-xl shadow-[0_8px_20px_rgb(79,70,229,0.3)] hover:bg-indigo-700 active:scale-95 transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    Start Background Queue Daemon
+                </button>
+            </form>
+        </div>
         @endif
     </div>
 </x-app-layout>

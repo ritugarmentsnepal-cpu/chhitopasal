@@ -39,6 +39,12 @@ class AiAgentService
 
         // Get or create thread state
         $threadState = AiThreadState::getOrCreate($pageId, $threadId, $senderName);
+        
+        // Reset followup count since customer replied, update interaction time
+        $threadState->update([
+            'followup_count' => 0,
+            'last_interaction_at' => now(),
+        ]);
 
         // If human has taken over or AI is disabled for this thread, skip
         if (!$threadState->shouldAiRespond()) {
@@ -131,6 +137,56 @@ class AiAgentService
                 'trace' => $e->getTraceAsString(),
             ]);
         }
+    }
+
+    /**
+     * Send an automated follow-up message to the customer.
+     */
+    public function sendFollowUp(AiThreadState $threadState): void
+    {
+        // Add a special prompt asking the AI to write a short follow-up nudge
+        $followUpCount = $threadState->followup_count + 1;
+        $instruction = "SYSTEM INSTRUCTION: The customer has not replied in 2 hours. This is automated follow-up #{$followUpCount}. Send a very short, friendly 1-sentence nudge to encourage them to reply or ask if they need help deciding. Do not be pushy.";
+        
+        $conversationHistory = \App\Models\AiConversationLog::where('thread_id', $threadState->thread_id)
+            ->latest('sent_at')
+            ->limit(10)
+            ->get()
+            ->reverse()
+            ->values();
+
+        $aiResponse = $this->generateResponse($threadState, $instruction, $conversationHistory);
+
+        if (empty($aiResponse) || empty($aiResponse['reply'])) {
+            Log::warning('AI Agent: Empty follow-up generated', ['thread_id' => $threadState->thread_id]);
+            return;
+        }
+
+        $page = FacebookPage::where('page_id', $threadState->page_id)->first();
+        if (!$page) return;
+
+        $sendResult = $this->graphService->sendMessage($threadState->thread_id, $aiResponse['reply'], $page->access_token);
+
+        if (isset($sendResult['error'])) {
+            Log::error('AI Agent: Failed to send follow-up', ['error' => $sendResult['error']]);
+            return;
+        }
+
+        \App\Models\AiConversationLog::create([
+            'page_id' => $threadState->page_id,
+            'thread_id' => $threadState->thread_id,
+            'sender_id' => $threadState->page_id,
+            'sender_name' => $page->page_name ?? 'Page',
+            'is_page_reply' => true,
+            'message' => $aiResponse['reply'],
+            'facebook_message_id' => $sendResult['message_id'] ?? ('ai_followup_' . uniqid()),
+            'sent_at' => now(),
+        ]);
+
+        $threadState->update([
+            'followup_count' => $followUpCount,
+            'last_interaction_at' => now(),
+        ]);
     }
 
     /**

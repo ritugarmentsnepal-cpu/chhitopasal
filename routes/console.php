@@ -25,3 +25,7 @@ Schedule::command('logs:prune --days=90')->daily();
 // AI-01: Daily incremental sync of Facebook conversations for AI training
 Schedule::command('facebook:sync-conversations')->dailyAt('03:00')->withoutOverlapping();
 
+
+// AI-02: Process automated follow-ups for AI Agent
+Schedule::command('ai:process-followups')->everyFifteenMinutes()->withoutOverlapping();
+

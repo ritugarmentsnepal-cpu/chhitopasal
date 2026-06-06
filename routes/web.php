@@ -205,6 +205,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/ai-agent/knowledge/{id}', [\App\Http\Controllers\AiAgentController::class, 'deleteKnowledge'])->name('ai-agent.deleteKnowledge');
         Route::post('/ai-agent/knowledge/{id}/toggle', [\App\Http\Controllers\AiAgentController::class, 'toggleKnowledge'])->name('ai-agent.toggleKnowledge');
         Route::post('/ai-agent/sync', [\App\Http\Controllers\AiAgentController::class, 'syncConversations'])->name('ai-agent.sync');
+        Route::post('/ai-agent/start-daemon', [\App\Http\Controllers\AiAgentController::class, 'startDaemon'])->name('ai-agent.startDaemon');
         Route::get('/api/ai-agent/stats', [\App\Http\Controllers\AiAgentController::class, 'getTrainingStats'])->name('api.ai-agent.stats');
         Route::post('/api/ai-agent/test', [\App\Http\Controllers\AiAgentController::class, 'testAgent'])->name('api.ai-agent.test');
 

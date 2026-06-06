@@ -162,6 +162,26 @@ class AiAgentController extends Controller
     }
 
     /**
+     * Start the queue worker daemon in the background
+     */
+    public function startDaemon()
+    {
+        try {
+            $basePath = base_path();
+            // This runs the artisan command in the background, ignoring hangups
+            $command = "nohup php {$basePath}/artisan queue:work --daemon > /dev/null 2>&1 &";
+            exec($command);
+            
+            return redirect()->back()
+                ->with('success', 'AI Agent Real-Time Queue Daemon started successfully! The AI will now process messages instantly in the background.');
+        } catch (\Exception $e) {
+            Log::error('AI Agent: Daemon start failed', ['error' => $e->getMessage()]);
+            return redirect()->back()
+                ->with('error', 'Failed to start daemon: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Get training stats (API).
      */
     public function getTrainingStats()
