@@ -56,30 +56,42 @@ class PathaoWebhookController extends Controller
         $orderStatus = $request->input('order_status');
         $eventLower = strtolower($request->input('event') ?? '');
         
-        if (!$consignmentId || (!$orderStatus && !in_array($eventLower, ['webhook_integration', 'issue']))) {
-            return response()->json(['message' => 'Invalid payload: missing consignment_id or order_status'], 400);
+        if (!$consignmentId) {
+            if ($eventLower !== 'webhook_integration') {
+                return response()->json(['message' => 'Invalid payload: missing consignment_id'], 400);
+            }
         }
 
         // Find the order
         $order = Order::where('pathao_consignment_id', $consignmentId)->first();
 
-        if (!$order) {
+        if (!$order && $eventLower !== 'webhook_integration') {
             Log::warning("Pathao Webhook: Order not found for consignment_id: {$consignmentId}");
             return response()->json(['message' => 'Order not found'], 404);
         }
 
-        if ($eventLower === 'issue') {
-            $issueId = $request->input('issue_id') ?? $request->input('id');
-            $commentText = $request->input('issue_description') ?? $request->input('reason') ?? $request->input('comment') ?? json_encode($request->all());
+        $issueId = $request->input('issue_id') ?? $request->input('id') ?? ('issue_' . time());
+        $commentText = $request->input('issue_description') ?? $request->input('reason') ?? $request->input('comment');
 
-            \App\Models\RiderComment::updateOrCreate(
-                ['order_id' => $order->id, 'pathao_issue_id' => $issueId],
-                ['rider_comment' => $commentText, 'status' => 'unread']
-            );
+        // If it's an issue event or it contains a reason/comment, log it
+        if ($order && ($eventLower === 'issue' || !empty($commentText))) {
+            // Default to json if we know it's an issue but text is empty
+            if (empty($commentText) && $eventLower === 'issue') {
+                $commentText = json_encode($request->all());
+            }
+            
+            if (!empty($commentText)) {
+                \App\Models\RiderComment::updateOrCreate(
+                    ['order_id' => $order->id, 'pathao_issue_id' => $issueId],
+                    ['rider_comment' => $commentText, 'status' => 'unread']
+                );
+            }
 
-            return response()->json(['status' => 'success'])
-                             ->setStatusCode(202)
-                             ->header('X-Pathao-Merchant-Webhook-Integration-Secret', $configuredSecret);
+            if ($eventLower === 'issue') {
+                return response()->json(['status' => 'success'])
+                                 ->setStatusCode(202)
+                                 ->header('X-Pathao-Merchant-Webhook-Integration-Secret', $configuredSecret);
+            }
         }
 
         try {
