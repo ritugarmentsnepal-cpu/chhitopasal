@@ -32,10 +32,10 @@ class ProductController extends Controller
             'cost_price' => 'nullable|numeric|min:0',
             'weight_grams' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'required_without:ai_thumbnail_url|image|mimes:jpeg,png,jpg,webp,gif|max:5120', // Thumbnail
+            'image' => 'required_without:ai_thumbnail_url|image|mimes:jpeg,png,jpg,webp,gif|max:20480', // Thumbnail (20MB max)
             'ai_thumbnail_url' => 'nullable|url',
-            'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:10240',
-            'video' => 'nullable|mimes:mp4,webm,mov|max:10240', // Max 10MB video
+            'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:20480', // Gallery (20MB max)
+            'video' => 'nullable|mimes:mp4,webm,mov|max:102400', // Max 100MB video
             'bundles' => 'nullable|array',
             'bundles.*.qty' => 'required_with:bundles|integer|min:1',
             'bundles.*.price' => 'required_with:bundles|numeric|min:0',
@@ -107,10 +107,10 @@ class ProductController extends Controller
             'cost_price' => 'nullable|numeric|min:0',
             'weight_grams' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:20480',
             'ai_thumbnail_url' => 'nullable|url',
-            'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:10240',
-            'video' => 'nullable|mimes:mp4,webm,mov|max:10240',
+            'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:20480',
+            'video' => 'nullable|mimes:mp4,webm,mov|max:102400',
             'bundles' => 'nullable|array',
             'bundles.*.qty' => 'required_with:bundles|integer|min:1',
             'bundles.*.price' => 'required_with:bundles|numeric|min:0',
