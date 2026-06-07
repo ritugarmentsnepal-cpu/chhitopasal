@@ -271,9 +271,9 @@
 
         <!-- Product Grid -->
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8 stagger-grid">
-            <template x-for="(product, index) in filteredProducts" :key="product.id">
+            <template x-for="(product, index) in filteredProducts" :key="product.id + '_' + (product.bundle_qty || 0)">
                 <!-- Outer Card Container -->
-                <article class="bg-white md:bg-[#FF4C4C] rounded-2xl md:rounded-[2.5rem] p-0 md:p-1.5 shadow-sm md:shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 md:hover:-translate-y-2 flex flex-col group cursor-pointer relative border border-gray-100 md:border-none overflow-hidden" @click="window.location.href = '{{ url('product') }}/' + product.slug">
+                <article class="bg-white md:bg-[#FF4C4C] rounded-2xl md:rounded-[2.5rem] p-0 md:p-1.5 shadow-sm md:shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 md:hover:-translate-y-2 flex flex-col group cursor-pointer relative border border-gray-100 md:border-none overflow-hidden" @click="window.location.href = '{{ url('product') }}/' + (product.parent_product_slug || product.slug)">
                     
                     <!-- Badge (Simulated New/Hot) -->
                     <div x-show="index % 3 === 0" class="absolute top-2 right-2 md:top-6 md:right-6 z-20">
@@ -284,6 +284,13 @@
                     <div x-show="index % 5 === 0" class="absolute top-2 left-2 md:top-6 md:left-6 z-20">
                         <span class="bg-yellow-400 text-gray-900 text-[10px] font-black uppercase px-2 py-0.5 md:px-2 md:py-1 rounded-full shadow-sm md:shadow-md md:border md:border-white/50 flex flex-col items-center justify-center leading-none">
                             <span>-20%</span>
+                        </span>
+                    </div>
+                    <!-- Bundle Only Pack Badge -->
+                    <div x-show="product.is_bundle_card" class="absolute top-2 left-2 md:top-6 md:left-6 z-20">
+                        <span class="bg-amber-500 text-white text-[10px] font-black uppercase px-2 py-0.5 md:px-2 md:py-1 rounded-full shadow-sm md:shadow-md flex items-center gap-1 leading-none">
+                            <span>📦</span>
+                            <span x-text="'Pack of ' + product.bundle_qty"></span>
                         </span>
                     </div>
                     
@@ -586,7 +593,8 @@
             <p class="text-gray-500 mb-6 text-sm">Choose the best value for you.</p>
             
             <div class="space-y-3">
-                <!-- Single Piece -->
+                <!-- Single Piece (hidden for bundle_only products) -->
+                <template x-if="!bundleProduct?.bundle_only">
                 <button @click="bundleSelectionOpen = false; if(needsVariants(bundleProduct)) { openVariantModal(bundleProduct, 1, bundleProduct.price, false); } else { processAddToCart(bundleProduct, 1, bundleProduct.price, false, '', ''); }" class="w-full border border-gray-200 bg-white rounded-xl p-4 flex justify-between items-center hover:border-primary/50 hover:bg-red-50 transition text-left group">
                     <div>
                         <span class="block font-display font-bold text-gray-900 text-base">Single Unit</span>
@@ -594,6 +602,7 @@
                     </div>
                     <span class="font-display font-bold text-lg text-gray-900 group-hover:text-primary transition">NPR <span x-text="bundleProduct?.price.toLocaleString()"></span></span>
                 </button>
+                </template>
                 
                 <!-- Bundles -->
                 <template x-for="bundle in bundleProduct?.bundles" :key="bundle.qty">
@@ -926,7 +935,15 @@
                 },
 
                 triggerAddToCart(product) {
-                    if (product.bundles && product.bundles.length > 0) {
+                    // Bundle-only card: add directly with bundle qty and unit price
+                    if (product.is_bundle_card && product.bundle_qty) {
+                        const unitPrice = product.bundle_price / product.bundle_qty;
+                        if (this.needsVariants(product)) {
+                            this.openVariantModal(product, product.bundle_qty, unitPrice, true);
+                        } else {
+                            this.processAddToCart(product, product.bundle_qty, unitPrice, true, '', '');
+                        }
+                    } else if (product.bundles && product.bundles.length > 0) {
                         this.bundleProduct = product;
                         this.bundleSelectionOpen = true;
                     } else if (this.needsVariants(product)) {

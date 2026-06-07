@@ -62,6 +62,11 @@
                             <span class="absolute top-0 right-5 -mt-3 bg-wildOrchid text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
                                 {{ $product->category->name ?? 'Uncategorized' }}
                             </span>
+                            @if($product->bundle_only)
+                                <span class="absolute top-0 left-5 -mt-3 bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                                    📦 Bundle Only
+                                </span>
+                            @endif
                             <h4 class="font-black text-lg mb-1 leading-tight text-gray-900 mt-1">{{ $product->name }}</h4>
                             <p class="text-wildOrchid font-bold text-lg mb-3">Rs.{{ number_format($product->price) }}</p>
                             <p class="text-sm text-gray-500 mb-4 line-clamp-2 flex-1">{{ $product->description }}</p>
@@ -172,6 +177,18 @@
                         </div>
                     </template>
                     <p x-show="bundles.length === 0" class="text-xs text-gray-400 font-medium">No bundles configured. Customers will only be able to buy single pieces.</p>
+                    
+                    <!-- Bundle Only Toggle -->
+                    <div x-show="bundles.length > 0" x-cloak class="mt-4 pt-4 border-t border-gray-100">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="hidden" name="bundle_only" value="0">
+                            <input type="checkbox" name="bundle_only" value="1" class="w-5 h-5 rounded-lg border-gray-300 text-amber-500 focus:ring-amber-500/30 cursor-pointer">
+                            <div>
+                                <span class="font-bold text-gray-900 text-sm group-hover:text-amber-600 transition-colors">Bundle Only Product</span>
+                                <p class="text-xs text-gray-400">Each bundle will be listed as a separate product card on the storefront. Single unit purchase will be disabled.</p>
+                            </div>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Color & Size Variants (Optional) -->
@@ -319,6 +336,18 @@
                                     </div>
                                 </template>
                                 <p x-show="formData.bundles.length === 0" class="text-xs text-gray-400 font-medium">No bundles configured.</p>
+                                
+                                <!-- Bundle Only Toggle - Edit -->
+                                <div x-show="formData.bundles.length > 0" x-cloak class="mt-4 pt-4 border-t border-gray-100">
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="hidden" name="bundle_only" value="0">
+                                        <input type="checkbox" name="bundle_only" value="1" x-model="formData.bundle_only" :checked="formData.bundle_only" class="w-5 h-5 rounded-lg border-gray-300 text-amber-500 focus:ring-amber-500/30 cursor-pointer">
+                                        <div>
+                                            <span class="font-bold text-gray-900 text-sm group-hover:text-amber-600 transition-colors">Bundle Only Product</span>
+                                            <p class="text-xs text-gray-400">Each bundle listed separately on storefront. No single unit option.</p>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
 
                             <!-- Color & Size Variants (Optional) - Edit -->
@@ -430,6 +459,7 @@
                     weight_grams: '',
                     stock: '',
                     bundles: [],
+                    bundle_only: false,
                     color_options: '',
                     size_options: '',
                 },
@@ -444,6 +474,7 @@
                     this.formData.weight_grams = product.weight_grams;
                     this.formData.stock = product.stock;
                     this.formData.bundles = product.bundles || [];
+                    this.formData.bundle_only = product.bundle_only || false;
                     this.formData.color_options = (product.color_options || []).join(', ');
                     this.formData.size_options = (product.size_options || []).join(', ');
                     

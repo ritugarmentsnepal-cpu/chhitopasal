@@ -24,6 +24,7 @@ class Product extends Model
         'additional_images',
         'video_path',
         'bundles',
+        'bundle_only',
         'color_options',
         'size_options',
     ];
@@ -31,6 +32,7 @@ class Product extends Model
     protected $casts = [
         'additional_images' => 'array',
         'bundles' => 'array',
+        'bundle_only' => 'boolean',
         'color_options' => 'array',
         'size_options' => 'array',
     ];

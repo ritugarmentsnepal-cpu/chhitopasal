@@ -39,6 +39,7 @@ class ProductController extends Controller
             'bundles' => 'nullable|array',
             'bundles.*.qty' => 'required_with:bundles|integer|min:2',
             'bundles.*.price' => 'required_with:bundles|numeric|min:0',
+            'bundle_only' => 'nullable|boolean',
             'color_options' => 'nullable|string|max:500',
             'size_options' => 'nullable|string|max:500',
         ]);
@@ -84,6 +85,7 @@ class ProductController extends Controller
             'additional_images' => $additionalImages,
             'video_path' => $videoPath,
             'bundles' => $validated['bundles'] ?? null,
+            'bundle_only' => !empty($validated['bundles']) ? ($validated['bundle_only'] ?? false) : false,
             'color_options' => !empty($validated['color_options']) ? array_map('trim', explode(',', $validated['color_options'])) : null,
             'size_options' => !empty($validated['size_options']) ? array_map('trim', explode(',', $validated['size_options'])) : null,
         ]);
@@ -112,6 +114,7 @@ class ProductController extends Controller
             'bundles' => 'nullable|array',
             'bundles.*.qty' => 'required_with:bundles|integer|min:2',
             'bundles.*.price' => 'required_with:bundles|numeric|min:0',
+            'bundle_only' => 'nullable|boolean',
             'color_options' => 'nullable|string|max:500',
             'size_options' => 'nullable|string|max:500',
         ]);
@@ -125,6 +128,7 @@ class ProductController extends Controller
             'weight_grams' => $validated['weight_grams'],
             'stock' => $validated['stock'],
             'bundles' => $validated['bundles'] ?? null,
+            'bundle_only' => !empty($validated['bundles']) ? ($validated['bundle_only'] ?? false) : false,
             'color_options' => !empty($validated['color_options']) ? array_map('trim', explode(',', $validated['color_options'])) : null,
             'size_options' => !empty($validated['size_options']) ? array_map('trim', explode(',', $validated['size_options'])) : null,
         ];

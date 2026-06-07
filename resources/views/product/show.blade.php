@@ -192,6 +192,11 @@
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <h1 class="text-3xl md:text-4xl font-black text-gray-900 leading-tight mb-1">{{ $product->name }}</h1>
+                        @if($product->bundle_only)
+                            <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-amber-200 mb-1">
+                                📦 Bundle Only — Available in packs
+                            </span>
+                        @endif
                         <span class="text-xs font-medium text-gray-400">{{ $product->category->name ?? 'Uncategorized' }}</span>
                     </div>
                     <div class="flex items-center gap-1 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100 mt-1">
@@ -332,6 +337,8 @@
             
             <div class="space-y-3">
                 <!-- Single Piece -->
+                <!-- Single Piece (hidden for bundle_only products) -->
+                @if(!$product->bundle_only)
                 <button @click="bundleSelectionOpen = false; if(needsVariants(bundleProduct)) { openVariantModal(bundleProduct, 1, bundleProduct.price, false); } else { processAddToCart(bundleProduct, 1, bundleProduct.price, false, '', ''); }" class="w-full border-2 border-gray-200 rounded-2xl p-4 flex justify-between items-center hover:border-mango hover:bg-mango/5 transition text-left group">
                     <div>
                         <span class="block font-black text-gray-900 text-lg">Single Piece</span>
@@ -339,6 +346,7 @@
                     </div>
                     <span class="font-black text-xl text-gray-900 group-hover:text-mango transition">Rs.<span x-text="bundleProduct?.price.toLocaleString()"></span></span>
                 </button>
+                @endif
                 
                 <!-- Bundles -->
                 <template x-for="bundle in bundleProduct?.bundles" :key="bundle.qty">
@@ -557,7 +565,17 @@
                 },
 
                 triggerAddToCart(product) {
-                    if (product.bundles && product.bundles.length > 0) {
+                    if (product.bundle_only && product.bundles && product.bundles.length === 1) {
+                        // Bundle-only with single bundle: skip modal, add directly
+                        const bundle = product.bundles[0];
+                        const qty = parseInt(bundle.qty);
+                        const unitPrice = bundle.price / qty;
+                        if (this.needsVariants(product)) {
+                            this.openVariantModal(product, qty, unitPrice, true);
+                        } else {
+                            this.processAddToCart(product, qty, unitPrice, true, '', '');
+                        }
+                    } else if (product.bundles && product.bundles.length > 0) {
                         this.bundleProduct = product;
                         this.bundleSelectionOpen = true;
                     } else if (this.needsVariants(product)) {
