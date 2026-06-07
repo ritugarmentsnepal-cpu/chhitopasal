@@ -187,10 +187,6 @@
           </div>
           <h2 class="text-4xl sm:text-6xl md:text-7xl font-display font-light tracking-tight mb-6">Flash <span class="font-bold text-white">Sales</span></h2>
           <p class="text-gray-400 text-sm sm:text-base md:text-lg font-light max-w-2xl leading-relaxed mb-8">Curated selections at exceptional value. Discover premium items available for a limited time.</p>
-          <a href="{{ route('frontend.flash-sales') }}" class="group relative inline-flex items-center justify-center px-10 py-4 text-sm font-bold text-white uppercase tracking-widest border border-white/30 hover:border-white transition-colors duration-300 overflow-hidden bg-white/5 backdrop-blur-sm">
-            <span class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></span>
-            <span class="relative z-10 group-hover:text-gray-900 transition-colors duration-300">View Collection</span>
-          </a>
         </div>
       </div>
     @endif
