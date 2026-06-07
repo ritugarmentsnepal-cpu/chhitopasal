@@ -102,7 +102,7 @@
 
         <!-- Add Product Modal -->
         <x-modal name="add-product-modal" focusable>
-            <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="p-8 max-h-[90vh] overflow-y-auto" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; } submitting = true;">
+            <form id="add-product-form" method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="p-8 max-h-[90vh] overflow-y-auto" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; } submitting = true;">
                 @csrf
                 <div class="mb-8">
                     <h2 class="text-2xl font-black text-gray-900 dark:text-white">Add New Product</h2>
@@ -112,19 +112,11 @@
                 <div class="mb-5 relative">
                     <div class="flex justify-between items-center mb-2">
                         <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Product Name</label>
-                        <button type="button" @click="generateDetails('add')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'add'">
-                            <span x-show="generatingAI && generatingMode === 'add'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
-                            <span x-show="!(generatingAI && generatingMode === 'add')">✨</span>
-                            <span x-text="generatingAI && generatingMode === 'add' ? 'Generating...' : 'AI Generate Details'"></span>
-                        </button>
                     </div>
-                    <input name="name" id="add-name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required placeholder="Enter a rough name (e.g. Blue Shirt) then click AI Generate" />
+                    <input name="name" id="add-name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required placeholder="Enter product name" />
                 </div>
 
-                <div class="mb-5">
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Description</label>
-                    <textarea name="description" id="add-desc" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
-                </div>
+
 
                 <div class="mb-5">
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category</label>
@@ -207,6 +199,18 @@
                     </div>
                 </div>
 
+                <div class="mb-5 relative">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Description</label>
+                        <button type="button" @click="generateDetails('add')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'add'">
+                            <span x-show="generatingAI && generatingMode === 'add'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
+                            <span x-show="!(generatingAI && generatingMode === 'add')">✨</span>
+                            <span x-text="generatingAI && generatingMode === 'add' ? 'Generating...' : 'AI Generate Description'"></span>
+                        </button>
+                    </div>
+                    <textarea name="description" id="add-desc" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
+                </div>
+
                 <!-- Media Uploads -->
                 <div class="space-y-4 mb-8">
                     <h3 class="font-bold text-gray-900 border-b border-gray-100 pb-2">Media Assets</h3>
@@ -259,7 +263,7 @@
                 
                 <div x-show="editModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
                     
-                    <form :action="`{{ url('products') }}/${editingProduct?.id}`" method="POST" enctype="multipart/form-data">
+                    <form id="edit-product-form" :action="`{{ url('products') }}/${editingProduct?.id}`" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         
@@ -272,19 +276,11 @@
                             <div class="mb-5 relative">
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Product Name</label>
-                                    <button type="button" @click="generateDetails('edit')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'edit'">
-                                        <span x-show="generatingAI && generatingMode === 'edit'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
-                                        <span x-show="!(generatingAI && generatingMode === 'edit')">✨</span>
-                                        <span x-text="generatingAI && generatingMode === 'edit' ? 'Generating...' : 'AI Generate Details'"></span>
-                                    </button>
                                 </div>
                                 <input name="name" x-model="formData.name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
                             </div>
 
-                            <div class="mb-5">
-                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Description</label>
-                                <textarea name="description" x-model="formData.description" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
-                            </div>
+
 
                             <div class="mb-5">
                                 <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category</label>
@@ -364,6 +360,18 @@
                                         <input name="size_options" x-model="formData.size_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 text-sm font-medium transition-colors" placeholder="e.g. S, M, L, XL" />
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="mb-5 relative">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Description</label>
+                                    <button type="button" @click="generateDetails('edit')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'edit'">
+                                        <span x-show="generatingAI && generatingMode === 'edit'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
+                                        <span x-show="!(generatingAI && generatingMode === 'edit')">✨</span>
+                                        <span x-text="generatingAI && generatingMode === 'edit' ? 'Generating...' : 'AI Generate Description'"></span>
+                                    </button>
+                                </div>
+                                <textarea name="description" x-model="formData.description" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
                             </div>
 
                             <!-- Media Uploads Edit -->
@@ -548,29 +556,24 @@
                 generatingMode: null,
                 
                 generateDetails(mode) {
-                    let nameInput, descInput, fileInput;
+                    let form, descInput;
                     
                     if (mode === 'add') {
-                        nameInput = document.getElementById('add-name');
+                        form = document.getElementById('add-product-form');
                         descInput = document.getElementById('add-desc');
-                        fileInput = document.getElementById('add-image');
                     } else {
-                        nameInput = { value: this.formData.name };
-                        fileInput = document.getElementById('edit-image');
+                        form = document.getElementById('edit-product-form');
                     }
 
-                    if (!nameInput.value || nameInput.value.trim() === '') {
-                        alert('Please enter a rough Product Name first before generating.');
+                    let formData = new FormData(form);
+
+                    let nameVal = formData.get('name');
+                    if (!nameVal || nameVal.trim() === '') {
+                        alert('Please enter a Product Name and other details first before generating.');
                         return;
                     }
                     
-                    let formData = new FormData();
-                    formData.append('name', nameInput.value.trim());
                     formData.append('_token', '{{ csrf_token() }}');
-                    
-                    if (fileInput && fileInput.files && fileInput.files.length > 0) {
-                        formData.append('image', fileInput.files[0]);
-                    }
 
                     this.generatingAI = true;
                     this.generatingMode = mode;
@@ -590,10 +593,8 @@
                         }
                         
                         if (mode === 'add') {
-                            nameInput.value = data.title;
                             descInput.value = data.description;
                         } else {
-                            this.formData.name = data.title;
                             this.formData.description = data.description;
                         }
                     })

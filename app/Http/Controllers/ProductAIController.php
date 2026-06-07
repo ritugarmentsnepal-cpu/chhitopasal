@@ -25,11 +25,23 @@ class ProductAIController extends Controller
         }
 
         $productName = $request->input('name');
+        $price = $request->input('price');
+        $color = $request->input('color_options');
+        $size = $request->input('size_options');
+        $weight = $request->input('weight_grams');
         
-        $prompt = "You are an expert e-commerce copywriter. I need a compelling product title and a detailed, persuasive product description for my online store.\n";
-        $prompt .= "The rough product name is: \"{$productName}\".\n";
-        $prompt .= "Please write a catchy, SEO-friendly Title (max 60 characters) and a detailed Description (100-300 words). Focus on benefits, features, and appealing language.\n";
-        $prompt .= "Respond ONLY with a valid JSON object matching this exact structure: {\"title\": \"Your Title\", \"description\": \"Your description here\"}. Do not include markdown code blocks around the JSON.";
+        $prompt = "You are an expert e-commerce copywriter. I need a compelling, persuasive product description for my online store in Nepal.\n";
+        $prompt .= "Product Details:\n";
+        $prompt .= "- Title: \"{$productName}\"\n";
+        if (!empty($price)) $prompt .= "- Price: Rs. {$price}\n";
+        if (!empty($color)) $prompt .= "- Colors available: {$color}\n";
+        if (!empty($size)) $prompt .= "- Sizes available: {$size}\n";
+        if (!empty($weight)) $prompt .= "- Weight: {$weight}g\n";
+        
+        $prompt .= "\nWrite a detailed description structured as a list of pointed highlights in brief, rather than a long essay.\n";
+        $prompt .= "Use all the information provided above (title, price, colour, size, weight, fabric if evident from the image or title, etc.) to enrich the description.\n";
+        $prompt .= "Also, naturally incorporate a few common Nepali words or phrases (like 'Ramro', 'Sasto', 'Majjako', 'Dammi', etc.) to appeal to the local Nepali audience.\n";
+        $prompt .= "Respond ONLY with a valid JSON object matching this exact structure: {\"description\": \"Your description here\"}. Do not include markdown code blocks around the JSON.";
 
         $content = [
             [
@@ -105,13 +117,12 @@ class ProductAIController extends Controller
 
             $parsedData = json_decode($messageContent, true);
 
-            if (json_last_error() !== JSON_ERROR_NONE || !isset($parsedData['title']) || !isset($parsedData['description'])) {
+            if (json_last_error() !== JSON_ERROR_NONE || !isset($parsedData['description'])) {
                 Log::error('OpenRouter JSON Parse Error: ' . $messageContent);
                 return response()->json(['error' => 'AI returned malformed data. Please try again.'], 500);
             }
 
             return response()->json([
-                'title' => $parsedData['title'],
                 'description' => $parsedData['description']
             ]);
 
