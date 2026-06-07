@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/flash-sales', [HomeController::class, 'flashSales'])->name('frontend.flash-sales');
 Route::get('/company-profile', [HomeController::class, 'companyProfile'])->name('company.profile');
 Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('privacy.policy');
 Route::get('/product/{slug}', [HomeController::class, 'show'])->name('product.show');
@@ -60,6 +61,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/products', [\App\Http\Controllers\ProductController::class, 'store'])->name('products.store');
         Route::put('/products/{product}', [\App\Http\Controllers\ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [\App\Http\Controllers\ProductController::class, 'destroy'])->name('products.destroy');
+        
+        // Flash Sales
+        Route::get('/admin/flash-sales', [\App\Http\Controllers\AdminFlashSaleController::class, 'index'])->name('flash-sales.index');
+        Route::post('/admin/flash-sales/{product}', [\App\Http\Controllers\AdminFlashSaleController::class, 'update'])->name('flash-sales.update');
     });
 
     // Categories — permission:categories

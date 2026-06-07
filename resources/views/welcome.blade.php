@@ -251,6 +251,47 @@
         </div>
     </section>
 
+    <!-- Flash Sales Section -->
+    @if(isset($flashSaleProducts) && $flashSaleProducts->count() > 0)
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8 relative z-20">
+        <div class="bg-gradient-to-r from-[#FF4C4C] to-red-600 rounded-[2rem] p-6 sm:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative">
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-black/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="flex-1 relative z-10 text-center md:text-left">
+                <span class="inline-block bg-white text-[#FF4C4C] text-[10px] sm:text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full mb-3 shadow-sm animate-pulse">⚡ Flash Sale Active</span>
+                <h2 class="text-3xl sm:text-4xl font-display font-black leading-tight mb-2 drop-shadow-sm">Special Discounts</h2>
+                <p class="text-white/90 text-sm sm:text-base font-medium max-w-md">Grab these exclusive deals before they are gone. Limited time offer!</p>
+            </div>
+            
+            <div class="relative z-10 w-full md:w-auto">
+                <a href="{{ route('frontend.flash-sales') }}" class="block w-full sm:w-auto text-center bg-gray-900 text-white font-bold px-8 py-4 rounded-full shadow-lg hover:bg-gray-800 hover:scale-105 active:scale-95 transition-all">
+                    View All Flash Sales
+                </a>
+            </div>
+        </div>
+        
+        <!-- Flash Sale Preview Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+            @foreach($flashSaleProducts->take(4) as $product)
+                <div class="bg-white rounded-2xl p-3 shadow-sm border border-red-100 flex flex-col relative group cursor-pointer hover:shadow-md transition-shadow" @click="window.location.href = '{{ url('product') }}/{{ $product->parent_product_slug ?: $product->slug }}{{ isset($product->bundle_qty) ? '?bundle=' . $product->bundle_qty : '' }}'">
+                    <span class="absolute top-3 left-3 bg-[#FF4C4C] text-white text-[10px] font-black uppercase px-2 py-1 rounded-md z-10 shadow-sm animate-bounce">⚡ Flash</span>
+                    <div class="aspect-square rounded-xl bg-gray-50 mb-3 overflow-hidden">
+                        <img src="{{ asset('storage/' . $product->image_path) }}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <div class="flex flex-col flex-1">
+                        <h3 class="font-bold text-gray-900 text-sm line-clamp-1 mb-1">{{ $product->name }}</h3>
+                        <div class="mt-auto flex items-end gap-2">
+                            <span class="font-black text-[#FF4C4C] text-lg leading-none">Rs.{{ number_format($product->flash_sale_price) }}</span>
+                            <span class="text-xs text-gray-400 line-through leading-none mb-0.5">Rs.{{ number_format($product->price) }}</span>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
     <!-- 5. Product Grid (New Arrivals) -->
     <main id="shop" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-24">
         

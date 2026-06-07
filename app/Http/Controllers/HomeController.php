@@ -45,8 +45,18 @@ class HomeController extends Controller
         }
         $products = $displayProducts;
 
+        $flashSaleProducts = Product::with('category')->where('is_flash_sale', true)->latest()->take(10)->get()->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
+        
         $settings = Setting::pluck('value', 'key')->toArray();
-        return view('welcome', compact('products', 'categories', 'settings'));
+        return view('welcome', compact('products', 'categories', 'settings', 'flashSaleProducts'));
+    }
+
+    public function flashSales()
+    {
+        $categories = Category::all();
+        $flashSaleProducts = Product::with('category')->where('is_flash_sale', true)->latest()->get()->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
+        $settings = Setting::pluck('value', 'key')->toArray();
+        return view('flash-sales', compact('flashSaleProducts', 'categories', 'settings'));
     }
 
 

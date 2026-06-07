@@ -71,6 +71,10 @@
                         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('products.*') ? 'text-white' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                         <span x-show="!sidebarCollapsed" x-transition.opacity>Products</span>
                     </a>
+                    <a href="{{ route('flash-sales.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('flash-sales.*') ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg shadow-gray-900/20' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Flash Sales">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('flash-sales.*') ? 'text-white' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span x-show="!sidebarCollapsed" x-transition.opacity>Flash Sales</span>
+                    </a>
                     @endif
                     @if(auth()->user()->hasPermission('categories'))
                     <a href="{{ route('categories.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('categories.*') ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg shadow-gray-900/20' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Categories">

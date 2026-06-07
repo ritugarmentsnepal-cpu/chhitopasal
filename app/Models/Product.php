@@ -27,6 +27,8 @@ class Product extends Model
         'bundle_only',
         'color_options',
         'size_options',
+        'is_flash_sale',
+        'flash_sale_price',
     ];
 
     protected $casts = [
@@ -35,6 +37,7 @@ class Product extends Model
         'bundle_only' => 'boolean',
         'color_options' => 'array',
         'size_options' => 'array',
+        'is_flash_sale' => 'boolean',
     ];
 
     /**
