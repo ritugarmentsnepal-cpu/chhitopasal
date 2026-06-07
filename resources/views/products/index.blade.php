@@ -573,6 +573,10 @@
                         return;
                     }
                     
+                    // Remove _method field if present (from the edit form's @method('PUT')),
+                    // otherwise Laravel will treat this fetch request as a PUT and return 405.
+                    formData.delete('_method');
+                    
                     formData.append('_token', '{{ csrf_token() }}');
 
                     this.generatingAI = true;
