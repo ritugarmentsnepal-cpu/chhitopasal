@@ -106,14 +106,19 @@
 
     <!-- Flash Sales Header Section -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-40 md:mt-40 mb-8 relative z-20">
-        <div class="bg-gradient-to-r from-[#FF4C4C] to-red-600 rounded-[2rem] p-8 sm:p-12 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative text-center">
-            <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-black/10 rounded-full blur-3xl pointer-events-none"></div>
+        <!-- Formal Banner -->
+        <div class="bg-gray-900 border border-gray-800 p-8 sm:p-16 text-white flex flex-col items-center text-center relative shadow-2xl overflow-hidden">
+            <!-- Subtle elegant pattern/texture -->
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] mix-blend-overlay pointer-events-none"></div>
             
-            <div class="relative z-10 mx-auto max-w-2xl">
-                <span class="inline-block bg-white text-[#FF4C4C] text-[12px] sm:text-sm font-black uppercase tracking-wider px-4 py-1.5 rounded-full mb-4 shadow-sm animate-pulse">⚡ Special Deals</span>
-                <h1 class="text-4xl sm:text-5xl font-display font-black leading-tight mb-4 drop-shadow-sm">Flash Sales</h1>
-                <p class="text-white/90 text-base sm:text-lg font-medium">Discover exclusive discounts on top products. Hurry up before they run out!</p>
+            <div class="relative z-10 mx-auto max-w-2xl flex flex-col items-center">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="h-[1px] w-12 bg-red-500"></div>
+                    <span class="text-red-400 text-xs font-bold uppercase tracking-[0.2em]">Exclusive Event</span>
+                    <div class="h-[1px] w-12 bg-red-500"></div>
+                </div>
+                <h1 class="text-4xl sm:text-6xl font-display font-light tracking-tight mb-4">Flash <span class="font-bold text-white">Sales</span></h1>
+                <p class="text-gray-400 text-base sm:text-lg font-light leading-relaxed">Discover exclusive discounts on premium products. Carefully curated, available for a strictly limited time.</p>
             </div>
         </div>
     </section>
@@ -140,34 +145,27 @@
         </div>
         @else
         <!-- Product Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8 stagger-grid">
+        <!-- Product Grid (Formal) -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200 border border-gray-200 mt-8 shadow-sm">
             @foreach($flashSaleProducts as $product)
-                <!-- Outer Card Container -->
-                <article class="bg-white md:bg-white rounded-2xl md:rounded-[2.5rem] p-0 md:p-1.5 shadow-sm md:shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 md:hover:-translate-y-2 flex flex-col group cursor-pointer relative border border-gray-100 md:border-none overflow-hidden border border-red-100" @click="window.location.href = '{{ url('product') }}/{{ $product->parent_product_slug ?: $product->slug }}{{ isset($product->bundle_qty) ? '?bundle=' . $product->bundle_qty : '' }}'">
-                    
-                    <div class="absolute top-2 left-2 md:top-6 md:left-6 z-20">
-                        <span class="bg-[#FF4C4C] text-white text-[10px] md:text-[10px] font-black uppercase px-2 py-0.5 md:px-3 md:py-1 rounded-full shadow-sm md:shadow-md flex flex-col items-center justify-center leading-none animate-pulse">
-                            <span>⚡ Flash</span>
-                        </span>
+                <div class="bg-white p-6 relative group cursor-pointer hover:bg-gray-50 transition-colors duration-500" @click="window.location.href = '{{ url('product') }}/{{ $product->parent_product_slug ?: $product->slug }}{{ isset($product->bundle_qty) ? '?bundle=' . $product->bundle_qty : '' }}'">
+                    <div class="absolute top-4 left-4 z-10">
+                        <span class="bg-gray-900 text-white text-[9px] font-bold uppercase tracking-widest px-3 py-1">Limited</span>
                     </div>
                     
-                    <!-- Inner Image Container -->
-                    <div class="relative bg-gray-50 md:bg-gray-50 md:rounded-[2rem] overflow-hidden w-full aspect-square md:aspect-[4/5] flex items-center justify-center p-4 md:p-6 transition-all duration-300 md:group-hover:bg-gray-100">
-                        <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-sm md:drop-shadow-lg" loading="lazy">
+                    <div class="aspect-[4/5] bg-transparent mb-6 overflow-hidden relative flex items-center justify-center">
+                        <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-in-out" loading="lazy">
                     </div>
                     
-                    <!-- Text Content -->
-                    <div class="p-3 md:p-5 flex flex-col flex-grow relative">
-                        <div class="w-full flex flex-col mb-4 md:items-center">
-                            <h3 class="font-display font-bold text-gray-900 text-[13px] md:text-lg line-clamp-2 md:line-clamp-1 mb-1 leading-snug">{{ $product->name }}</h3>
-                            <p class="text-gray-400 text-[10px] md:text-xs font-medium md:uppercase md:tracking-wider line-clamp-1">{{ $product->category ? $product->category->name : 'Accessories' }}</p>
-                        </div>
-                        <div class="mt-auto flex justify-between items-center md:justify-center gap-2">
-                            <span class="text-gray-400 font-bold text-xs md:text-sm line-through">Rs.{{ number_format($product->original_price) }}</span>
-                            <span class="text-[#FF4C4C] font-black text-sm md:text-xl md:px-6 md:py-1.5 md:bg-red-50 md:rounded-full">Rs.{{ number_format($product->price) }}</span>
+                    <div class="flex flex-col text-center">
+                        <h3 class="font-bold text-gray-900 text-xs sm:text-sm uppercase tracking-wide line-clamp-1 mb-2">{{ $product->name }}</h3>
+                        <p class="text-gray-400 text-[10px] sm:text-xs font-medium uppercase tracking-wider line-clamp-1 mb-3">{{ $product->category ? $product->category->name : 'Accessories' }}</p>
+                        <div class="flex justify-center items-center gap-3">
+                            <span class="text-[10px] sm:text-xs text-gray-400 line-through tracking-wider">Rs.{{ number_format($product->original_price) }}</span>
+                            <span class="font-bold text-red-600 text-sm sm:text-base tracking-wider">Rs.{{ number_format($product->price) }}</span>
                         </div>
                     </div>
-                </article>
+                </div>
             @endforeach
         </div>
         @endif
