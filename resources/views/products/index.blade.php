@@ -1,617 +1,617 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-black text-2xl text-gray-900 dark:text-white leading-tight tracking-tight">
-                {{ __('Products Manager') }}
-            </h2>
-            <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-product-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:bg-gray-800 transition duration-150 active:scale-95 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                <span class="hidden sm:inline">Add Product</span>
-            </button>
-        </div>
-    </x-slot>
+  <x-slot name="header">
+    <div class="flex items-center justify-between">
+      <h2 class="font-black text-2xl text-gray-900 leading-tight tracking-tight">
+        {{ __('Products Manager') }}
+      </h2>
+      <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-product-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:bg-gray-800 transition duration-150 active:scale-95 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span class="hidden sm:inline">Add Product</span>
+      </button>
+    </div>
+  </x-slot>
 
-    <div class="py-6" x-data="productManager()">
-        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            
-            @if (session('success'))
-                <div class="mb-6 bg-green-50 text-green-700 border border-green-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  <div class="py-6" x-data="productManager()">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+      
+      @if (session('success'))
+        <div class="mb-6 bg-green-50 text-green-700 border border-green-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="font-bold">{{ session('success') }}</span>
+        </div>
+      @endif
+
+      @if ($errors->any())
+        <div class="mb-6 bg-red-50 text-red-700 border border-red-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
+          <ul class="list-disc pl-5 font-bold">
+            @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+            @endforeach
+          </ul>
+        </div>
+      @endif
+
+      <div class="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+        @foreach($products as $product)
+          <div class="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col border border-gray-100 hover:shadow-lg transition-shadow group">
+            <div class="aspect-[4/5] bg-gray-50 relative overflow-hidden">
+              @if($product->image_path)
+                <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+              @else
+                <div class="absolute inset-0 flex items-center justify-center text-gray-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              @endif
+              <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-2.5 py-1 rounded-lg shadow-sm text-xs font-black text-gray-900 border border-gray-100 flex gap-2 items-center">
+                @if($product->video_path)
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-wildOrchid" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" /></svg>
+                @endif
+                @if($product->additional_images && count($product->additional_images) > 0)
+                  <span class="text-gray-500 font-bold">+{{ count($product->additional_images) }}</span>
+                @endif
+                <span>{{ $product->stock }} in stock</span>
+              </div>
+            </div>
+            <div class="p-5 flex-1 flex flex-col relative">
+              <span class="absolute top-0 right-5 -mt-3 bg-wildOrchid text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
+                {{ $product->category->name ?? 'Uncategorized' }}
+              </span>
+              @if($product->bundle_only)
+                <span class="absolute top-0 left-5 -mt-3 bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                  📦 Bundle Only
+                </span>
+              @endif
+              <h4 class="font-black text-lg mb-1 leading-tight text-gray-900 mt-1">{{ $product->name }}</h4>
+              <p class="text-wildOrchid font-bold text-lg mb-3">Rs.{{ number_format($product->price) }}</p>
+              <p class="text-sm text-gray-500 mb-4 line-clamp-2 flex-1">{{ $product->description }}</p>
+              
+              <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between">
+                <button type="button" @click="openEditModal({{ $product }})" class="text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 text-sm font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  Edit
+                </button>
+                <form method="POST" action="{{ route('products.destroy', $product) }}" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit" class="text-red-500 hover:text-red-700 hover:bg-red-50 text-sm font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    <span class="font-bold">{{ session('success') }}</span>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="mb-6 bg-red-50 text-red-700 border border-red-100 rounded-2xl px-6 py-4 shadow-sm flex items-center gap-3">
-                    <ul class="list-disc pl-5 font-bold">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <div class="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
-                @foreach($products as $product)
-                    <div class="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col border border-gray-100 hover:shadow-lg transition-shadow group">
-                        <div class="aspect-[4/5] bg-gray-50 relative overflow-hidden">
-                            @if($product->image_path)
-                                <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                            @else
-                                <div class="absolute inset-0 flex items-center justify-center text-gray-300">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                            @endif
-                            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-2.5 py-1 rounded-lg shadow-sm text-xs font-black text-gray-900 border border-gray-100 flex gap-2 items-center">
-                                @if($product->video_path)
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-wildOrchid" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" /></svg>
-                                @endif
-                                @if($product->additional_images && count($product->additional_images) > 0)
-                                    <span class="text-gray-500 font-bold">+{{ count($product->additional_images) }}</span>
-                                @endif
-                                <span>{{ $product->stock }} in stock</span>
-                            </div>
-                        </div>
-                        <div class="p-5 flex-1 flex flex-col relative">
-                            <span class="absolute top-0 right-5 -mt-3 bg-wildOrchid text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
-                                {{ $product->category->name ?? 'Uncategorized' }}
-                            </span>
-                            @if($product->bundle_only)
-                                <span class="absolute top-0 left-5 -mt-3 bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
-                                    📦 Bundle Only
-                                </span>
-                            @endif
-                            <h4 class="font-black text-lg mb-1 leading-tight text-gray-900 mt-1">{{ $product->name }}</h4>
-                            <p class="text-wildOrchid font-bold text-lg mb-3">Rs.{{ number_format($product->price) }}</p>
-                            <p class="text-sm text-gray-500 mb-4 line-clamp-2 flex-1">{{ $product->description }}</p>
-                            
-                            <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between">
-                                <button type="button" @click="openEditModal({{ $product }})" class="text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 text-sm font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                    Edit
-                                </button>
-                                <form method="POST" action="{{ route('products.destroy', $product) }}" onsubmit="return confirm('Are you sure you want to delete this product?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:text-red-700 hover:bg-red-50 text-sm font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Delete
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
+                    Delete
+                  </button>
+                </form>
+              </div>
             </div>
-            
-            {{-- PERF-BUG-01: Pagination links --}}
-            <div class="mt-6">
-                {{ $products->links() }}
-            </div>
-        </div>
-
-        <!-- Add Product Modal -->
-        <x-modal name="add-product-modal" focusable>
-            <form id="add-product-form" method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="p-8 max-h-[90vh] overflow-y-auto" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; } submitting = true;">
-                @csrf
-                <div class="mb-8">
-                    <h2 class="text-2xl font-black text-gray-900 dark:text-white">Add New Product</h2>
-                    <p class="text-sm text-gray-500 mt-1">Enter details for the new inventory item.</p>
-                </div>
-                
-                <div class="mb-5 relative">
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Product Name</label>
-                    </div>
-                    <input name="name" id="add-name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required placeholder="Enter product name" />
-                </div>
-
-
-
-                <div class="mb-5">
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category</label>
-                    <select name="category_id" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
-                        <option value="" disabled selected>-- Select Category --</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-5 mb-5">
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Selling Price (Rs.)</label>
-                        <input name="price" type="number" step="0.01" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Cost Price (Rs.)</label>
-                        <input name="cost_price" type="number" step="0.01" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" placeholder="0" />
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Weight (g)</label>
-                        <input name="weight_grams" type="number" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Stock</label>
-                        <input name="stock" type="number" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
-                    </div>
-                </div>
-
-                <div x-data="{ bundles: [] }" class="mb-5 border border-gray-200 rounded-2xl p-5 bg-white">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-gray-900">Product Bundles (Optional)</h3>
-                        <button type="button" @click="bundles.push({qty: '', price: ''})" class="text-xs bg-mango text-gray-900 font-bold px-3 py-1.5 rounded-lg hover:bg-[#ffdf8c] shadow-sm">+ Add Bundle</button>
-                    </div>
-                    
-                    <template x-for="(bundle, index) in bundles" :key="index">
-                        <div class="flex gap-4 mb-3 items-end">
-                            <div class="flex-1">
-                                <label class="block text-xs font-bold text-gray-500 mb-1">Bundle Quantity</label>
-                                <input type="number" :name="`bundles[${index}][qty]`" x-model="bundle.qty" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-2 text-sm" placeholder="e.g. 3" required>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-xs font-bold text-gray-500 mb-1">Total Bundle Price (Rs.)</label>
-                                <input type="number" step="0.01" :name="`bundles[${index}][price]`" x-model="bundle.price" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-2 text-sm" placeholder="e.g. 2500" required>
-                            </div>
-                            <button type="button" @click="bundles.splice(index, 1)" class="bg-red-50 text-red-500 hover:bg-red-100 p-2.5 rounded-xl mb-[1px]">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                            </button>
-                        </div>
-                    </template>
-                    <p x-show="bundles.length === 0" class="text-xs text-gray-400 font-medium">No bundles configured. Customers will only be able to buy single pieces.</p>
-                    
-                    <!-- Bundle Only Toggle -->
-                    <div x-show="bundles.length > 0" x-cloak class="mt-4 pt-4 border-t border-gray-100">
-                        <label class="flex items-center gap-3 cursor-pointer group">
-                            <input type="hidden" name="bundle_only" value="0">
-                            <input type="checkbox" name="bundle_only" value="1" class="w-5 h-5 rounded-lg border-gray-300 text-amber-500 focus:ring-amber-500/30 cursor-pointer">
-                            <div>
-                                <span class="font-bold text-gray-900 text-sm group-hover:text-amber-600 transition-colors">Bundle Only Product</span>
-                                <p class="text-xs text-gray-400">Each bundle will be listed as a separate product card on the storefront. Single unit purchase will be disabled.</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Color & Size Variants (Optional) -->
-                <div class="mb-5 border border-gray-200 rounded-2xl p-5 bg-white">
-                    <h3 class="font-bold text-gray-900 mb-1">Colour & Size Variants <span class="text-xs text-gray-400 font-medium">(Optional)</span></h3>
-                    <p class="text-xs text-gray-400 mb-4">Enter comma-separated values. Leave blank if no variants.</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Colour Options</label>
-                            <input name="color_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 text-sm font-medium transition-colors" placeholder="e.g. Red, Blue, Black" />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Size Options</label>
-                            <input name="size_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 text-sm font-medium transition-colors" placeholder="e.g. S, M, L, XL" />
-                        </div>
-                    </div>
-                </div>
-
-
-                <!-- Media Uploads -->
-                <div class="space-y-4 mb-8">
-                    <h3 class="font-bold text-gray-900 border-b border-gray-100 pb-2">Media Assets</h3>
-                    
-                    <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 relative">
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Primary Thumbnail Image (Required)</label>
-                            <button type="button" @click="generateAIThumbnails('add')" class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingThumbnails && generatingThumbnailMode === 'add'">
-                                <span x-show="generatingThumbnails && generatingThumbnailMode === 'add'" class="animate-spin inline-block w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full"></span>
-                                <span x-show="!(generatingThumbnails && generatingThumbnailMode === 'add')">✨</span>
-                                <span x-text="(generatingThumbnails && generatingThumbnailMode === 'add') ? 'Generating...' : 'Enhance with AI'"></span>
-                            </button>
-                        </div>
-                        <p class="text-xs text-gray-500 mb-3">This is the main image shown on the grid. Select a raw image, then click Enhance with AI.</p>
-                        
-                        <input type="hidden" name="ai_thumbnail_url" id="ai_image_url_add">
-                        <div id="add_thumbnail_preview_container" style="display:none;" class="mb-3 relative inline-block">
-                            <img id="add_thumbnail_preview" src="" class="h-24 w-24 object-cover rounded-xl shadow-sm border border-gray-200">
-                            <button type="button" onclick="document.getElementById('ai_image_url_add').value=''; document.getElementById('add_thumbnail_preview_container').style.display='none';" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-600">&times;</button>
-                        </div>
-
-                        <input type="file" name="image" id="add-image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
-                    </div>
-
-                    <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Additional Gallery Images (Optional)</label>
-                        <p class="text-xs text-gray-500 mb-3">Select multiple files at once.</p>
-                        <input type="file" name="additional_images[]" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
-                    </div>
-
-                    <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Product Video (Optional)</label>
-                        <p class="text-xs text-gray-500 mb-3">Max 10MB (mp4, webm).</p>
-                        <input type="file" name="video" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="video/mp4,video/webm,video/quicktime">
-                    </div>
-                </div>
-
-                <div class="mb-5 relative mt-4">
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Description</label>
-                        <button type="button" @click="generateDetails('add')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'add'">
-                            <span x-show="generatingAI && generatingMode === 'add'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
-                            <span x-show="!(generatingAI && generatingMode === 'add')">✨</span>
-                            <span x-text="generatingAI && generatingMode === 'add' ? 'Generating...' : 'AI Generate Description'"></span>
-                        </button>
-                    </div>
-                    <textarea name="description" id="add-desc" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
-                </div>
-
-                <div class="flex justify-end gap-3 border-t border-gray-100 pt-6">
-                    <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
-                    <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800 active:scale-95'" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] transition"><span x-show="!submitting">Save Product</span><span x-show="submitting">Saving...</span></button>
-                </div>
-            </form>
-        </x-modal>
-
-        <!-- Edit Product Modal -->
-        <div x-show="editModalOpen" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div x-show="editModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="closeEditModal()"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                
-                <div x-show="editModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
-                    
-                    <form id="edit-product-form" :action="`{{ url('products') }}/${editingProduct?.id}`" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-                        
-                        <div class="px-8 py-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                            <h3 class="text-xl font-black text-gray-900 dark:text-white">Edit Product</h3>
-                            <button type="button" @click="closeEditModal()" class="text-gray-400 hover:text-gray-900"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-                        </div>
-
-                        <div class="p-8 max-h-[70vh] overflow-y-auto">
-                            <div class="mb-5 relative">
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Product Name</label>
-                                </div>
-                                <input name="name" x-model="formData.name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
-                            </div>
-
-
-
-                            <div class="mb-5">
-                                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category</label>
-                                <select name="category_id" x-model="formData.category_id" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-5 mb-5">
-                                <div>
-                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Selling Price (Rs.)</label>
-                                    <input name="price" x-model="formData.price" type="number" step="0.01" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Cost Price (Rs.)</label>
-                                    <input name="cost_price" x-model="formData.cost_price" type="number" step="0.01" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Weight (g)</label>
-                                    <input name="weight_grams" x-model="formData.weight_grams" type="number" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Stock</label>
-                                    <input name="stock" x-model="formData.stock" type="number" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
-                                </div>
-                            </div>
-
-                            <div class="mb-5 border border-gray-200 rounded-2xl p-5 bg-white">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h3 class="font-bold text-gray-900">Product Bundles</h3>
-                                    <button type="button" @click="formData.bundles.push({qty: '', price: ''})" class="text-xs bg-mango text-gray-900 font-bold px-3 py-1.5 rounded-lg hover:bg-[#ffdf8c] shadow-sm">+ Add Bundle</button>
-                                </div>
-                                
-                                <template x-for="(bundle, index) in formData.bundles" :key="index">
-                                    <div class="flex gap-4 mb-3 items-end">
-                                        <div class="flex-1">
-                                            <label class="block text-xs font-bold text-gray-500 mb-1">Bundle Quantity</label>
-                                            <input type="number" :name="`bundles[${index}][qty]`" x-model="bundle.qty" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-2 text-sm" placeholder="e.g. 3" required>
-                                        </div>
-                                        <div class="flex-1">
-                                            <label class="block text-xs font-bold text-gray-500 mb-1">Total Bundle Price (Rs.)</label>
-                                            <input type="number" step="0.01" :name="`bundles[${index}][price]`" x-model="bundle.price" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-2 text-sm" placeholder="e.g. 2500" required>
-                                        </div>
-                                        <button type="button" @click="formData.bundles.splice(index, 1)" class="bg-red-50 text-red-500 hover:bg-red-100 p-2.5 rounded-xl mb-[1px]">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                                        </button>
-                                    </div>
-                                </template>
-                                <p x-show="formData.bundles.length === 0" class="text-xs text-gray-400 font-medium">No bundles configured.</p>
-                                
-                                <!-- Bundle Only Toggle - Edit -->
-                                <div x-show="formData.bundles.length > 0" x-cloak class="mt-4 pt-4 border-t border-gray-100">
-                                    <label class="flex items-center gap-3 cursor-pointer group">
-                                        <input type="hidden" name="bundle_only" value="0">
-                                        <input type="checkbox" name="bundle_only" value="1" x-model="formData.bundle_only" :checked="formData.bundle_only" class="w-5 h-5 rounded-lg border-gray-300 text-amber-500 focus:ring-amber-500/30 cursor-pointer">
-                                        <div>
-                                            <span class="font-bold text-gray-900 text-sm group-hover:text-amber-600 transition-colors">Bundle Only Product</span>
-                                            <p class="text-xs text-gray-400">Each bundle listed separately on storefront. No single unit option.</p>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Color & Size Variants (Optional) - Edit -->
-                            <div class="mb-5 border border-gray-200 rounded-2xl p-5 bg-white">
-                                <h3 class="font-bold text-gray-900 mb-1">Colour & Size Variants <span class="text-xs text-gray-400 font-medium">(Optional)</span></h3>
-                                <p class="text-xs text-gray-400 mb-4">Enter comma-separated values. Leave blank if no variants.</p>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-500 mb-1">Colour Options</label>
-                                        <input name="color_options" x-model="formData.color_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 text-sm font-medium transition-colors" placeholder="e.g. Red, Blue, Black" />
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-500 mb-1">Size Options</label>
-                                        <input name="size_options" x-model="formData.size_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 text-sm font-medium transition-colors" placeholder="e.g. S, M, L, XL" />
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <!-- Media Uploads Edit -->
-                            <div class="space-y-4">
-                                <h3 class="font-bold text-gray-900 border-b border-gray-100 pb-2">Update Media</h3>
-                                <p class="text-xs text-gray-500 mb-3">Uploading new files will replace the existing ones. Leave blank to keep existing files.</p>
-                                
-                                <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 relative">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Replace Thumbnail Image</label>
-                                        <button type="button" @click="generateAIThumbnails('edit')" class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingThumbnails && generatingThumbnailMode === 'edit'">
-                                            <span x-show="generatingThumbnails && generatingThumbnailMode === 'edit'" class="animate-spin inline-block w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full"></span>
-                                            <span x-show="!(generatingThumbnails && generatingThumbnailMode === 'edit')">✨</span>
-                                            <span x-text="(generatingThumbnails && generatingThumbnailMode === 'edit') ? 'Generating...' : 'Enhance with AI'"></span>
-                                        </button>
-                                    </div>
-                                    <p class="text-xs text-gray-500 mb-3">Select a new raw image and enhance it, or just upload directly.</p>
-                                    
-                                    <input type="hidden" name="ai_thumbnail_url" id="ai_image_url_edit">
-                                    <div id="edit_thumbnail_preview_container" style="display:none;" class="mb-3 relative inline-block">
-                                        <img id="edit_thumbnail_preview" src="" class="h-24 w-24 object-cover rounded-xl shadow-sm border border-gray-200">
-                                        <button type="button" onclick="document.getElementById('ai_image_url_edit').value=''; document.getElementById('edit_thumbnail_preview_container').style.display='none';" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-600">&times;</button>
-                                    </div>
-
-                                    <input type="file" name="image" id="edit-image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
-                                </div>
-
-                                <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
-                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Replace Additional Gallery Images</label>
-                                    <input type="file" name="additional_images[]" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
-                                </div>
-
-                                <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
-                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Replace Product Video</label>
-                                    <input type="file" name="video" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="video/mp4,video/webm,video/quicktime">
-                                </div>
-                            </div>
-
-                            <div class="mb-5 relative mt-4">
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Description</label>
-                                    <button type="button" @click="generateDetails('edit')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'edit'">
-                                        <span x-show="generatingAI && generatingMode === 'edit'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
-                                        <span x-show="!(generatingAI && generatingMode === 'edit')">✨</span>
-                                        <span x-text="generatingAI && generatingMode === 'edit' ? 'Generating...' : 'AI Generate Description'"></span>
-                                    </button>
-                                </div>
-                                <textarea name="description" x-model="formData.description" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
-                            </div>
-                        </div>
-
-                        <div class="px-8 py-5 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
-                            <button type="button" @click="closeEditModal()" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
-                            <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition" onclick="this.disabled=true; this.innerText='Updating...'; this.form.submit();">Update Product</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- AI Thumbnail Selection Modal -->
-        <div x-show="thumbnailModalOpen" x-cloak class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div x-show="thumbnailModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" @click="thumbnailModalOpen = false"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                
-                <div x-show="thumbnailModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl w-full">
-                    
-                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                        <h3 class="text-xl font-black text-gray-900">Select AI Generated Thumbnail</h3>
-                        <button type="button" @click="thumbnailModalOpen = false" class="text-gray-400 hover:text-gray-900"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-                    </div>
-
-                    <div class="p-8 bg-gray-100">
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                            <template x-for="(url, index) in generatedThumbnails" :key="index">
-                                <div @click="selectThumbnail(url, generatingThumbnailMode)" class="bg-white p-2 rounded-2xl cursor-pointer hover:ring-4 hover:ring-purple-500 transition-all shadow-sm group relative aspect-[4/5]">
-                                    <img :src="url" class="w-full h-full object-cover rounded-xl" alt="AI Generated Option">
-                                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-xl">
-                                        <span class="text-white font-bold px-3 py-1 bg-purple-600 rounded-full text-xs shadow-lg">Select</span>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+          </div>
+        @endforeach
+      </div>
+      
+      {{-- PERF-BUG-01: Pagination links --}}
+      <div class="mt-6">
+        {{ $products->links() }}
+      </div>
     </div>
 
-    <!-- AlpineJS Logic -->
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('productManager', () => ({
-                editModalOpen: false,
-                editingProduct: null,
+    <!-- Add Product Modal -->
+    <x-modal name="add-product-modal" focusable>
+      <form id="add-product-form" method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="p-8 max-h-[90vh] overflow-y-auto" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; } submitting = true;">
+        @csrf
+        <div class="mb-8">
+          <h2 class="text-2xl font-black text-gray-900 ">Add New Product</h2>
+          <p class="text-sm text-gray-500 mt-1">Enter details for the new inventory item.</p>
+        </div>
+        
+        <div class="mb-5 relative">
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Product Name</label>
+          </div>
+          <input name="name" id="add-name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required placeholder="Enter product name" />
+        </div>
+
+
+
+        <div class="mb-5">
+          <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category</label>
+          <select name="category_id" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
+            <option value="" disabled selected>-- Select Category --</option>
+            @foreach($categories as $category)
+              <option value="{{ $category->id }}">{{ $category->name }}</option>
+            @endforeach
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-5 mb-5">
+          <div>
+            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Selling Price (Rs.)</label>
+            <input name="price" type="number" step="0.01" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+          </div>
+          <div>
+            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Cost Price (Rs.)</label>
+            <input name="cost_price" type="number" step="0.01" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" placeholder="0" />
+          </div>
+          <div>
+            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Weight (g)</label>
+            <input name="weight_grams" type="number" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+          </div>
+          <div>
+            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Stock</label>
+            <input name="stock" type="number" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+          </div>
+        </div>
+
+        <div x-data="{ bundles: [] }" class="mb-5 border border-gray-200 rounded-2xl p-5 bg-white">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-gray-900">Product Bundles (Optional)</h3>
+            <button type="button" @click="bundles.push({qty: '', price: ''})" class="text-xs bg-mango text-gray-900 font-bold px-3 py-1.5 rounded-lg hover:bg-[#ffdf8c] shadow-sm">+ Add Bundle</button>
+          </div>
+          
+          <template x-for="(bundle, index) in bundles" :key="index">
+            <div class="flex gap-4 mb-3 items-end">
+              <div class="flex-1">
+                <label class="block text-xs font-bold text-gray-500 mb-1">Bundle Quantity</label>
+                <input type="number" :name="`bundles[${index}][qty]`" x-model="bundle.qty" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-2 text-sm" placeholder="e.g. 3" required>
+              </div>
+              <div class="flex-1">
+                <label class="block text-xs font-bold text-gray-500 mb-1">Total Bundle Price (Rs.)</label>
+                <input type="number" step="0.01" :name="`bundles[${index}][price]`" x-model="bundle.price" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-2 text-sm" placeholder="e.g. 2500" required>
+              </div>
+              <button type="button" @click="bundles.splice(index, 1)" class="bg-red-50 text-red-500 hover:bg-red-100 p-2.5 rounded-xl mb-[1px]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+              </button>
+            </div>
+          </template>
+          <p x-show="bundles.length === 0" class="text-xs text-gray-400 font-medium">No bundles configured. Customers will only be able to buy single pieces.</p>
+          
+          <!-- Bundle Only Toggle -->
+          <div x-show="bundles.length > 0" x-cloak class="mt-4 pt-4 border-t border-gray-100">
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="hidden" name="bundle_only" value="0">
+              <input type="checkbox" name="bundle_only" value="1" class="w-5 h-5 rounded-lg border-gray-300 text-amber-500 focus:ring-amber-500/30 cursor-pointer">
+              <div>
+                <span class="font-bold text-gray-900 text-sm group-hover:text-amber-600 transition-colors">Bundle Only Product</span>
+                <p class="text-xs text-gray-400">Each bundle will be listed as a separate product card on the storefront. Single unit purchase will be disabled.</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Color & Size Variants (Optional) -->
+        <div class="mb-5 border border-gray-200 rounded-2xl p-5 bg-white">
+          <h3 class="font-bold text-gray-900 mb-1">Colour & Size Variants <span class="text-xs text-gray-400 font-medium">(Optional)</span></h3>
+          <p class="text-xs text-gray-400 mb-4">Enter comma-separated values. Leave blank if no variants.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">Colour Options</label>
+              <input name="color_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 text-sm font-medium transition-colors" placeholder="e.g. Red, Blue, Black" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">Size Options</label>
+              <input name="size_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 text-sm font-medium transition-colors" placeholder="e.g. S, M, L, XL" />
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Media Uploads -->
+        <div class="space-y-4 mb-8">
+          <h3 class="font-bold text-gray-900 border-b border-gray-100 pb-2">Media Assets</h3>
+          
+          <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 relative">
+            <div class="flex justify-between items-center mb-1">
+              <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Primary Thumbnail Image (Required)</label>
+              <button type="button" @click="generateAIThumbnails('add')" class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingThumbnails && generatingThumbnailMode === 'add'">
+                <span x-show="generatingThumbnails && generatingThumbnailMode === 'add'" class="animate-spin inline-block w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full"></span>
+                <span x-show="!(generatingThumbnails && generatingThumbnailMode === 'add')">✨</span>
+                <span x-text="(generatingThumbnails && generatingThumbnailMode === 'add') ? 'Generating...' : 'Enhance with AI'"></span>
+              </button>
+            </div>
+            <p class="text-xs text-gray-500 mb-3">This is the main image shown on the grid. Select a raw image, then click Enhance with AI.</p>
+            
+            <input type="hidden" name="ai_thumbnail_url" id="ai_image_url_add">
+            <div id="add_thumbnail_preview_container" style="display:none;" class="mb-3 relative inline-block">
+              <img id="add_thumbnail_preview" src="" class="h-24 w-24 object-cover rounded-xl shadow-sm border border-gray-200">
+              <button type="button" onclick="document.getElementById('ai_image_url_add').value=''; document.getElementById('add_thumbnail_preview_container').style.display='none';" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-600">&times;</button>
+            </div>
+
+            <input type="file" name="image" id="add-image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
+          </div>
+
+          <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
+            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Additional Gallery Images (Optional)</label>
+            <p class="text-xs text-gray-500 mb-3">Select multiple files at once.</p>
+            <input type="file" name="additional_images[]" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
+          </div>
+
+          <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
+            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Product Video (Optional)</label>
+            <p class="text-xs text-gray-500 mb-3">Max 10MB (mp4, webm).</p>
+            <input type="file" name="video" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="video/mp4,video/webm,video/quicktime">
+          </div>
+        </div>
+
+        <div class="mb-5 relative mt-4">
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Description</label>
+            <button type="button" @click="generateDetails('add')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'add'">
+              <span x-show="generatingAI && generatingMode === 'add'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
+              <span x-show="!(generatingAI && generatingMode === 'add')">✨</span>
+              <span x-text="generatingAI && generatingMode === 'add' ? 'Generating...' : 'AI Generate Description'"></span>
+            </button>
+          </div>
+          <textarea name="description" id="add-desc" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t border-gray-100 pt-6">
+          <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
+          <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800 active:scale-95'" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] transition"><span x-show="!submitting">Save Product</span><span x-show="submitting">Saving...</span></button>
+        </div>
+      </form>
+    </x-modal>
+
+    <!-- Edit Product Modal -->
+    <div x-show="editModalOpen" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div x-show="editModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="closeEditModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div x-show="editModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
+          
+          <form id="edit-product-form" :action="`{{ url('products') }}/${editingProduct?.id}`" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            
+            <div class="px-8 py-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+              <h3 class="text-xl font-black text-gray-900 ">Edit Product</h3>
+              <button type="button" @click="closeEditModal()" class="text-gray-400 hover:text-gray-900"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+
+            <div class="p-8 max-h-[70vh] overflow-y-auto">
+              <div class="mb-5 relative">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Product Name</label>
+                </div>
+                <input name="name" x-model="formData.name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+              </div>
+
+
+
+              <div class="mb-5">
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Category</label>
+                <select name="category_id" x-model="formData.category_id" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required>
+                  @foreach($categories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                  @endforeach
+                </select>
+              </div>
+
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-5 mb-5">
+                <div>
+                  <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Selling Price (Rs.)</label>
+                  <input name="price" x-model="formData.price" type="number" step="0.01" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+                </div>
+                <div>
+                  <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Cost Price (Rs.)</label>
+                  <input name="cost_price" x-model="formData.cost_price" type="number" step="0.01" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Weight (g)</label>
+                  <input name="weight_grams" x-model="formData.weight_grams" type="number" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+                </div>
+                <div>
+                  <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Stock</label>
+                  <input name="stock" x-model="formData.stock" type="number" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+                </div>
+              </div>
+
+              <div class="mb-5 border border-gray-200 rounded-2xl p-5 bg-white">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="font-bold text-gray-900">Product Bundles</h3>
+                  <button type="button" @click="formData.bundles.push({qty: '', price: ''})" class="text-xs bg-mango text-gray-900 font-bold px-3 py-1.5 rounded-lg hover:bg-[#ffdf8c] shadow-sm">+ Add Bundle</button>
+                </div>
                 
-                formData: {
-                    name: '',
-                    description: '',
-                    category_id: '',
-                    price: '',
-                    cost_price: '',
-                    weight_grams: '',
-                    stock: '',
-                    bundles: [],
-                    bundle_only: false,
-                    color_options: '',
-                    size_options: '',
-                },
-
-                openEditModal(product) {
-                    this.editingProduct = product;
-                    this.formData.name = product.name;
-                    this.formData.description = product.description;
-                    this.formData.category_id = product.category_id;
-                    this.formData.price = product.price;
-                    this.formData.cost_price = product.cost_price;
-                    this.formData.weight_grams = product.weight_grams;
-                    this.formData.stock = product.stock;
-                    this.formData.bundles = product.bundles || [];
-                    this.formData.bundle_only = product.bundle_only || false;
-                    this.formData.color_options = (product.color_options || []).join(', ');
-                    this.formData.size_options = (product.size_options || []).join(', ');
-                    
-                    this.editModalOpen = true;
-                },
-
-                closeEditModal() {
-                    this.editModalOpen = false;
-                    setTimeout(() => { this.editingProduct = null; }, 300);
-                },
-
-                generatingThumbnails: false,
-                generatingThumbnailMode: null,
-                generatedThumbnails: [],
-                thumbnailModalOpen: false,
-
-                generateAIThumbnails(mode) {
-                    let fileInput = mode === 'add' ? document.getElementById('add-image') : document.getElementById('edit-image');
-                    if (!fileInput.files || fileInput.files.length === 0) {
-                        alert('Please select a raw image file first to generate AI variations.');
-                        return;
-                    }
-                    
-                    let formData = new FormData();
-                    formData.append('_token', '{{ csrf_token() }}');
-                    formData.append('image', fileInput.files[0]);
-                    
-                    this.generatingThumbnails = true;
-                    this.generatingThumbnailMode = mode;
-                    
-                    fetch('{{ route("products.ai-generate-thumbnails") }}', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        this.generatingThumbnails = false;
-                        
-                        if (data.error) {
-                            this.generatingThumbnailMode = null;
-                            alert(data.error);
-                            return;
-                        }
-                        
-                        this.generatedThumbnails = data.urls;
-                        this.thumbnailModalOpen = true;
-                    })
-                    .catch(err => {
-                        this.generatingThumbnails = false;
-                        this.generatingThumbnailMode = null;
-                        alert('An error occurred communicating with the AI server.');
-                        console.error(err);
-                    });
-                },
-
-                selectThumbnail(url, mode) {
-                    if (mode === 'add') {
-                        document.getElementById('ai_image_url_add').value = url;
-                        document.getElementById('add_thumbnail_preview').src = url;
-                        document.getElementById('add_thumbnail_preview_container').style.display = 'block';
-                    } else {
-                        document.getElementById('ai_image_url_edit').value = url;
-                        document.getElementById('edit_thumbnail_preview').src = url;
-                        document.getElementById('edit_thumbnail_preview_container').style.display = 'block';
-                    }
-                    this.thumbnailModalOpen = false;
-                    this.generatingThumbnailMode = null;
-                },
-
-                generatingAI: false,
-                generatingMode: null,
+                <template x-for="(bundle, index) in formData.bundles" :key="index">
+                  <div class="flex gap-4 mb-3 items-end">
+                    <div class="flex-1">
+                      <label class="block text-xs font-bold text-gray-500 mb-1">Bundle Quantity</label>
+                      <input type="number" :name="`bundles[${index}][qty]`" x-model="bundle.qty" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-2 text-sm" placeholder="e.g. 3" required>
+                    </div>
+                    <div class="flex-1">
+                      <label class="block text-xs font-bold text-gray-500 mb-1">Total Bundle Price (Rs.)</label>
+                      <input type="number" step="0.01" :name="`bundles[${index}][price]`" x-model="bundle.price" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm py-2 text-sm" placeholder="e.g. 2500" required>
+                    </div>
+                    <button type="button" @click="formData.bundles.splice(index, 1)" class="bg-red-50 text-red-500 hover:bg-red-100 p-2.5 rounded-xl mb-[1px]">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                    </button>
+                  </div>
+                </template>
+                <p x-show="formData.bundles.length === 0" class="text-xs text-gray-400 font-medium">No bundles configured.</p>
                 
-                generateDetails(mode) {
-                    let form, descInput;
-                    
-                    if (mode === 'add') {
-                        form = document.getElementById('add-product-form');
-                        descInput = document.getElementById('add-desc');
-                    } else {
-                        form = document.getElementById('edit-product-form');
-                    }
+                <!-- Bundle Only Toggle - Edit -->
+                <div x-show="formData.bundles.length > 0" x-cloak class="mt-4 pt-4 border-t border-gray-100">
+                  <label class="flex items-center gap-3 cursor-pointer group">
+                    <input type="hidden" name="bundle_only" value="0">
+                    <input type="checkbox" name="bundle_only" value="1" x-model="formData.bundle_only" :checked="formData.bundle_only" class="w-5 h-5 rounded-lg border-gray-300 text-amber-500 focus:ring-amber-500/30 cursor-pointer">
+                    <div>
+                      <span class="font-bold text-gray-900 text-sm group-hover:text-amber-600 transition-colors">Bundle Only Product</span>
+                      <p class="text-xs text-gray-400">Each bundle listed separately on storefront. No single unit option.</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
 
-                    let formData = new FormData(form);
+              <!-- Color & Size Variants (Optional) - Edit -->
+              <div class="mb-5 border border-gray-200 rounded-2xl p-5 bg-white">
+                <h3 class="font-bold text-gray-900 mb-1">Colour & Size Variants <span class="text-xs text-gray-400 font-medium">(Optional)</span></h3>
+                <p class="text-xs text-gray-400 mb-4">Enter comma-separated values. Leave blank if no variants.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Colour Options</label>
+                    <input name="color_options" x-model="formData.color_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 text-sm font-medium transition-colors" placeholder="e.g. Red, Blue, Black" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Size Options</label>
+                    <input name="size_options" x-model="formData.size_options" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-2.5 text-sm font-medium transition-colors" placeholder="e.g. S, M, L, XL" />
+                  </div>
+                </div>
+              </div>
 
-                    let nameVal = formData.get('name');
-                    if (!nameVal || nameVal.trim() === '') {
-                        alert('Please enter a Product Name and other details first before generating.');
-                        return;
-                    }
-                    
-                    // Remove _method field if present (from the edit form's @method('PUT')),
-                    // otherwise Laravel will treat this fetch request as a PUT and return 405.
-                    formData.delete('_method');
-                    
-                    formData.append('_token', '{{ csrf_token() }}');
 
-                    this.generatingAI = true;
-                    this.generatingMode = mode;
+              <!-- Media Uploads Edit -->
+              <div class="space-y-4">
+                <h3 class="font-bold text-gray-900 border-b border-gray-100 pb-2">Update Media</h3>
+                <p class="text-xs text-gray-500 mb-3">Uploading new files will replace the existing ones. Leave blank to keep existing files.</p>
+                
+                <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 relative">
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Replace Thumbnail Image</label>
+                    <button type="button" @click="generateAIThumbnails('edit')" class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingThumbnails && generatingThumbnailMode === 'edit'">
+                      <span x-show="generatingThumbnails && generatingThumbnailMode === 'edit'" class="animate-spin inline-block w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full"></span>
+                      <span x-show="!(generatingThumbnails && generatingThumbnailMode === 'edit')">✨</span>
+                      <span x-text="(generatingThumbnails && generatingThumbnailMode === 'edit') ? 'Generating...' : 'Enhance with AI'"></span>
+                    </button>
+                  </div>
+                  <p class="text-xs text-gray-500 mb-3">Select a new raw image and enhance it, or just upload directly.</p>
+                  
+                  <input type="hidden" name="ai_thumbnail_url" id="ai_image_url_edit">
+                  <div id="edit_thumbnail_preview_container" style="display:none;" class="mb-3 relative inline-block">
+                    <img id="edit_thumbnail_preview" src="" class="h-24 w-24 object-cover rounded-xl shadow-sm border border-gray-200">
+                    <button type="button" onclick="document.getElementById('ai_image_url_edit').value=''; document.getElementById('edit_thumbnail_preview_container').style.display='none';" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-600">&times;</button>
+                  </div>
 
-                    fetch('{{ route("products.ai-generate") }}', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        this.generatingAI = false;
-                        this.generatingMode = null;
-                        
-                        if (data.error) {
-                            alert(data.error);
-                            return;
-                        }
-                        
-                        if (mode === 'add') {
-                            descInput.value = data.description;
-                        } else {
-                            this.formData.description = data.description;
-                        }
-                    })
-                    .catch(err => {
-                        this.generatingAI = false;
-                        this.generatingMode = null;
-                        alert('An error occurred communicating with the server.');
-                        console.error(err);
-                    });
-                }
-            }));
-        });
-    </script>
+                  <input type="file" name="image" id="edit-image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
+                </div>
+
+                <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
+                  <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Replace Additional Gallery Images</label>
+                  <input type="file" name="additional_images[]" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="image/*">
+                </div>
+
+                <div class="p-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
+                  <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Replace Product Video</label>
+                  <input type="file" name="video" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="video/mp4,video/webm,video/quicktime">
+                </div>
+              </div>
+
+              <div class="mb-5 relative mt-4">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Description</label>
+                  <button type="button" @click="generateDetails('edit')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'edit'">
+                    <span x-show="generatingAI && generatingMode === 'edit'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
+                    <span x-show="!(generatingAI && generatingMode === 'edit')">✨</span>
+                    <span x-text="generatingAI && generatingMode === 'edit' ? 'Generating...' : 'AI Generate Description'"></span>
+                  </button>
+                </div>
+                <textarea name="description" x-model="formData.description" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
+              </div>
+            </div>
+
+            <div class="px-8 py-5 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+              <button type="button" @click="closeEditModal()" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
+              <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition" onclick="this.disabled=true; this.innerText='Updating...'; this.form.submit();">Update Product</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Thumbnail Selection Modal -->
+    <div x-show="thumbnailModalOpen" x-cloak class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div x-show="thumbnailModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" @click="thumbnailModalOpen = false"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div x-show="thumbnailModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl w-full">
+          
+          <div class="px-8 py-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h3 class="text-xl font-black text-gray-900">Select AI Generated Thumbnail</h3>
+            <button type="button" @click="thumbnailModalOpen = false" class="text-gray-400 hover:text-gray-900"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+          </div>
+
+          <div class="p-8 bg-gray-100">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <template x-for="(url, index) in generatedThumbnails" :key="index">
+                <div @click="selectThumbnail(url, generatingThumbnailMode)" class="bg-white p-2 rounded-2xl cursor-pointer hover:ring-4 hover:ring-purple-500 transition-all shadow-sm group relative aspect-[4/5]">
+                  <img :src="url" class="w-full h-full object-cover rounded-xl" alt="AI Generated Option">
+                  <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-xl">
+                    <span class="text-white font-bold px-3 py-1 bg-purple-600 rounded-full text-xs shadow-lg">Select</span>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- AlpineJS Logic -->
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('productManager', () => ({
+        editModalOpen: false,
+        editingProduct: null,
+        
+        formData: {
+          name: '',
+          description: '',
+          category_id: '',
+          price: '',
+          cost_price: '',
+          weight_grams: '',
+          stock: '',
+          bundles: [],
+          bundle_only: false,
+          color_options: '',
+          size_options: '',
+        },
+
+        openEditModal(product) {
+          this.editingProduct = product;
+          this.formData.name = product.name;
+          this.formData.description = product.description;
+          this.formData.category_id = product.category_id;
+          this.formData.price = product.price;
+          this.formData.cost_price = product.cost_price;
+          this.formData.weight_grams = product.weight_grams;
+          this.formData.stock = product.stock;
+          this.formData.bundles = product.bundles || [];
+          this.formData.bundle_only = product.bundle_only || false;
+          this.formData.color_options = (product.color_options || []).join(', ');
+          this.formData.size_options = (product.size_options || []).join(', ');
+          
+          this.editModalOpen = true;
+        },
+
+        closeEditModal() {
+          this.editModalOpen = false;
+          setTimeout(() => { this.editingProduct = null; }, 300);
+        },
+
+        generatingThumbnails: false,
+        generatingThumbnailMode: null,
+        generatedThumbnails: [],
+        thumbnailModalOpen: false,
+
+        generateAIThumbnails(mode) {
+          let fileInput = mode === 'add' ? document.getElementById('add-image') : document.getElementById('edit-image');
+          if (!fileInput.files || fileInput.files.length === 0) {
+            alert('Please select a raw image file first to generate AI variations.');
+            return;
+          }
+          
+          let formData = new FormData();
+          formData.append('_token', '{{ csrf_token() }}');
+          formData.append('image', fileInput.files[0]);
+          
+          this.generatingThumbnails = true;
+          this.generatingThumbnailMode = mode;
+          
+          fetch('{{ route("products.ai-generate-thumbnails") }}', {
+            method: 'POST',
+            body: formData
+          })
+          .then(res => res.json())
+          .then(data => {
+            this.generatingThumbnails = false;
+            
+            if (data.error) {
+              this.generatingThumbnailMode = null;
+              alert(data.error);
+              return;
+            }
+            
+            this.generatedThumbnails = data.urls;
+            this.thumbnailModalOpen = true;
+          })
+          .catch(err => {
+            this.generatingThumbnails = false;
+            this.generatingThumbnailMode = null;
+            alert('An error occurred communicating with the AI server.');
+            console.error(err);
+          });
+        },
+
+        selectThumbnail(url, mode) {
+          if (mode === 'add') {
+            document.getElementById('ai_image_url_add').value = url;
+            document.getElementById('add_thumbnail_preview').src = url;
+            document.getElementById('add_thumbnail_preview_container').style.display = 'block';
+          } else {
+            document.getElementById('ai_image_url_edit').value = url;
+            document.getElementById('edit_thumbnail_preview').src = url;
+            document.getElementById('edit_thumbnail_preview_container').style.display = 'block';
+          }
+          this.thumbnailModalOpen = false;
+          this.generatingThumbnailMode = null;
+        },
+
+        generatingAI: false,
+        generatingMode: null,
+        
+        generateDetails(mode) {
+          let form, descInput;
+          
+          if (mode === 'add') {
+            form = document.getElementById('add-product-form');
+            descInput = document.getElementById('add-desc');
+          } else {
+            form = document.getElementById('edit-product-form');
+          }
+
+          let formData = new FormData(form);
+
+          let nameVal = formData.get('name');
+          if (!nameVal || nameVal.trim() === '') {
+            alert('Please enter a Product Name and other details first before generating.');
+            return;
+          }
+          
+          // Remove _method field if present (from the edit form's @method('PUT')),
+          // otherwise Laravel will treat this fetch request as a PUT and return 405.
+          formData.delete('_method');
+          
+          formData.append('_token', '{{ csrf_token() }}');
+
+          this.generatingAI = true;
+          this.generatingMode = mode;
+
+          fetch('{{ route("products.ai-generate") }}', {
+            method: 'POST',
+            body: formData
+          })
+          .then(res => res.json())
+          .then(data => {
+            this.generatingAI = false;
+            this.generatingMode = null;
+            
+            if (data.error) {
+              alert(data.error);
+              return;
+            }
+            
+            if (mode === 'add') {
+              descInput.value = data.description;
+            } else {
+              this.formData.description = data.description;
+            }
+          })
+          .catch(err => {
+            this.generatingAI = false;
+            this.generatingMode = null;
+            alert('An error occurred communicating with the server.');
+            console.error(err);
+          });
+        }
+      }));
+    });
+  </script>
 </x-app-layout>
