@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/shop', [HomeController::class, 'shop'])->name('shop');
 Route::get('/flash-sales', [HomeController::class, 'flashSales'])->name('frontend.flash-sales');
 Route::get('/company-profile', [HomeController::class, 'companyProfile'])->name('company.profile');
 Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('privacy.policy');

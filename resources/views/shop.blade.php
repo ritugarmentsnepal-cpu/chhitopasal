@@ -115,8 +115,8 @@
 
             <!-- Desktop Nav -->
             <nav class="hidden md:flex items-center gap-8 font-medium">
-                <a href="{{ route('home') }}" class="transition-colors text-sm font-bold text-gray-900 hover:text-red-600">Home</a>
-                <a href="{{ route('shop') }}" class="transition-colors text-sm text-gray-600 hover:text-red-600">Shop</a>
+                <a href="{{ route('home') }}" class="transition-colors text-sm text-gray-600 hover:text-red-600">Home</a>
+                <a href="{{ route('shop') }}" class="transition-colors text-sm font-bold text-gray-900 hover:text-red-600">Shop</a>
                 <a href="{{ route('company.profile') }}" class="transition-colors text-sm text-gray-600 hover:text-red-600">Company</a>
             </nav>
 
@@ -163,125 +163,17 @@
         </div>
     </header>
 
-    <!-- Mobile Hero Banner Widget -->
-    <section class="md:hidden pt-[115px] px-4 pb-4">
-        <div class="bg-gray-100 rounded-2xl relative overflow-hidden h-44 flex flex-col justify-center border border-gray-200">
-            <img src="{{ asset('storage/artifacts/hero_woman_red_1780421907868.png') }}" class="absolute right-[-10px] bottom-0 h-[105%] object-contain z-10 drop-shadow-xl" alt="Fashion">
-            
-            <div class="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent z-10"></div>
-            
-            <div class="relative z-20 px-6 w-[70%]">
-                <span class="inline-block bg-gray-900 text-white text-[9px] font-bold uppercase tracking-widest px-3 py-1 mb-2">New Season</span>
-                <h1 class="text-xl font-display font-light leading-tight text-gray-900 mb-3">
-                    Style that <span class="font-bold">Speaks</span>
-                </h1>
-                <a href="{{ route('shop') }}" class="inline-flex items-center justify-center text-gray-900 text-[11px] font-bold border-b border-gray-900 pb-0.5 hover:text-red-600 hover:border-red-600 transition-colors">
-                    Explore Collection
-                </a>
-            </div>
-        </div>
-    </section>
+    <!-- Mobile Spacer -->
+    <div class="md:hidden h-24"></div>
+    
+    <!-- Desktop Spacer -->
+    <div class="hidden md:block h-32"></div>
 
-    <!-- 2. Hero Section (Desktop Only) -->
-    <section class="hidden md:block bg-gray-50 pt-28 pb-20 relative overflow-hidden border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center justify-between">
-            
-            <!-- Left Column: Text -->
-            <div class="w-full md:w-[50%] mb-12 md:mb-0 text-center md:text-left z-20 md:pr-8 mt-12">
-                <span class="inline-block text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mb-4">New Arrivals &bull; 2024 Collection</span>
-                <h1 class="text-5xl md:text-6xl lg:text-[5rem] font-display font-light leading-[1.1] mb-6 text-gray-900 tracking-tight">
-                    {!! nl2br(e(str_replace('Female', '<span class="font-bold">Female</span>', setting('hero_title') ?: "Stylish\nFemale Clothes"))) !!}
-                </h1>
-                <p class="text-lg text-gray-500 mb-10 max-w-lg mx-auto md:mx-0 font-light leading-relaxed">
-                    {{ setting('hero_subtitle') ?: 'Discover the epitome of elegance. Curated fashion for the modern lifestyle.' }}
-                </p>
-                <div class="flex items-center justify-center md:justify-start gap-6">
-                    <a href="{{ route('shop') }}" class="inline-flex justify-center bg-gray-900 text-white text-sm font-bold uppercase tracking-widest px-10 py-4 hover:bg-gray-800 transition-colors shadow-lg">
-                        Shop Collection
-                    </a>
-                </div>
-
-                <!-- Social Proof -->
-                <div class="flex items-center gap-4 mt-16 mx-auto md:mx-0">
-                    <div class="flex -space-x-3">
-                        <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=1" alt="Customer">
-                        <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=2" alt="Customer">
-                        <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=3" alt="Customer">
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-gray-900">Trusted by thousands</p>
-                        <p class="text-xs text-gray-500">4.9/5 Average Rating</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Right Column: Image -->
-            <div class="w-full md:w-[50%] relative flex justify-center z-10 mt-12">
-                <!-- Soft elegant background shape -->
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-gray-200 rounded-full z-0"></div>
-                <!-- Hero Image -->
-                <img src="{{ asset('storage/artifacts/hero_woman_red_1780421907868.png') }}" alt="Hero Fashion" class="w-full max-w-[400px] xl:max-w-[550px] object-contain relative z-10 drop-shadow-2xl">
-            </div>
-        </div>
-    </section>
-
-    <!-- Flash Sales Section -->
-    @if(isset($flashSaleProducts) && $flashSaleProducts->count() > 0)
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-16 relative z-20">
-        <!-- Formal Banner -->
-        <div class="bg-gray-900 border border-gray-800 p-8 sm:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8 relative shadow-2xl">
-            <!-- Subtle elegant pattern/texture -->
-            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] mix-blend-overlay pointer-events-none"></div>
-            
-            <div class="flex-1 relative z-10 text-center md:text-left flex flex-col items-center md:items-start">
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="h-[1px] w-12 bg-red-500"></div>
-                    <span class="text-red-400 text-xs font-bold uppercase tracking-[0.2em]">Exclusive Event</span>
-                    <div class="h-[1px] w-12 bg-red-500 md:hidden"></div>
-                </div>
-                <h2 class="text-3xl sm:text-5xl font-display font-light tracking-tight mb-3">Flash <span class="font-bold text-white">Sales</span></h2>
-                <p class="text-gray-400 text-sm sm:text-base font-light max-w-lg leading-relaxed">Curated selections at exceptional value. Discover premium items available for a limited time.</p>
-            </div>
-            
-            <div class="relative z-10 w-full md:w-auto flex justify-center md:justify-end">
-                <a href="{{ route('frontend.flash-sales') }}" class="group relative inline-flex items-center justify-center px-8 py-3 text-sm font-bold text-white uppercase tracking-widest border border-white/30 hover:border-white transition-colors duration-300 overflow-hidden">
-                    <span class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></span>
-                    <span class="relative z-10 group-hover:text-gray-900 transition-colors duration-300">View Collection</span>
-                </a>
-            </div>
-        </div>
-        
-        <!-- Flash Sale Preview Grid (Formal) -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200 border border-gray-200 mt-8 shadow-sm">
-            @foreach($flashSaleProducts->take(4) as $product)
-                <div class="bg-white p-6 relative group cursor-pointer hover:bg-gray-50 transition-colors duration-500" @click="window.location.href = '{{ url('product') }}/{{ $product->parent_product_slug ?: $product->slug }}{{ isset($product->bundle_qty) ? '?bundle=' . $product->bundle_qty : '' }}'">
-                    <div class="absolute top-4 left-4 z-10">
-                        <span class="bg-gray-900 text-white text-[9px] font-bold uppercase tracking-widest px-3 py-1">Limited</span>
-                    </div>
-                    
-                    <div class="aspect-[4/5] bg-transparent mb-6 overflow-hidden relative flex items-center justify-center">
-                        <img src="{{ asset('storage/' . $product->image_path) }}" class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-in-out">
-                    </div>
-                    
-                    <div class="flex flex-col text-center">
-                        <h3 class="font-bold text-gray-900 text-xs sm:text-sm uppercase tracking-wide line-clamp-1 mb-2">{{ $product->name }}</h3>
-                        <div class="flex justify-center items-center gap-3">
-                            <span class="text-[10px] sm:text-xs text-gray-400 line-through tracking-wider">Rs.{{ number_format($product->original_price) }}</span>
-                            <span class="font-bold text-red-600 text-sm sm:text-base tracking-wider">Rs.{{ number_format($product->price) }}</span>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </section>
-    @endif
-
-    <!-- 5. Product Grid (New Arrivals) -->
-    <main id="shop" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-24">
+    <!-- 5. Product Grid (Shop Catalog) -->
+    <main id="shop" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 md:mt-12 mb-24">
         
         <div class="flex justify-between items-end mb-8 border-b border-gray-200 pb-4">
-            <h2 class="text-2xl font-display font-bold text-gray-900">New Arrival</h2>
-            <a href="{{ route('shop') }}" class="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors">See All</a>
+            <h2 class="text-2xl font-display font-bold text-gray-900">All Products</h2>
         </div>
 
         <!-- Empty State -->
@@ -1121,7 +1013,7 @@
     </script>
 
     <!-- Floating Bottom Navigation Bar (Mobile only) -->
-    <nav class="fixed bottom-4 left-4 right-4 z-40 md:hidden bg-white/90 backdrop-blur-lg rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 px-6 py-3" x-data="{ activeNav: 'home' }">
+    <nav class="fixed bottom-4 left-4 right-4 z-40 md:hidden bg-white/90 backdrop-blur-lg rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 px-6 py-3" x-data="{ activeNav: 'shop' }">
         <div class="flex items-center justify-between">
             <!-- Home -->
             <a href="{{ route('home') }}" class="flex flex-col items-center gap-1 transition-colors" :class="activeNav === 'home' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-900'">
@@ -1132,7 +1024,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
             </a>
             <!-- Categories -->
-            <button @click="window.location.href='{{ route('shop') }}'" class="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center text-white shadow-lg shadow-gray-900/30 transform -translate-y-4 border-4 border-white active:scale-95 transition-transform">
+            <button @click="document.getElementById('shop').scrollIntoView({behavior: 'smooth'})" class="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center text-white shadow-lg shadow-gray-900/30 transform -translate-y-4 border-4 border-white active:scale-95 transition-transform">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
             </button>
             <!-- Cart -->

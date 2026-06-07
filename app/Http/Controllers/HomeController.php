@@ -45,7 +45,7 @@ class HomeController extends Controller
                 $displayProducts->push($product);
             }
         }
-        $products = $displayProducts;
+        $products = $displayProducts->shuffle()->take(12)->values();
 
         $flashSaleProducts = $this->getFlashSaleProducts()->take(10);
         
@@ -93,6 +93,48 @@ class HomeController extends Controller
         $flashSaleProducts = $this->getFlashSaleProducts();
         $settings = Setting::pluck('value', 'key')->toArray();
         return view('flash-sales', compact('flashSaleProducts', 'categories', 'settings'));
+    }
+
+    public function shop()
+    {
+        $categories = Category::all();
+        // FRONT-01: Hide stock count and cost_price from public JSON
+        $products = Product::with('category')->latest()->get()->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
+
+        // BUNDLE-ONLY: Expand bundle-only products into separate virtual cards
+        $displayProducts = collect();
+        foreach ($products as $product) {
+            if ($product->bundle_only && !empty($product->bundles) && is_array($product->bundles)) {
+                // Create a separate virtual card for each bundle
+                foreach ($product->bundles as $bundle) {
+                    $qty = (int) $bundle['qty'];
+                    $bundlePrice = (float) $bundle['price'];
+                    $virtualProduct = clone $product;
+                    $virtualProduct->name = $product->name . ' - Pack of ' . $qty;
+                    $virtualProduct->price = $bundlePrice;
+                    $virtualProduct->is_flash_sale = isset($bundle['is_flash_sale']) && $bundle['is_flash_sale'];
+                    $virtualProduct->flash_sale_price = $bundle['flash_sale_price'] ?? null;
+                    // Attach bundle metadata as dynamic attributes for the frontend
+                    $virtualProduct->bundle_qty = $qty;
+                    $virtualProduct->bundle_price = $bundlePrice;
+                    $virtualProduct->is_bundle_card = true;
+                    $virtualProduct->parent_product_slug = $product->slug;
+                    // Clear bundles array so the card doesn't trigger the bundle modal
+                    $virtualProduct->bundles = null;
+                    $displayProducts->push($virtualProduct);
+                }
+            } else {
+                $product->is_bundle_card = false;
+                $product->bundle_qty = null;
+                $product->bundle_price = null;
+                $product->parent_product_slug = null;
+                $displayProducts->push($product);
+            }
+        }
+        $products = $displayProducts->shuffle()->values();
+
+        $settings = Setting::pluck('value', 'key')->toArray();
+        return view('shop', compact('products', 'categories', 'settings'));
     }
 
 
