@@ -41,7 +41,7 @@ class ProductAIController extends Controller
         $prompt .= "\nWrite a detailed description structured as a list of pointed highlights in brief, rather than a long essay.\n";
         $prompt .= "Use all the information provided above (title, price, colour, size, weight, fabric if evident from the image or title, etc.) to enrich the description.\n";
         $prompt .= "Also, naturally incorporate a few common Nepali words or phrases (like 'Ramro', 'Sasto', 'Majjako', 'Dammi', etc.) to appeal to the local Nepali audience.\n";
-        $prompt .= "Respond ONLY with a valid JSON object matching this exact structure: {\"description\": \"Your description here\"}. Do not include markdown code blocks around the JSON.";
+        $prompt .= "Respond ONLY with a valid JSON object where the 'description' key contains a SINGLE STRING of text. Use newlines (\\n) and bullet points inside the string. Do NOT return an array of objects. Exact structure expected: {\"description\": \"• Point 1\\n• Point 2\"}. Do not include markdown code blocks around the JSON.";
 
         $content = [
             [
@@ -122,8 +122,21 @@ class ProductAIController extends Controller
                 return response()->json(['error' => 'AI returned malformed data. Please try again.'], 500);
             }
 
+            $descriptionStr = '';
+            if (is_array($parsedData['description'])) {
+                foreach ($parsedData['description'] as $item) {
+                    if (is_string($item)) {
+                        $descriptionStr .= "• " . $item . "\n";
+                    } elseif (is_array($item)) {
+                        $descriptionStr .= "• " . implode(" - ", array_values($item)) . "\n";
+                    }
+                }
+            } else {
+                $descriptionStr = (string)$parsedData['description'];
+            }
+
             return response()->json([
-                'description' => $parsedData['description']
+                'description' => trim($descriptionStr)
             ]);
 
         } catch (\Exception $e) {
