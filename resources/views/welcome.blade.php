@@ -283,7 +283,7 @@
                         <h3 class="font-bold text-gray-900 text-sm line-clamp-1 mb-1">{{ $product->name }}</h3>
                         <div class="mt-auto flex items-end gap-2">
                             <span class="font-black text-[#FF4C4C] text-lg leading-none">Rs.{{ number_format($product->flash_sale_price) }}</span>
-                            <span class="text-xs text-gray-400 line-through leading-none mb-0.5">Rs.{{ number_format($product->price) }}</span>
+                            <span class="text-xs text-gray-400 font-bold line-through leading-tight">Rs.{{ number_format($product->original_price) }}</span>
                         </div>
                     </div>
                 </div>
@@ -355,7 +355,15 @@
                             <p class="text-gray-400 md:text-white/80 text-[10px] md:text-xs font-medium md:uppercase md:tracking-wider line-clamp-1" x-text="product.category ? product.category.name : 'Accessories'"></p>
                         </div>
                         <div class="mt-auto flex justify-between items-center md:justify-center">
-                            <span class="text-gray-900 md:text-white font-black text-sm md:text-lg md:px-6 md:py-1.5 md:bg-white/20 md:backdrop-blur-md rounded-full md:shadow-inner md:border md:border-white/20" x-text="'NPR ' + product.price.toLocaleString()"></span>
+                            <template x-if="product.is_flash_sale">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400 md:text-white/60 font-bold text-xs md:text-sm line-through" x-text="'Rs.' + product.original_price.toLocaleString()"></span>
+                                    <span class="text-[#FF4C4C] md:text-white font-black text-sm md:text-lg md:px-6 md:py-1.5 md:bg-white/20 md:backdrop-blur-md rounded-full md:shadow-inner md:border md:border-white/20" x-text="'NPR ' + product.price.toLocaleString()"></span>
+                                </div>
+                            </template>
+                            <template x-if="!product.is_flash_sale">
+                                <span class="text-gray-900 md:text-white font-black text-sm md:text-lg md:px-6 md:py-1.5 md:bg-white/20 md:backdrop-blur-md rounded-full md:shadow-inner md:border md:border-white/20" x-text="'NPR ' + product.price.toLocaleString()"></span>
+                            </template>
                             <!-- Mobile Quick Add Button -->
                             <button @click.stop.prevent="triggerAddToCart(product)" class="md:hidden w-8 h-8 rounded-full bg-[#FF4C4C] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>

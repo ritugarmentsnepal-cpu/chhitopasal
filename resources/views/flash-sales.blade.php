@@ -163,8 +163,8 @@
                             <p class="text-gray-400 text-[10px] md:text-xs font-medium md:uppercase md:tracking-wider line-clamp-1">{{ $product->category ? $product->category->name : 'Accessories' }}</p>
                         </div>
                         <div class="mt-auto flex justify-between items-center md:justify-center gap-2">
-                            <span class="text-gray-400 font-bold text-xs md:text-sm line-through">Rs.{{ number_format($product->price) }}</span>
-                            <span class="text-[#FF4C4C] font-black text-sm md:text-xl md:px-6 md:py-1.5 md:bg-red-50 md:rounded-full">Rs.{{ number_format($product->flash_sale_price) }}</span>
+                            <span class="text-gray-400 font-bold text-xs md:text-sm line-through">Rs.{{ number_format($product->original_price) }}</span>
+                            <span class="text-[#FF4C4C] font-black text-sm md:text-xl md:px-6 md:py-1.5 md:bg-red-50 md:rounded-full">Rs.{{ number_format($product->price) }}</span>
                         </div>
                     </div>
                 </article>

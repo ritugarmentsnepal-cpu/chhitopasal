@@ -47,7 +47,7 @@ class AdminFlashSaleController extends Controller
                 }
             } else {
                 $product->is_bundle = false;
-                $product->regular_price = $product->price;
+                $product->regular_price = $product->getRawOriginal('price');
                 $displayItems->push($product);
 
                 if (!empty($product->bundles) && is_array($product->bundles)) {

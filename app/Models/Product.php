@@ -43,11 +43,24 @@ class Product extends Model
     /**
      * FRONT-01: Expose a boolean instead of exact stock count for public pages.
      */
-    protected $appends = ['in_stock'];
+    protected $appends = ['in_stock', 'original_price'];
 
     public function getInStockAttribute(): bool
     {
         return ($this->stock ?? 0) > 0;
+    }
+
+    public function getOriginalPriceAttribute()
+    {
+        return $this->attributes['price'] ?? 0;
+    }
+
+    public function getPriceAttribute($value)
+    {
+        if ($this->is_flash_sale && !is_null($this->flash_sale_price)) {
+            return $this->flash_sale_price;
+        }
+        return $value;
     }
 
     public function orderItems()

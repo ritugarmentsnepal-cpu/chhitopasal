@@ -210,8 +210,14 @@
                     <div class="absolute -right-5 -top-5 w-20 h-20 bg-primary/20 rounded-full blur-2xl"></div>
                     <p class="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-amber-700 mb-1 relative z-10">Our Price</p>
                     <div class="flex items-baseline gap-1.5 relative z-10">
-                        <span class="text-base md:text-lg font-bold text-amber-600">Rs.</span>
-                        <span class="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-none">{{ number_format($product->price) }}</span>
+                        @if($product->is_flash_sale)
+                            <span class="text-lg font-bold text-gray-400 line-through">Rs.{{ number_format($product->original_price) }}</span>
+                            <span class="text-base md:text-lg font-bold text-[#FF4C4C] ml-2">Rs.</span>
+                            <span class="text-3xl md:text-5xl font-black text-[#FF4C4C] tracking-tighter leading-none">{{ number_format($product->price) }}</span>
+                        @else
+                            <span class="text-base md:text-lg font-bold text-amber-600">Rs.</span>
+                            <span class="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-none">{{ number_format($product->price) }}</span>
+                        @endif
                     </div>
                 </div>
 
@@ -334,7 +340,14 @@
         <button @click="triggerAddToCart({{ json_encode($product) }})" class="w-full bg-[#18181b] text-white rounded-[2rem] p-2 flex items-center justify-between shadow-2xl active:scale-95 transition-transform">
             <span class="pl-5 font-bold text-sm tracking-wide">Buy</span>
             <div class="flex items-center gap-3 bg-white/10 rounded-full px-5 py-3">
-                <span class="font-bold text-sm tracking-wide">Rs. {{ number_format($product->price) }}</span>
+                <div class="flex flex-col items-end">
+                    @if($product->is_flash_sale)
+                        <span class="text-[10px] font-bold text-gray-400 line-through leading-none">Rs. {{ number_format($product->original_price) }}</span>
+                        <span class="font-black text-sm tracking-wide text-[#FF4C4C] leading-none">Rs. {{ number_format($product->price) }}</span>
+                    @else
+                        <span class="font-bold text-sm tracking-wide">Rs. {{ number_format($product->price) }}</span>
+                    @endif
+                </div>
                 <span class="bg-white text-gray-900 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-purple-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
                     +35

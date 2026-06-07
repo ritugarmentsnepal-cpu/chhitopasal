@@ -26,6 +26,8 @@ class HomeController extends Controller
                     $virtualProduct = clone $product;
                     $virtualProduct->name = $product->name . ' - Pack of ' . $qty;
                     $virtualProduct->price = $bundlePrice;
+                    $virtualProduct->is_flash_sale = isset($bundle['is_flash_sale']) && $bundle['is_flash_sale'];
+                    $virtualProduct->flash_sale_price = $bundle['flash_sale_price'] ?? null;
                     // Attach bundle metadata as dynamic attributes for the frontend
                     $virtualProduct->bundle_qty = $qty;
                     $virtualProduct->bundle_price = $bundlePrice;
