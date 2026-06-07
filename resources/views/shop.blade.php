@@ -164,7 +164,7 @@
     </header>
 
     <!-- Mobile Spacer -->
-    <div class="md:hidden h-24"></div>
+    <div class="md:hidden h-32"></div>
     
     <!-- Desktop Spacer -->
     <div class="hidden md:block h-32"></div>

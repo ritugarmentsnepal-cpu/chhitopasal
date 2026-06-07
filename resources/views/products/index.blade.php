@@ -199,17 +199,6 @@
                     </div>
                 </div>
 
-                <div class="mb-5 relative">
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Description</label>
-                        <button type="button" @click="generateDetails('add')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'add'">
-                            <span x-show="generatingAI && generatingMode === 'add'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
-                            <span x-show="!(generatingAI && generatingMode === 'add')">✨</span>
-                            <span x-text="generatingAI && generatingMode === 'add' ? 'Generating...' : 'AI Generate Description'"></span>
-                        </button>
-                    </div>
-                    <textarea name="description" id="add-desc" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
-                </div>
 
                 <!-- Media Uploads -->
                 <div class="space-y-4 mb-8">
@@ -246,6 +235,18 @@
                         <p class="text-xs text-gray-500 mb-3">Max 10MB (mp4, webm).</p>
                         <input type="file" name="video" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="video/mp4,video/webm,video/quicktime">
                     </div>
+                </div>
+
+                <div class="mb-5 relative mt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Description</label>
+                        <button type="button" @click="generateDetails('add')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'add'">
+                            <span x-show="generatingAI && generatingMode === 'add'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
+                            <span x-show="!(generatingAI && generatingMode === 'add')">✨</span>
+                            <span x-text="generatingAI && generatingMode === 'add' ? 'Generating...' : 'AI Generate Description'"></span>
+                        </button>
+                    </div>
+                    <textarea name="description" id="add-desc" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
                 </div>
 
                 <div class="flex justify-end gap-3 border-t border-gray-100 pt-6">
@@ -362,17 +363,6 @@
                                 </div>
                             </div>
 
-                            <div class="mb-5 relative">
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Description</label>
-                                    <button type="button" @click="generateDetails('edit')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'edit'">
-                                        <span x-show="generatingAI && generatingMode === 'edit'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
-                                        <span x-show="!(generatingAI && generatingMode === 'edit')">✨</span>
-                                        <span x-text="generatingAI && generatingMode === 'edit' ? 'Generating...' : 'AI Generate Description'"></span>
-                                    </button>
-                                </div>
-                                <textarea name="description" x-model="formData.description" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
-                            </div>
 
                             <!-- Media Uploads Edit -->
                             <div class="space-y-4">
@@ -408,6 +398,18 @@
                                     <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Replace Product Video</label>
                                     <input type="file" name="video" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-colors file:cursor-pointer" accept="video/mp4,video/webm,video/quicktime">
                                 </div>
+                            </div>
+
+                            <div class="mb-5 relative mt-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Description</label>
+                                    <button type="button" @click="generateDetails('edit')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" :disabled="generatingAI && generatingMode === 'edit'">
+                                        <span x-show="generatingAI && generatingMode === 'edit'" class="animate-spin inline-block w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
+                                        <span x-show="!(generatingAI && generatingMode === 'edit')">✨</span>
+                                        <span x-text="generatingAI && generatingMode === 'edit' ? 'Generating...' : 'AI Generate Description'"></span>
+                                    </button>
+                                </div>
+                                <textarea name="description" x-model="formData.description" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" rows="4" required></textarea>
                             </div>
                         </div>
 

@@ -164,7 +164,7 @@
     </header>
 
     <!-- Mobile Hero Banner Widget -->
-    <section class="md:hidden pt-[115px] px-4 pb-4">
+    <section class="md:hidden pt-[125px] px-4 pb-4">
         <div class="bg-gray-100 rounded-2xl relative overflow-hidden h-44 flex flex-col justify-center border border-gray-200">
             <img src="{{ asset('storage/artifacts/hero_woman_red_1780421907868.png') }}" class="absolute right-[-10px] bottom-0 h-[105%] object-contain z-10 drop-shadow-xl" alt="Fashion">
             

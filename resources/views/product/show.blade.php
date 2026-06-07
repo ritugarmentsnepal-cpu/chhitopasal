@@ -115,20 +115,14 @@
     </header>
 
     <!-- Mobile Header -->
-    <header class="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md px-4 py-3 flex items-center justify-between">
-        <button class="w-10 h-10 flex items-center justify-center text-gray-800" onclick="history.back()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+    <header class="md:hidden absolute top-0 left-0 right-0 z-50 px-4 py-4 pt-safe flex items-center justify-between pointer-events-none">
+        <button class="w-10 h-10 flex items-center justify-center text-gray-900 bg-white/80 backdrop-blur-md rounded-full shadow-sm pointer-events-auto active:scale-95 transition-transform" onclick="history.back()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <div class="flex items-center gap-4">
-            <button class="text-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-            </button>
-            <button class="text-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
-            </button>
-            <button @click="toggleCart()" class="relative text-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 -right-2 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white text-[10px] font-black flex items-center justify-center"></span>
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <button @click="toggleCart()" class="w-10 h-10 relative flex items-center justify-center text-gray-900 bg-white/80 backdrop-blur-md rounded-full shadow-sm active:scale-95 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white rounded-full border border-white text-[10px] font-black flex items-center justify-center"></span>
             </button>
         </div>
     </header>
@@ -144,14 +138,14 @@
         </div>
     </nav>
 
-    <main class="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 pb-32 md:pb-20 min-h-[60vh] mt-20 md:mt-0">
-        <div class="pdp-layout fade-up flex flex-col rounded-[16px] md:rounded-[24px] overflow-hidden bg-white shadow-none md:shadow-sm"
+    <main class="max-w-[1300px] mx-auto px-0 md:px-8 pb-32 md:pb-20 min-h-[60vh]">
+        <div class="pdp-layout fade-up flex flex-col md:rounded-[24px] overflow-hidden bg-white shadow-none md:shadow-sm"
              x-data="{ activeMedia: '{{ asset('storage/' . $product->image_path) }}', isVideo: false }">
 
             <!-- Gallery Side -->
-            <div class="pdp-gallery w-full p-0 md:p-5 bg-white md:bg-gray-50">
+            <div class="pdp-gallery w-full bg-gray-50 md:rounded-2xl overflow-hidden relative">
                 <!-- Main Image -->
-                <div class="aspect-[3/4] md:aspect-square rounded-xl overflow-hidden bg-gray-100 relative">
+                <div class="aspect-[4/5] md:aspect-square w-full relative">
                     <template x-if="!isVideo">
                         <img :src="activeMedia" alt="{{ $product->name }}" class="w-full h-full object-cover transition-opacity duration-300">
                     </template>
@@ -161,7 +155,7 @@
                 </div>
 
                 <!-- Thumbnails -->
-                <div class="flex justify-center md:justify-start gap-4 md:gap-2.5 mt-6 md:mt-3 overflow-x-auto no-scrollbar pb-1">
+                <div class="absolute bottom-6 left-0 right-0 z-10 flex justify-center md:justify-start gap-4 md:gap-2.5 overflow-x-auto no-scrollbar px-4">
                     <button @click="activeMedia = '{{ asset('storage/' . $product->image_path) }}'; isVideo = false"
                             :class="activeMedia === '{{ asset('storage/' . $product->image_path) }}' ? 'thumb-active' : 'thumb-inactive'"
                             class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0 rounded-xl overflow-hidden border-2 border-border cursor-pointer transition-all active:scale-95 bg-white">
@@ -187,7 +181,7 @@
             </div>
 
             <!-- Details Side -->
-            <div class="pdp-details w-full px-0 py-6 md:px-4 md:py-5 md:p-7 flex flex-col">
+            <div class="pdp-details w-full px-5 py-6 md:px-8 md:py-8 flex flex-col bg-white md:rounded-r-2xl relative -mt-6 md:mt-0 rounded-t-3xl z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] md:shadow-none border-t border-gray-100 md:border-none">
                 <!-- Mobile Title Row -->
                 <div class="flex items-start justify-between mb-4">
                     <div>
@@ -336,8 +330,8 @@
     </footer>
 
     <!-- Mobile Floating Buy Button -->
-    <div class="md:hidden fixed bottom-6 left-4 right-4 z-30">
-        <button @click="triggerAddToCart({{ json_encode($product) }})" class="w-full bg-[#18181b] text-white rounded-[2rem] p-2 flex items-center justify-between shadow-2xl active:scale-95 transition-transform">
+    <div class="md:hidden fixed bottom-4 left-4 right-4 z-40">
+        <button @click="triggerAddToCart({{ json_encode($product) }})" class="w-full bg-[#18181b] text-white rounded-[2rem] p-2 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.25)] active:scale-95 transition-transform">
             <span class="pl-5 font-bold text-sm tracking-wide">Buy</span>
             <div class="flex items-center gap-3 bg-white/10 rounded-full px-5 py-3">
                 <div class="flex flex-col items-end">
