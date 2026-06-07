@@ -38,10 +38,11 @@ class ProductAIController extends Controller
         if (!empty($size)) $prompt .= "- Sizes available: {$size}\n";
         if (!empty($weight)) $prompt .= "- Weight: {$weight}g\n";
         
-        $prompt .= "\nWrite a detailed description structured as a list of pointed highlights in brief, rather than a long essay.\n";
+        $prompt .= "\nWrite a detailed description structured as a list of pointed highlights in brief.\n";
+        $prompt .= "CRITICAL INSTRUCTION: You MUST write extremely short bullet points. Each bullet point must be ONLY 3 to 7 words maximum. DO NOT write full sentences. DO NOT write paragraphs.\n";
         $prompt .= "Use all the information provided above (title, price, colour, size, weight, fabric if evident from the image or title, etc.) to enrich the description.\n";
-        $prompt .= "Also, naturally incorporate a few common Nepali words or phrases (like 'Ramro', 'Sasto', 'Majjako', 'Dammi', etc.) to appeal to the local Nepali audience.\n";
-        $prompt .= "Respond ONLY with a valid JSON object where the 'description' key contains a SINGLE STRING of text. Use newlines (\\n) and bullet points inside the string. Do NOT return an array of objects. Exact structure expected: {\"description\": \"• Point 1\\n• Point 2\"}. Do not include markdown code blocks around the JSON.";
+        $prompt .= "Naturally incorporate a few common Nepali words or phrases (like 'Ramro', 'Sasto', 'Majjako', 'Dammi', etc.) to appeal to the local Nepali audience.\n";
+        $prompt .= "Respond ONLY with a valid JSON object where the 'description' key contains a SINGLE STRING of text. Use newlines (\\n) and bullet points inside the string. Exact structure expected: {\"description\": \"• Point 1\\n• Point 2\"}. Do not include markdown code blocks around the JSON.";
 
         $content = [
             [
