@@ -45,16 +45,50 @@ class HomeController extends Controller
         }
         $products = $displayProducts;
 
-        $flashSaleProducts = Product::with('category')->where('is_flash_sale', true)->latest()->take(10)->get()->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
+        $flashSaleProducts = $this->getFlashSaleProducts()->take(10);
         
         $settings = Setting::pluck('value', 'key')->toArray();
         return view('welcome', compact('products', 'categories', 'settings', 'flashSaleProducts'));
     }
 
+    private function getFlashSaleProducts()
+    {
+        $products = Product::with('category')->where(function($q) {
+            $q->where('is_flash_sale', true)
+              ->orWhere('bundles', 'LIKE', '%"is_flash_sale":true%')
+              ->orWhere('bundles', 'LIKE', '%"is_flash_sale":"1"%');
+        })->latest()->get()->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
+
+        $flashSaleProducts = collect();
+        foreach ($products as $product) {
+            if ($product->is_flash_sale && !$product->bundle_only) {
+                $virtual = clone $product;
+                $flashSaleProducts->push($virtual);
+            }
+            if (!empty($product->bundles) && is_array($product->bundles)) {
+                foreach ($product->bundles as $bundle) {
+                    if (isset($bundle['is_flash_sale']) && $bundle['is_flash_sale']) {
+                        $qty = (int) $bundle['qty'];
+                        $virtualProduct = clone $product;
+                        $virtualProduct->name = $product->name . ' - Pack of ' . $qty;
+                        $virtualProduct->price = (float) $bundle['price'];
+                        $virtualProduct->flash_sale_price = (float) $bundle['flash_sale_price'];
+                        $virtualProduct->bundle_qty = $qty;
+                        $virtualProduct->is_bundle_card = true;
+                        $virtualProduct->parent_product_slug = $product->slug;
+                        $virtualProduct->bundles = null;
+                        $flashSaleProducts->push($virtualProduct);
+                    }
+                }
+            }
+        }
+        return $flashSaleProducts;
+    }
+
     public function flashSales()
     {
         $categories = Category::all();
-        $flashSaleProducts = Product::with('category')->where('is_flash_sale', true)->latest()->get()->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
+        $flashSaleProducts = $this->getFlashSaleProducts();
         $settings = Setting::pluck('value', 'key')->toArray();
         return view('flash-sales', compact('flashSaleProducts', 'categories', 'settings'));
     }

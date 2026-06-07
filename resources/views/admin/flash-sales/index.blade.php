@@ -44,7 +44,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            @foreach($products as $product)
+                            @foreach($displayItems as $product)
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-4">
@@ -56,21 +56,29 @@
                                             </div>
                                         @endif
                                         <div>
-                                            <div class="font-bold text-gray-900">{{ $product->name }}</div>
+                                            <div class="font-bold text-gray-900 flex items-center gap-2">
+                                                {{ $product->name }}
+                                                @if(isset($product->is_bundle) && $product->is_bundle)
+                                                    <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-md font-bold">Bundle</span>
+                                                @endif
+                                            </div>
                                             <div class="text-xs text-gray-500">{{ $product->category->name ?? 'Uncategorized' }}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 font-bold text-gray-900">Rs.{{ number_format($product->price) }}</td>
+                                <td class="px-6 py-4 font-bold text-gray-900">Rs.{{ number_format($product->regular_price ?? $product->price) }}</td>
                                 <td class="px-6 py-4">
-                                    <form id="flash-sale-form-{{ $product->id }}" method="POST" action="{{ route('flash-sales.update', $product) }}">
+                                    <form id="flash-sale-form-{{ $product->id }}-{{ $product->is_bundle ? $product->bundle_index : 'main' }}" method="POST" action="{{ route('flash-sales.update', $product->id) }}">
                                         @csrf
+                                        @if(isset($product->is_bundle) && $product->is_bundle)
+                                            <input type="hidden" name="bundle_index" value="{{ $product->bundle_index }}">
+                                        @endif
                                         <input type="number" name="flash_sale_price" value="{{ $product->flash_sale_price }}" step="0.01" class="w-32 rounded-xl border-gray-200 bg-white shadow-sm focus:border-gray-900 py-1.5 text-sm" placeholder="e.g. 999">
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="hidden" name="is_flash_sale" value="0">
-                                            <input type="checkbox" name="is_flash_sale" value="1" class="sr-only peer" {{ $product->is_flash_sale ? 'checked' : '' }} onchange="document.getElementById('flash-sale-form-{{ $product->id }}').submit()">
+                                            <input type="checkbox" name="is_flash_sale" value="1" class="sr-only peer" {{ $product->is_flash_sale ? 'checked' : '' }} onchange="document.getElementById('flash-sale-form-{{ $product->id }}-{{ $product->is_bundle ? $product->bundle_index : 'main' }}').submit()">
                                             <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-mango/30 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-mango"></div>
                                         </label>
                                 </td>

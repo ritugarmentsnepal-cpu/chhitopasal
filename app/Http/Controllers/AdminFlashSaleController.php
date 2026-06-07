@@ -21,12 +21,52 @@ class AdminFlashSaleController extends Controller
         }
 
         if ($request->has('status') && $request->status == 'flash_sale') {
-            $query->where('is_flash_sale', true);
+            $query->where(function($q) {
+                $q->where('is_flash_sale', true)
+                  ->orWhere('bundles', 'LIKE', '%"is_flash_sale":true%')
+                  ->orWhere('bundles', 'LIKE', '%"is_flash_sale":"1"%');
+            });
         }
 
         $products = $query->latest()->paginate(20);
 
-        return view('admin.flash-sales.index', compact('products'));
+        $displayItems = collect();
+        foreach ($products as $product) {
+            if ($product->bundle_only && !empty($product->bundles) && is_array($product->bundles)) {
+                foreach ($product->bundles as $index => $bundle) {
+                    $virtual = clone $product;
+                    $virtual->is_bundle = true;
+                    $virtual->bundle_index = $index;
+                    $virtual->bundle_qty = $bundle['qty'];
+                    $virtual->name = $product->name . ' - Pack of ' . $bundle['qty'];
+                    $virtual->regular_price = $bundle['price'];
+                    $virtual->is_flash_sale = isset($bundle['is_flash_sale']) && $bundle['is_flash_sale'] ? true : false;
+                    $virtual->flash_sale_price = $bundle['flash_sale_price'] ?? null;
+                    // Reset ID for form handling so we can still use product->id but know it's a bundle
+                    $displayItems->push($virtual);
+                }
+            } else {
+                $product->is_bundle = false;
+                $product->regular_price = $product->price;
+                $displayItems->push($product);
+
+                if (!empty($product->bundles) && is_array($product->bundles)) {
+                    foreach ($product->bundles as $index => $bundle) {
+                        $virtual = clone $product;
+                        $virtual->is_bundle = true;
+                        $virtual->bundle_index = $index;
+                        $virtual->bundle_qty = $bundle['qty'];
+                        $virtual->name = $product->name . ' - Pack of ' . $bundle['qty'];
+                        $virtual->regular_price = $bundle['price'];
+                        $virtual->is_flash_sale = isset($bundle['is_flash_sale']) && $bundle['is_flash_sale'] ? true : false;
+                        $virtual->flash_sale_price = $bundle['flash_sale_price'] ?? null;
+                        $displayItems->push($virtual);
+                    }
+                }
+            }
+        }
+
+        return view('admin.flash-sales.index', compact('products', 'displayItems'));
     }
 
     /**
@@ -36,14 +76,25 @@ class AdminFlashSaleController extends Controller
     {
         $validated = $request->validate([
             'is_flash_sale' => 'required|boolean',
-            'flash_sale_price' => 'nullable|numeric|min:0'
+            'flash_sale_price' => 'nullable|numeric|min:0',
+            'bundle_index' => 'nullable|integer'
         ]);
 
-        $product->update([
-            'is_flash_sale' => $validated['is_flash_sale'],
-            'flash_sale_price' => $validated['is_flash_sale'] ? $validated['flash_sale_price'] : null,
-        ]);
+        if ($request->has('bundle_index') && $request->bundle_index !== null) {
+            $bundles = $product->bundles ?? [];
+            $index = $request->bundle_index;
+            if (isset($bundles[$index])) {
+                $bundles[$index]['is_flash_sale'] = (bool) $validated['is_flash_sale'];
+                $bundles[$index]['flash_sale_price'] = $validated['is_flash_sale'] ? $validated['flash_sale_price'] : null;
+                $product->update(['bundles' => $bundles]);
+            }
+        } else {
+            $product->update([
+                'is_flash_sale' => $validated['is_flash_sale'],
+                'flash_sale_price' => $validated['is_flash_sale'] ? $validated['flash_sale_price'] : null,
+            ]);
+        }
 
-        return redirect()->back()->with('success', 'Flash sale status updated for ' . $product->name);
+        return redirect()->back()->with('success', 'Flash sale status updated');
     }
 }
