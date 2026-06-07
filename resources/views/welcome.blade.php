@@ -163,111 +163,68 @@
     </div>
   </header>
 
-  <!-- Mobile Hero Banner Widget -->
-  <section class="md:hidden pt-[125px] px-4 pb-4">
-    <div class="bg-gray-100 rounded-2xl relative overflow-hidden h-44 flex flex-col justify-center border border-gray-200">
-      <img src="{{ asset('storage/artifacts/hero_woman_red_1780421907868.png') }}" class="absolute right-[-10px] bottom-0 h-[105%] object-contain z-10 drop-shadow-xl" alt="Fashion">
-      
-      <div class="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent z-10"></div>
-      
-      <div class="relative z-20 px-6 w-[70%]">
-        <span class="inline-block bg-gray-900 text-white text-[9px] font-bold uppercase tracking-widest px-3 py-1 mb-2">New Season</span>
-        <h1 class="text-xl font-display font-light leading-tight text-gray-900 mb-3">
-          Style that <span class="font-bold">Speaks</span>
-        </h1>
-        <a href="{{ route('shop') }}" class="inline-flex items-center justify-center text-gray-900 text-[11px] font-bold border-b border-gray-900 pb-0.5 hover:text-red-600 hover:border-red-600 transition-colors">
-          Explore Collection
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. Hero Section (Desktop Only) -->
-  <section class="hidden md:block bg-gray-50 pt-28 pb-20 relative overflow-hidden border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center justify-between">
-      
-      <!-- Left Column: Text -->
-      <div class="w-full md:w-[50%] mb-12 md:mb-0 text-center md:text-left z-20 md:pr-8 mt-12">
-        <span class="inline-block text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mb-4">New Arrivals &bull; 2024 Collection</span>
-        <h1 class="text-5xl md:text-6xl lg:text-[5rem] font-display font-light leading-[1.1] mb-6 text-gray-900 tracking-tight">
-          {!! nl2br(e(str_replace('Female', '<span class="font-bold">Female</span>', setting('hero_title') ?: "Stylish\nFemale Clothes"))) !!}
-        </h1>
-        <p class="text-lg text-gray-500 mb-10 max-w-lg mx-auto md:mx-0 font-light leading-relaxed">
-          {{ setting('hero_subtitle') ?: 'Discover the epitome of elegance. Curated fashion for the modern lifestyle.' }}
-        </p>
-        <div class="flex items-center justify-center md:justify-start gap-6">
-          <a href="{{ route('shop') }}" class="inline-flex justify-center bg-gray-900 text-white text-sm font-bold uppercase tracking-widest px-10 py-4 hover:bg-gray-800 transition-colors shadow-lg">
-            Shop Collection
+  <!-- 2. Hero Section / Flash Sale Banner -->
+  <section class="relative z-20 md:mt-20 pt-[80px] md:pt-0">
+    @if(setting('home_banner_desktop') || setting('home_banner_mobile'))
+      <a href="{{ route('frontend.flash-sales') }}" class="block w-full">
+        @if(setting('home_banner_desktop'))
+          <img src="{{ asset('storage/' . setting('home_banner_desktop')) }}" alt="Flash Sale" class="w-full h-auto hidden md:block object-cover">
+        @endif
+        @if(setting('home_banner_mobile'))
+          <img src="{{ asset('storage/' . setting('home_banner_mobile')) }}" alt="Flash Sale" class="w-full h-auto block md:hidden object-cover">
+        @endif
+      </a>
+    @else
+      <div class="bg-gray-900 border-y border-gray-800 p-8 sm:p-12 md:p-24 text-white flex flex-col md:flex-row items-center justify-center gap-8 relative overflow-hidden min-h-[400px]">
+        <!-- Subtle elegant pattern/texture -->
+        <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] mix-blend-overlay pointer-events-none"></div>
+        
+        <div class="flex-1 relative z-10 text-center flex flex-col items-center">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="h-[1px] w-12 bg-red-500"></div>
+            <span class="text-red-400 text-xs font-bold uppercase tracking-[0.2em]">Exclusive Event</span>
+            <div class="h-[1px] w-12 bg-red-500"></div>
+          </div>
+          <h2 class="text-4xl sm:text-6xl md:text-7xl font-display font-light tracking-tight mb-6">Flash <span class="font-bold text-white">Sales</span></h2>
+          <p class="text-gray-400 text-sm sm:text-base md:text-lg font-light max-w-2xl leading-relaxed mb-8">Curated selections at exceptional value. Discover premium items available for a limited time.</p>
+          <a href="{{ route('frontend.flash-sales') }}" class="group relative inline-flex items-center justify-center px-10 py-4 text-sm font-bold text-white uppercase tracking-widest border border-white/30 hover:border-white transition-colors duration-300 overflow-hidden bg-white/5 backdrop-blur-sm">
+            <span class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></span>
+            <span class="relative z-10 group-hover:text-gray-900 transition-colors duration-300">View Collection</span>
           </a>
         </div>
-
-        <!-- Social Proof -->
-        <div class="flex items-center gap-4 mt-16 mx-auto md:mx-0">
-          <div class="flex -space-x-3">
-            <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=1" alt="Customer">
-            <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=2" alt="Customer">
-            <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=3" alt="Customer">
-          </div>
-          <div>
-            <p class="text-xs font-bold text-gray-900">Trusted by thousands</p>
-            <p class="text-xs text-gray-500">4.9/5 Average Rating</p>
-          </div>
-        </div>
       </div>
-      
-      <!-- Right Column: Image -->
-      <div class="w-full md:w-[50%] relative flex justify-center z-10 mt-12">
-        <!-- Soft elegant background shape -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-gray-200 rounded-full z-0"></div>
-        <!-- Hero Image -->
-        <img src="{{ asset('storage/artifacts/hero_woman_red_1780421907868.png') }}" alt="Hero Fashion" class="w-full max-w-[400px] xl:max-w-[550px] object-contain relative z-10 drop-shadow-2xl">
-      </div>
-    </div>
+    @endif
   </section>
 
-  <!-- Flash Sales Section -->
+  <!-- Flash Sales Grid -->
   @if(isset($flashSaleProducts) && $flashSaleProducts->count() > 0)
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-16 relative z-20">
-    <!-- Formal Banner -->
-    <div class="bg-gray-900 border border-gray-800 p-8 sm:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8 relative shadow-2xl">
-      <!-- Subtle elegant pattern/texture -->
-      <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] mix-blend-overlay pointer-events-none"></div>
-      
-      <div class="flex-1 relative z-10 text-center md:text-left flex flex-col items-center md:items-start">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="h-[1px] w-12 bg-red-500"></div>
-          <span class="text-red-400 text-xs font-bold uppercase tracking-[0.2em]">Exclusive Event</span>
-          <div class="h-[1px] w-12 bg-red-500 md:hidden"></div>
-        </div>
-        <h2 class="text-3xl sm:text-5xl font-display font-light tracking-tight mb-3">Flash <span class="font-bold text-white">Sales</span></h2>
-        <p class="text-gray-400 text-sm sm:text-base font-light max-w-lg leading-relaxed">Curated selections at exceptional value. Discover premium items available for a limited time.</p>
-      </div>
-      
-      <div class="relative z-10 w-full md:w-auto flex justify-center md:justify-end">
-        <a href="{{ route('frontend.flash-sales') }}" class="group relative inline-flex items-center justify-center px-8 py-3 text-sm font-bold text-white uppercase tracking-widest border border-white/30 hover:border-white transition-colors duration-300 overflow-hidden">
-          <span class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></span>
-          <span class="relative z-10 group-hover:text-gray-900 transition-colors duration-300">View Collection</span>
-        </a>
-      </div>
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-16 relative z-20">
+    <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-4">
+      <h2 class="text-2xl font-display font-bold text-gray-900 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        Flash Sales
+      </h2>
+      <a href="{{ route('frontend.flash-sales') }}" class="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors">See All</a>
     </div>
-    
-    <!-- Flash Sale Preview Grid (Formal) -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200 border border-gray-200 mt-8 shadow-sm">
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8 stagger-grid">
       @foreach($flashSaleProducts->take(4) as $product)
-        <div class="bg-white p-6 relative group cursor-pointer hover:bg-gray-50 transition-colors duration-500" @click="window.location.href = '{{ url('product') }}/{{ $product->parent_product_slug ?: $product->slug }}{{ isset($product->bundle_qty) ? '?bundle=' . $product->bundle_qty : '' }}'">
-          <div class="absolute top-4 left-4 z-10">
-            <span class="bg-gray-900 text-white text-[9px] font-bold uppercase tracking-widest px-3 py-1">Limited</span>
+        <div class="bg-white border border-gray-100 rounded-lg md:rounded-2xl shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 transform hover:-translate-y-1 relative group cursor-pointer overflow-hidden flex flex-col" @click="window.location.href = '{{ url('product') }}/{{ $product->parent_product_slug ?: $product->slug }}{{ isset($product->bundle_qty) ? '?bundle=' . $product->bundle_qty : '' }}'">
+          <div class="absolute top-2 left-2 md:top-4 md:left-4 z-20">
+            <span class="bg-gray-900 text-white text-[9px] md:text-[10px] font-bold uppercase tracking-widest px-2 py-1 md:px-3 rounded-full flex flex-col items-center justify-center leading-none">Limited</span>
           </div>
           
-          <div class="aspect-[4/5] bg-transparent mb-6 overflow-hidden relative flex items-center justify-center">
+          <div class="relative bg-gray-50 overflow-hidden w-full aspect-[4/5] flex items-center justify-center p-4 transition-all duration-500">
             <img src="{{ asset('storage/' . $product->image_path) }}" class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-in-out">
           </div>
           
-          <div class="flex flex-col text-center">
-            <h3 class="font-bold text-gray-900 text-xs sm:text-sm uppercase tracking-wide line-clamp-1 mb-2">{{ $product->name }}</h3>
-            <div class="flex justify-center items-center gap-3">
-              <span class="text-[10px] sm:text-xs text-gray-400 line-through tracking-wider">Rs.{{ number_format($product->original_price) }}</span>
-              <span class="font-bold text-red-600 text-sm sm:text-base tracking-wider">Rs.{{ number_format($product->price) }}</span>
+          <div class="p-4 flex flex-col flex-grow relative bg-white border-t border-gray-50 text-center">
+            <h3 class="font-display font-medium text-gray-900 text-[13px] md:text-sm line-clamp-1 mb-1">{{ $product->name }}</h3>
+            <div class="mt-auto flex justify-center items-center gap-2">
+              <span class="text-gray-400 font-medium text-xs line-through">Rs.{{ number_format($product->original_price) }}</span>
+              <span class="text-red-600 font-bold text-sm md:text-base">Rs.{{ number_format($product->price) }}</span>
             </div>
           </div>
         </div>

@@ -45,34 +45,30 @@
   <!-- Hero Banner Settings -->
   <div class="bg-white rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-8">
     <h3 class="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
-      Hero Banner (Welcome Page)
+      Homepage Hero Banner (Flash Sale Banner)
     </h3>
     
     <div class="space-y-5">
-      <div>
-        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Hero Title</label>
-        <input name="hero_title" type="text" value="{{ setting('hero_title', 'Upgrade your lifestyle.') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
-      </div>
-      
-      <div>
-        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Hero Subtitle</label>
-        <textarea name="hero_subtitle" rows="2" class="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 font-medium">{{ setting('hero_subtitle', 'Discover the best tech, fashion, and home accessories delivered straight to your door.') }}</textarea>
-      </div>
-
-      <div>
-        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Call to Action Button Text</label>
-        <input name="hero_cta" type="text" value="{{ setting('hero_cta', 'Shop Collection') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
+      <div class="pt-4">
+        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Desktop Banner Image</label>
+        @if(setting('home_banner_desktop'))
+          <div class="mb-4 aspect-[21/9] bg-gray-100 rounded-xl overflow-hidden relative max-w-2xl">
+            <img src="{{ asset('storage/' . setting('home_banner_desktop')) }}" class="w-full h-full object-cover">
+          </div>
+        @endif
+        <input type="file" name="home_banner_desktop" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800" accept="image/*">
+        <p class="mt-2 text-xs text-gray-500 font-medium">Recommended size: <span class="font-bold">1920 x 600 pixels</span> (Wide). Max 4MB.</p>
       </div>
 
       <div class="pt-4 border-t border-gray-100">
-        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Hero Background Image</label>
-        @if(setting('hero_image'))
-          <div class="mb-4 aspect-video bg-gray-100 rounded-xl overflow-hidden relative">
-            <img src="{{ asset('storage/' . setting('hero_image')) }}" class="w-full h-full object-cover">
+        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Mobile Banner Image</label>
+        @if(setting('home_banner_mobile'))
+          <div class="mb-4 aspect-[4/5] bg-gray-100 rounded-xl overflow-hidden relative max-w-[300px]">
+            <img src="{{ asset('storage/' . setting('home_banner_mobile')) }}" class="w-full h-full object-cover">
           </div>
         @endif
-        <input type="file" name="hero_image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800" accept="image/*">
-        <p class="mt-2 text-xs text-gray-500 font-medium">Recommended image size: <span class="font-bold">1920 x 1080 pixels</span> (16:9 proportion). Max 4MB.</p>
+        <input type="file" name="home_banner_mobile" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-gray-900 file:text-white hover:file:bg-gray-800" accept="image/*">
+        <p class="mt-2 text-xs text-gray-500 font-medium">Recommended size: <span class="font-bold">800 x 1000 pixels</span> (Portrait). Max 2MB.</p>
       </div>
     </div>
   </div>

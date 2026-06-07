@@ -33,7 +33,7 @@ class SettingController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->except(['_token', 'hero_image', 'store_logo', 'store_favicon', 'redirect_tab']);
+        $data = $request->except(['_token', 'hero_image', 'store_logo', 'store_favicon', 'home_banner_desktop', 'home_banner_mobile', 'redirect_tab']);
         $tab = $request->input('redirect_tab', 'frontend');
 
         // SEC-MED-02: Allowlist of valid setting keys to prevent arbitrary key injection
@@ -62,7 +62,7 @@ class SettingController extends Controller
         ];
 
         // Handle image uploads separately
-        $fileFields = ['hero_image', 'store_logo', 'store_favicon'];
+        $fileFields = ['hero_image', 'store_logo', 'store_favicon', 'home_banner_desktop', 'home_banner_mobile'];
         foreach ($fileFields as $field) {
             if ($request->hasFile($field)) {
                 $path = $request->file($field)->store('settings', 'public');
