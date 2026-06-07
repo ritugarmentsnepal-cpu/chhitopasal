@@ -273,7 +273,7 @@
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8 stagger-grid">
             <template x-for="(product, index) in filteredProducts" :key="product.id + '_' + (product.bundle_qty || 0)">
                 <!-- Outer Card Container -->
-                <article class="bg-white md:bg-[#FF4C4C] rounded-2xl md:rounded-[2.5rem] p-0 md:p-1.5 shadow-sm md:shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 md:hover:-translate-y-2 flex flex-col group cursor-pointer relative border border-gray-100 md:border-none overflow-hidden" @click="window.location.href = '{{ url('product') }}/' + (product.parent_product_slug || product.slug)">
+                <article class="bg-white md:bg-[#FF4C4C] rounded-2xl md:rounded-[2.5rem] p-0 md:p-1.5 shadow-sm md:shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 md:hover:-translate-y-2 flex flex-col group cursor-pointer relative border border-gray-100 md:border-none overflow-hidden" @click="window.location.href = '{{ url('product') }}/' + (product.parent_product_slug || product.slug) + (product.bundle_qty ? '?bundle=' + product.bundle_qty : '')">
                     
                     <!-- Badge (Simulated New/Hot) -->
                     <div x-show="index % 3 === 0" class="absolute top-2 right-2 md:top-6 md:right-6 z-20">

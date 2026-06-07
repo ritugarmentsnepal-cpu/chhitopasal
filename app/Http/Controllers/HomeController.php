@@ -50,15 +50,37 @@ class HomeController extends Controller
     }
 
 
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
         // UX-02: Hide cost_price on product detail page to prevent leaking sensitive data
         $product = Product::with('category')->where('slug', $slug)->firstOrFail()
             ->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
+
+        $selectedBundleQty = $request->query('bundle');
+        $selectedBundle = null;
+
+        if ($product->bundle_only && !empty($product->bundles) && is_array($product->bundles)) {
+            if ($selectedBundleQty) {
+                $selectedBundle = collect($product->bundles)->firstWhere('qty', $selectedBundleQty);
+            }
+            if (!$selectedBundle) {
+                $selectedBundle = $product->bundles[0]; // default to first bundle
+            }
+            
+            // Update the main product data to represent the selected bundle
+            $product->name = $product->name . ' - Pack of ' . $selectedBundle['qty'];
+            $product->price = (float) $selectedBundle['price'];
+            $product->is_bundle_card = true;
+            $product->bundle_qty = (int) $selectedBundle['qty'];
+            $product->bundle_price = (float) $selectedBundle['price'];
+        } else {
+            $product->is_bundle_card = false;
+        }
+
         $products = Product::with('category')->latest()->get()
             ->makeHidden(['cost_price', 'stock', 'created_at', 'updated_at']);
         $settings = Setting::pluck('value', 'key')->toArray();
-        return view('product.show', compact('product', 'products', 'settings'));
+        return view('product.show', compact('product', 'products', 'settings', 'selectedBundle'));
     }
 
     public function privacyPolicy()

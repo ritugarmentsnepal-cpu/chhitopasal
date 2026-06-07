@@ -234,6 +234,22 @@
                     </div>
                 </div>
 
+                <!-- Available Packages (For bundle-only products) -->
+                @if($product->bundle_only && !empty($product->bundles) && count($product->bundles) > 1)
+                <div class="mb-6">
+                    <h4 class="text-xs md:text-sm font-black text-gray-900 mb-3 uppercase tracking-wider">Available Packages</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        @foreach($product->bundles as $bundle)
+                        <a href="{{ url('product/' . $product->slug) }}?bundle={{ $bundle['qty'] }}" 
+                           class="border-2 rounded-xl p-3 flex flex-col items-center justify-center transition-all {{ ($selectedBundle && $selectedBundle['qty'] == $bundle['qty']) ? 'border-mango bg-mango/10' : 'border-gray-200 hover:border-mango/50 hover:bg-gray-50' }}">
+                            <span class="font-black text-gray-900">{{ $bundle['qty'] }} Pack</span>
+                            <span class="text-sm font-bold text-gray-500">Rs.{{ number_format($bundle['price']) }}</span>
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                 <!-- Buy button (hidden on mobile — shown as sticky bar instead) -->
                 <button @click="triggerAddToCart({{ json_encode($product) }})" class="cp-btn-buy hidden md:flex w-full py-4 px-6 rounded-2xl text-base items-center justify-center gap-3 mb-5">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
@@ -565,15 +581,13 @@
                 },
 
                 triggerAddToCart(product) {
-                    if (product.bundle_only && product.bundles && product.bundles.length === 1) {
-                        // Bundle-only with single bundle: skip modal, add directly
-                        const bundle = product.bundles[0];
-                        const qty = parseInt(bundle.qty);
-                        const unitPrice = bundle.price / qty;
+                    // Bundle-only card: skip modal, add directly using the selected bundle qty
+                    if (product.is_bundle_card && product.bundle_qty) {
+                        const unitPrice = product.bundle_price / product.bundle_qty;
                         if (this.needsVariants(product)) {
-                            this.openVariantModal(product, qty, unitPrice, true);
+                            this.openVariantModal(product, product.bundle_qty, unitPrice, true);
                         } else {
-                            this.processAddToCart(product, qty, unitPrice, true, '', '');
+                            this.processAddToCart(product, product.bundle_qty, unitPrice, true, '', '');
                         }
                     } else if (product.bundles && product.bundles.length > 0) {
                         this.bundleProduct = product;
