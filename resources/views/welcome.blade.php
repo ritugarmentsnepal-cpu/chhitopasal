@@ -100,7 +100,7 @@
     @endif
 
     <!-- 1. Header -->
-    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 hidden md:block" :class="scrolled ? 'bg-white shadow-sm py-2' : 'bg-transparent py-4'">
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 hidden md:block bg-white/90 backdrop-blur-md border-b border-gray-100" :class="scrolled ? 'py-2 shadow-sm' : 'py-4'">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             
             <!-- Brand -->
@@ -108,146 +108,120 @@
                 @if(setting('store_logo'))
                     <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-8 md:h-10 w-auto object-contain">
                 @endif
-                <span class="text-xl md:text-2xl font-bold font-display tracking-tight transition-colors" :class="scrolled ? 'text-gray-900' : 'text-white'">
+                <span class="text-xl md:text-2xl font-bold font-display tracking-tight text-gray-900">
                     {{ setting('store_name', 'Chhito Pasal') }}
                 </span>
             </a>
 
             <!-- Desktop Nav -->
             <nav class="hidden md:flex items-center gap-8 font-medium">
-                <a href="#" class="px-4 py-1.5 rounded-full transition-colors text-sm font-bold" :class="scrolled ? 'bg-primary text-white' : 'bg-white/20 text-white hover:bg-white/30'">Home</a>
-                <a href="#shop" class="transition-colors text-sm" :class="scrolled ? 'text-gray-600 hover:text-primary' : 'text-white/80 hover:text-white'">Shop</a>
-                <a href="{{ route('company.profile') }}" class="transition-colors text-sm" :class="scrolled ? 'text-gray-600 hover:text-primary' : 'text-white/80 hover:text-white'">Company</a>
+                <a href="#" class="transition-colors text-sm font-bold text-gray-900 hover:text-red-600">Home</a>
+                <a href="#shop" class="transition-colors text-sm text-gray-600 hover:text-red-600">Shop</a>
+                <a href="{{ route('company.profile') }}" class="transition-colors text-sm text-gray-600 hover:text-red-600">Company</a>
             </nav>
 
             <!-- Actions -->
             <div class="flex items-center gap-4">
                 <div class="relative hidden md:block">
-                    <input type="text" x-model="searchQuery" placeholder="Search..." class="border-transparent rounded-full py-2 pl-10 pr-4 focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm w-64" :class="scrolled ? 'bg-gray-100 text-gray-900' : 'bg-white/20 text-white placeholder-white/70'">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-4 top-3" :class="scrolled ? 'text-gray-400' : 'text-white/70'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    <input type="text" x-model="searchQuery" placeholder="Search products..." class="border-gray-200 rounded-full py-2 pl-10 pr-4 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all text-sm w-64 bg-gray-50 text-gray-900 placeholder-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-4 top-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
-                
-                <button @click="mobileSearchOpen = !mobileSearchOpen" class="md:hidden transition-colors" :class="scrolled ? 'text-gray-600 hover:text-primary' : 'text-white hover:text-white/80'">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                </button>
 
-                <button @click="toggleCart()" class="relative transition-colors" :class="scrolled ? 'text-gray-600 hover:text-primary' : 'text-white hover:text-white/80'">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                    <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" x-transition class="absolute -top-2 -right-2 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white" :class="scrolled ? 'bg-primary' : 'bg-yellow-400'"></span>
+                <button @click="toggleCart()" class="relative transition-colors text-gray-800 hover:text-red-600 p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                    <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" x-transition class="absolute top-0 right-0 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center bg-gray-900 border border-white"></span>
                 </button>
-            </div>
-        </div>
-
-        <!-- Mobile Search -->
-        <div x-show="mobileSearchOpen" x-collapse class="md:hidden px-4 py-3 border-t" :class="scrolled ? 'bg-white border-gray-100' : 'bg-primary-dark border-white/10'">
-            <div class="relative">
-                <input type="text" x-model="searchQuery" placeholder="Search..." class="w-full border-transparent rounded-full py-2 pl-10 pr-4 focus:bg-white focus:ring-2 focus:ring-primary text-sm" :class="scrolled ? 'bg-gray-100 text-gray-900' : 'bg-white/20 text-white placeholder-white/70'" x-ref="mobileSearch" @keydown.escape="mobileSearchOpen = false">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-4 top-3" :class="scrolled ? 'text-gray-400' : 'text-white/70'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
         </div>
     </header>
 
     <!-- Mobile App Header -->
-    <header class="md:hidden fixed top-0 left-0 right-0 z-50 bg-white shadow-sm pb-3 pt-safe">
+    <header class="md:hidden fixed top-0 left-0 right-0 z-50 bg-white shadow-sm pb-3 pt-safe border-b border-gray-100">
         <div class="px-4 py-2 flex items-center justify-between">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
                 @if(setting('store_logo'))
                     <img src="{{ asset('storage/' . setting('store_logo')) }}" alt="{{ setting('store_name', 'Chhito Pasal') }}" class="h-7 w-auto object-contain">
                 @else
-                    <span class="text-xl font-bold font-display text-gray-900">
+                    <span class="text-xl font-bold font-display text-gray-900 tracking-tight">
                         {{ setting('store_name', 'Chhito Pasal') }}
                     </span>
                 @endif
             </a>
             <div class="flex items-center gap-3">
-                <button @click="toggleCart()" class="relative text-gray-800 bg-gray-50 p-2 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                    <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 -right-1 w-4 h-4 bg-[#FF4C4C] text-white rounded-full border border-white text-[9px] font-black flex items-center justify-center"></span>
+                <button @click="toggleCart()" class="relative text-gray-800 p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                    <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute top-0 right-0 w-4 h-4 bg-gray-900 text-white rounded-full border border-white text-[9px] font-black flex items-center justify-center"></span>
                 </button>
             </div>
         </div>
         <!-- Persistent Search Bar -->
         <div class="px-4 mt-1">
             <div class="relative">
-                <input type="text" x-model="searchQuery" placeholder="Search for products..." class="w-full border-gray-100 rounded-xl py-2 pl-10 pr-4 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-[#FF4C4C] focus:border-transparent text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <input type="text" x-model="searchQuery" placeholder="Search for products..." class="w-full border-gray-200 rounded-full py-2 pl-10 pr-4 bg-gray-50 text-gray-900 focus:ring-1 focus:ring-gray-900 focus:border-gray-900 text-sm placeholder-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
         </div>
     </header>
 
     <!-- Mobile Hero Banner Widget -->
     <section class="md:hidden pt-[115px] px-4 pb-4">
-        <div class="bg-[#FF4C4C] rounded-2xl relative overflow-hidden shadow-md h-44 flex flex-col justify-center">
-            <div class="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
-            <img src="{{ asset('storage/artifacts/hero_woman_red_1780421907868.png') }}" class="absolute right-[-20px] bottom-0 h-[110%] object-contain z-10 opacity-90 drop-shadow-lg">
+        <div class="bg-gray-100 rounded-2xl relative overflow-hidden h-44 flex flex-col justify-center border border-gray-200">
+            <img src="{{ asset('storage/artifacts/hero_woman_red_1780421907868.png') }}" class="absolute right-[-10px] bottom-0 h-[105%] object-contain z-10 drop-shadow-xl" alt="Fashion">
             
-            <div class="relative z-20 px-6 w-[65%]">
-                <span class="inline-block bg-white/20 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2">Exclusive</span>
-                <h1 class="text-xl font-display font-black leading-tight text-white mb-3">
-                    Style that Speaks
+            <div class="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent z-10"></div>
+            
+            <div class="relative z-20 px-6 w-[70%]">
+                <span class="inline-block bg-gray-900 text-white text-[9px] font-bold uppercase tracking-widest px-3 py-1 mb-2">New Season</span>
+                <h1 class="text-xl font-display font-light leading-tight text-gray-900 mb-3">
+                    Style that <span class="font-bold">Speaks</span>
                 </h1>
-                <a href="#shop" @click="document.getElementById('shop').scrollIntoView({behavior: 'smooth'})" class="inline-flex items-center justify-center bg-white text-[#FF4C4C] text-[11px] font-black px-4 py-2 rounded-full shadow-lg active:scale-95 transition-transform">
-                    Shop Now <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                <a href="#shop" @click="document.getElementById('shop').scrollIntoView({behavior: 'smooth'})" class="inline-flex items-center justify-center text-gray-900 text-[11px] font-bold border-b border-gray-900 pb-0.5 hover:text-red-600 hover:border-red-600 transition-colors">
+                    Explore Collection
                 </a>
             </div>
         </div>
     </section>
 
     <!-- 2. Hero Section (Desktop Only) -->
-    <section class="hidden md:block bg-[#FF4C4C] text-white pt-32 pb-32 md:pt-40 md:pb-48 relative overflow-hidden">
+    <section class="hidden md:block bg-gray-50 pt-28 pb-20 relative overflow-hidden border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center justify-between">
             
             <!-- Left Column: Text -->
-            <div class="w-full md:w-[50%] mb-12 md:mb-0 text-center md:text-left z-20 md:pr-8">
-                <span class="inline-block text-white/90 font-medium tracking-wide mb-3">Exclusive Offer 20% off This Week</span>
-                <h1 class="text-5xl md:text-6xl lg:text-[5.5rem] font-display font-bold leading-[1.1] mb-6 drop-shadow-sm">
-                    {!! nl2br(e(setting('hero_title') ?: "Stylish\nFemale Clothes")) !!}
+            <div class="w-full md:w-[50%] mb-12 md:mb-0 text-center md:text-left z-20 md:pr-8 mt-12">
+                <span class="inline-block text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mb-4">New Arrivals &bull; 2024 Collection</span>
+                <h1 class="text-5xl md:text-6xl lg:text-[5rem] font-display font-light leading-[1.1] mb-6 text-gray-900 tracking-tight">
+                    {!! nl2br(e(str_replace('Female', '<span class="font-bold">Female</span>', setting('hero_title') ?: "Stylish\nFemale Clothes"))) !!}
                 </h1>
-                <p class="text-lg md:text-xl text-white/90 mb-10 max-w-lg mx-auto md:mx-0">
-                    {{ setting('hero_subtitle') ?: 'Made from Soft, Durable, US-grown Supima Cotton.' }}
+                <p class="text-lg text-gray-500 mb-10 max-w-lg mx-auto md:mx-0 font-light leading-relaxed">
+                    {{ setting('hero_subtitle') ?: 'Discover the epitome of elegance. Curated fashion for the modern lifestyle.' }}
                 </p>
-                <div class="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 mb-12">
-                    <a href="#categories" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/20 text-white font-bold px-8 py-3.5 rounded-full hover:bg-white/30 transition-colors border border-white/30">
-                        Select Category
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 bg-white text-[#FF4C4C] rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                    </a>
-                    <a href="#shop" class="w-full sm:w-auto inline-flex justify-center bg-white text-[#FF4C4C] font-bold px-8 py-3.5 rounded-full hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl">
-                        Shop Now
+                <div class="flex items-center justify-center md:justify-start gap-6">
+                    <a href="#shop" class="inline-flex justify-center bg-gray-900 text-white text-sm font-bold uppercase tracking-widest px-10 py-4 hover:bg-gray-800 transition-colors shadow-lg">
+                        Shop Collection
                     </a>
                 </div>
 
                 <!-- Social Proof -->
-                <div class="flex items-center gap-4 bg-white/10 p-3 pr-6 rounded-full inline-flex mx-auto md:mx-0 backdrop-blur-sm border border-white/20 mb-8 md:mb-0">
+                <div class="flex items-center gap-4 mt-16 mx-auto md:mx-0">
                     <div class="flex -space-x-3">
-                        <img class="w-10 h-10 rounded-full border-2 border-[#FF4C4C] object-cover" src="https://i.pravatar.cc/100?img=1" alt="Customer">
-                        <img class="w-10 h-10 rounded-full border-2 border-[#FF4C4C] object-cover" src="https://i.pravatar.cc/100?img=2" alt="Customer">
-                        <img class="w-10 h-10 rounded-full border-2 border-[#FF4C4C] object-cover" src="https://i.pravatar.cc/100?img=3" alt="Customer">
+                        <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=1" alt="Customer">
+                        <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=2" alt="Customer">
+                        <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=3" alt="Customer">
                     </div>
                     <div>
-                        <p class="text-sm font-bold">Our Happy Customer</p>
-                        <p class="text-xs text-yellow-300 flex items-center gap-1">
-                            <span>⭐</span> 8.5 <span class="text-white/80">(453k Reviews)</span>
-                        </p>
+                        <p class="text-xs font-bold text-gray-900">Trusted by thousands</p>
+                        <p class="text-xs text-gray-500">4.9/5 Average Rating</p>
                     </div>
                 </div>
             </div>
             
             <!-- Right Column: Image -->
-            <div class="w-full md:w-[50%] relative flex justify-center z-10">
-                <!-- Large Circle Background -->
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[450px] md:h-[450px] bg-white/10 rounded-full blur-2xl md:blur-0 md:bg-[#FF6B6B] z-0 pointer-events-none"></div>
+            <div class="w-full md:w-[50%] relative flex justify-center z-10 mt-12">
+                <!-- Soft elegant background shape -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-gray-200 rounded-full z-0"></div>
                 <!-- Hero Image -->
-                <img src="{{ asset('storage/artifacts/hero_woman_red_1780421907868.png') }}" alt="Hero Fashion" class="w-full max-w-[300px] sm:max-w-[400px] xl:max-w-[500px] object-contain relative z-10 drop-shadow-2xl translate-x-2 translate-y-4">
+                <img src="{{ asset('storage/artifacts/hero_woman_red_1780421907868.png') }}" alt="Hero Fashion" class="w-full max-w-[400px] xl:max-w-[550px] object-contain relative z-10 drop-shadow-2xl">
             </div>
-        </div>
-
-        <!-- SVG Curve Separator -->
-        <div class="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none z-20 translate-y-1">
-            <svg class="block w-full h-[50px] md:h-[90px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" class="fill-white"></path>
-                <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" class="fill-white"></path>
-                <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" class="fill-white"></path>
-            </svg>
         </div>
     </section>
 
@@ -307,7 +281,7 @@
         
         <div class="flex justify-between items-end mb-8 border-b border-gray-200 pb-4">
             <h2 class="text-2xl font-display font-bold text-gray-900">New Arrival</h2>
-            <button @click="searchQuery = ''; activeCategory = 'all'" class="text-sm font-medium text-gray-500 hover:text-primary transition-colors">See All</button>
+            <button @click="searchQuery = ''; activeCategory = 'all'" class="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors">See All</button>
         </div>
 
         <!-- Empty State -->
@@ -317,65 +291,64 @@
             </div>
             <h3 class="text-lg font-display font-bold text-gray-900 mb-1">No Products Found</h3>
             <p class="text-gray-500 text-sm mb-4">We couldn't find anything matching your criteria.</p>
-            <button @click="searchQuery = ''; activeCategory = 'all'" class="text-primary font-bold text-sm hover:underline">Clear Filters</button>
+            <button @click="searchQuery = ''; activeCategory = 'all'" class="text-red-600 font-bold text-sm hover:underline">Clear Filters</button>
         </div>
 
         <!-- Product Grid -->
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8 stagger-grid">
             <template x-for="(product, index) in filteredProducts" :key="product.id + '_' + (product.bundle_qty || 0)">
                 <!-- Outer Card Container -->
-                <article class="bg-white md:bg-[#FF4C4C] rounded-2xl md:rounded-[2.5rem] p-0 md:p-1.5 shadow-sm md:shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 md:hover:-translate-y-2 flex flex-col group cursor-pointer relative border border-gray-100 md:border-none overflow-hidden" @click="window.location.href = '{{ url('product') }}/' + (product.parent_product_slug || product.slug) + (product.bundle_qty ? '?bundle=' + product.bundle_qty : '')">
+                <article class="bg-white border border-gray-100 rounded-lg md:rounded-2xl shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 transform hover:-translate-y-1 flex flex-col group cursor-pointer relative overflow-hidden" @click="window.location.href = '{{ url('product') }}/' + (product.parent_product_slug || product.slug) + (product.bundle_qty ? '?bundle=' + product.bundle_qty : '')">
                     
                     <!-- Badge (Simulated New/Hot) -->
-                    <div x-show="index % 3 === 0" class="absolute top-2 right-2 md:top-6 md:right-6 z-20">
-                        <span class="bg-[#FF4C4C] text-white text-[10px] md:text-[10px] font-black uppercase px-2 py-0.5 md:px-3 md:py-1 rounded-full shadow-sm md:shadow-md md:border md:border-white/20 flex flex-col items-center justify-center leading-none">
+                    <div x-show="index % 3 === 0" class="absolute top-2 right-2 md:top-4 md:right-4 z-20">
+                        <span class="bg-gray-900 text-white text-[9px] md:text-[10px] font-bold uppercase tracking-widest px-2 py-1 md:px-3 rounded-full flex flex-col items-center justify-center leading-none">
                             <span>New</span>
                         </span>
                     </div>
-                    <div x-show="index % 5 === 0" class="absolute top-2 left-2 md:top-6 md:left-6 z-20">
-                        <span class="bg-yellow-400 text-gray-900 text-[10px] font-black uppercase px-2 py-0.5 md:px-2 md:py-1 rounded-full shadow-sm md:shadow-md md:border md:border-white/50 flex flex-col items-center justify-center leading-none">
+                    <div x-show="index % 5 === 0" class="absolute top-2 left-2 md:top-4 md:left-4 z-20">
+                        <span class="bg-red-600 text-white text-[9px] md:text-[10px] font-bold uppercase tracking-widest px-2 py-1 md:px-3 rounded-full flex flex-col items-center justify-center leading-none">
                             <span>-20%</span>
                         </span>
                     </div>
                     <!-- Bundle Only Pack Badge -->
-                    <div x-show="product.is_bundle_card" class="absolute top-2 left-2 md:top-6 md:left-6 z-20">
-                        <span class="bg-amber-500 text-white text-[10px] font-black uppercase px-2 py-0.5 md:px-2 md:py-1 rounded-full shadow-sm md:shadow-md flex items-center gap-1 leading-none">
-                            <span>📦</span>
+                    <div x-show="product.is_bundle_card" class="absolute top-2 left-2 md:top-4 md:left-4 z-20">
+                        <span class="bg-amber-500 text-white text-[9px] md:text-[10px] font-bold uppercase tracking-widest px-2 py-1 md:px-3 rounded-full flex items-center gap-1 leading-none">
                             <span x-text="'Pack of ' + product.bundle_qty"></span>
                         </span>
                     </div>
                     
                     <!-- Inner Image Container -->
-                    <div class="relative bg-gray-50 md:bg-white md:rounded-[2rem] overflow-hidden w-full aspect-square md:aspect-[4/5] flex items-center justify-center p-4 md:p-6 transition-all duration-300 md:group-hover:bg-white/95">
-                        <img :src="'{{ asset('storage') }}/' + product.image_path" :alt="product.name" class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-sm md:drop-shadow-lg" loading="lazy" x-on:error="$el.src='https://via.placeholder.com/300?text=No+Image'">
+                    <div class="relative bg-gray-50 overflow-hidden w-full aspect-[4/5] flex items-center justify-center p-4 transition-all duration-500">
+                        <img :src="'{{ asset('storage') }}/' + product.image_path" :alt="product.name" class="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105" loading="lazy" x-on:error="$el.src='https://via.placeholder.com/300?text=No+Image'">
                         
                         <!-- Hover Action Button inside image area -->
-                        <div class="hidden md:flex absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 items-center justify-center backdrop-blur-[2px]">
-                            <button @click.stop.prevent="triggerAddToCart(product)" class="bg-[#FF4C4C] text-white font-bold py-3 px-6 rounded-full transform translate-y-8 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-xl flex items-center gap-2 hover:bg-red-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        <div class="hidden md:flex absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 items-center justify-center backdrop-blur-sm">
+                            <button @click.stop.prevent="triggerAddToCart(product)" class="bg-gray-900 text-white text-sm font-bold py-3 px-6 rounded-full transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-2 hover:bg-gray-800">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                                 Quick Add
                             </button>
                         </div>
                     </div>
                     
                     <!-- Text Content -->
-                    <div class="p-3 md:p-5 flex flex-col flex-grow relative">
-                        <div class="w-full flex flex-col mb-4 md:items-center">
-                            <h3 class="font-display font-bold text-gray-900 md:text-white text-[13px] md:text-lg line-clamp-2 md:line-clamp-1 mb-1 leading-snug" x-text="product.name"></h3>
-                            <p class="text-gray-400 md:text-white/80 text-[10px] md:text-xs font-medium md:uppercase md:tracking-wider line-clamp-1" x-text="product.category ? product.category.name : 'Accessories'"></p>
+                    <div class="p-4 flex flex-col flex-grow relative bg-white border-t border-gray-50">
+                        <div class="w-full flex flex-col mb-4 md:items-center text-center">
+                            <h3 class="font-display font-medium text-gray-900 text-[13px] md:text-sm line-clamp-1 mb-1" x-text="product.name"></h3>
+                            <p class="text-gray-400 text-[10px] md:text-xs font-medium uppercase tracking-widest line-clamp-1" x-text="product.category ? product.category.name : 'Accessories'"></p>
                         </div>
-                        <div class="mt-auto flex justify-between items-center md:justify-center">
+                        <div class="mt-auto flex justify-between md:justify-center items-center">
                             <template x-if="product.is_flash_sale">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-gray-400 md:text-white/60 font-bold text-xs md:text-sm line-through" x-text="'Rs.' + product.original_price.toLocaleString()"></span>
-                                    <span class="text-[#FF4C4C] md:text-white font-black text-sm md:text-lg md:px-6 md:py-1.5 md:bg-white/20 md:backdrop-blur-md rounded-full md:shadow-inner md:border md:border-white/20" x-text="'NPR ' + product.price.toLocaleString()"></span>
+                                    <span class="text-gray-400 font-medium text-xs line-through" x-text="'Rs.' + product.original_price.toLocaleString()"></span>
+                                    <span class="text-red-600 font-bold text-sm md:text-base" x-text="'Rs.' + product.price.toLocaleString()"></span>
                                 </div>
                             </template>
                             <template x-if="!product.is_flash_sale">
-                                <span class="text-gray-900 md:text-white font-black text-sm md:text-lg md:px-6 md:py-1.5 md:bg-white/20 md:backdrop-blur-md rounded-full md:shadow-inner md:border md:border-white/20" x-text="'NPR ' + product.price.toLocaleString()"></span>
+                                <span class="text-gray-900 font-bold text-sm md:text-base" x-text="'Rs.' + product.price.toLocaleString()"></span>
                             </template>
                             <!-- Mobile Quick Add Button -->
-                            <button @click.stop.prevent="triggerAddToCart(product)" class="md:hidden w-8 h-8 rounded-full bg-[#FF4C4C] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform">
+                            <button @click.stop.prevent="triggerAddToCart(product)" class="md:hidden w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center hover:bg-gray-200 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
                             </button>
                         </div>
@@ -385,89 +358,25 @@
         </div>
     </main>
 
-    <!-- 3. Banners Section -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 md:mt-8 relative z-20 mb-16">
-        <div class="flex flex-col gap-6 items-center justify-center">
-            <h2 class="text-2xl md:text-3xl font-display font-bold text-[#FF4C4C] text-center relative inline-block pb-3">
-                Premium Shades
-                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-[#FF4C4C]"></span>
-                    <span class="w-8 h-1 rounded-full bg-[#FF4C4C]"></span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-[#FF4C4C]"></span>
-                </div>
-            </h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
-                @foreach($categories->take(4) as $index => $category)
-                    @php
-                        $bgColors = ['bg-pink-100/80', 'bg-yellow-100/80', 'bg-gray-200/80', 'bg-orange-100/80'];
-                        $bgColor = $bgColors[$index % count($bgColors)];
-                    @endphp
-                    <div class="{{ $bgColor }} rounded-2xl md:rounded-full shadow-sm overflow-hidden flex items-center p-2 pr-4 md:pr-6 cursor-pointer hover:shadow-md transition-all hover:scale-[1.02] gap-3 md:gap-4 group border border-white" @click="activeCategory = '{{ $category->slug }}'; document.getElementById('shop').scrollIntoView({behavior: 'smooth'})">
-                        <div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden shrink-0 bg-white flex items-center justify-center">
-                            @if($category->thumbnail)
-                                <img src="{{ asset('storage/' . $category->thumbnail) }}" alt="{{ $category->name }}" class="w-full h-full object-cover">
-                            @else
-                                <span class="text-xl md:text-2xl opacity-50">🛍️</span>
-                            @endif
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="font-display font-bold text-gray-800 text-xs md:text-sm leading-tight group-hover:text-[#FF4C4C] transition-colors line-clamp-2">{{ $category->name }}</span>
-                            <span class="text-[9px] md:text-[10px] uppercase font-bold text-gray-500 bg-white/70 px-2 py-0.5 rounded-full mt-1 w-max">Click Now</span>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
+    <!-- Categories Scroller -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-display font-bold text-gray-900">Shop by Category</h2>
         </div>
-    </section>
-
-    <!-- 4. Category Icons Section -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div class="flex flex-col gap-6 items-center justify-center mb-8">
-            <h2 class="text-2xl md:text-3xl font-display font-bold text-[#FF4C4C] text-center relative inline-block pb-3">
-                Category
-                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-[#FF4C4C]"></span>
-                    <span class="w-8 h-1 rounded-full bg-[#FF4C4C]"></span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-[#FF4C4C]"></span>
-                </div>
-            </h2>
-        </div>
-        <div class="flex gap-6 md:gap-12 overflow-x-auto no-scrollbar pb-4 justify-start md:justify-center">
+        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
             <!-- All -->
-            <div class="flex flex-col items-center gap-2 cursor-pointer group" @click="activeCategory = 'all'">
-                <div class="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 flex items-center justify-center transition-all bg-white" :class="activeCategory === 'all' ? 'border-[#FF4C4C] text-[#FF4C4C] shadow-md' : 'border-gray-200 text-gray-400 group-hover:border-[#FF4C4C]/50'">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                </div>
-                <div class="flex flex-col items-center">
-                    <span class="text-sm font-bold transition-colors" :class="activeCategory === 'all' ? 'text-gray-900' : 'text-gray-500 group-hover:text-gray-900'">All</span>
-                    <div class="h-0.5 w-full mt-0.5 rounded-full bg-[#FF4C4C] transition-transform duration-300 origin-left" :class="activeCategory === 'all' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-50'"></div>
-                </div>
-            </div>
+            <button @click="activeCategory = 'all'" 
+                    class="px-6 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border"
+                    :class="activeCategory === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-900'">
+                All Categories
+            </button>
             
             @foreach($categories as $category)
-                <div class="flex flex-col items-center gap-2 cursor-pointer group" @click="activeCategory = '{{ $category->slug }}'">
-                    <div class="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 flex items-center justify-center transition-all bg-white" :class="activeCategory === '{{ $category->slug }}' ? 'border-transparent shadow-md' : 'border-transparent opacity-80 group-hover:opacity-100 group-hover:shadow-sm'">
-                        @if(str_contains(strtolower($category->name), 'dress'))
-                            <span class="text-3xl">👗</span>
-                        @elseif(str_contains(strtolower($category->name), 'shirt'))
-                            <span class="text-3xl">👕</span>
-                        @elseif(str_contains(strtolower($category->name), 'denim') || str_contains(strtolower($category->name), 'pant'))
-                            <span class="text-3xl">👖</span>
-                        @elseif(str_contains(strtolower($category->name), 'jacket'))
-                            <span class="text-3xl">🧥</span>
-                        @elseif(str_contains(strtolower($category->name), 'shoe'))
-                            <span class="text-3xl">👟</span>
-                        @elseif(str_contains(strtolower($category->name), 'coat'))
-                            <span class="text-3xl">🧥</span>
-                        @else
-                            <span class="text-3xl">📦</span>
-                        @endif
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <span class="text-sm font-bold transition-colors whitespace-nowrap" :class="activeCategory === '{{ $category->slug }}' ? 'text-[#FF4C4C]' : 'text-gray-500 group-hover:text-[#FF4C4C]/70'">{{ $category->name }}</span>
-                        <div class="h-0.5 w-full mt-0.5 rounded-full bg-[#FF4C4C] transition-transform duration-300 origin-center" :class="activeCategory === '{{ $category->slug }}' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-50'"></div>
-                    </div>
-                </div>
+                <button @click="activeCategory = '{{ $category->slug }}'" 
+                        class="px-6 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border"
+                        :class="activeCategory === '{{ $category->slug }}' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-900'">
+                    {{ $category->name }}
+                </button>
             @endforeach
         </div>
     </section>
