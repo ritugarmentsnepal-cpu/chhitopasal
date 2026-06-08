@@ -105,27 +105,31 @@ class FacebookWebhookController extends Controller
         return response('', 404);
     }
 
-    /**
-     * Process a single messaging event from the webhook.
-     */
     protected function handleMessagingEvent(array $event, ?string $pageId): void
     {
-        // Only handle text messages (skip delivery confirmations, read receipts, etc.)
-        if (!isset($event['message']) || !isset($event['message']['text'])) {
+        if (!isset($event['message'])) {
             return;
         }
 
-        // Skip echo messages (messages sent BY the page — these are our own replies)
-        if (isset($event['message']['is_echo']) && $event['message']['is_echo']) {
+        $messageText = $event['message']['text'] ?? '';
+        
+        // If there is no text but there is an attachment, log a placeholder so AI knows an image/file was sent
+        if (empty($messageText) && isset($event['message']['attachments'])) {
+            $messageText = '[Attachment/Image sent]';
+        }
+        
+        if (empty($messageText)) {
             return;
         }
+
+        $isEcho = isset($event['message']['is_echo']) && $event['message']['is_echo'];
 
         $senderId = $event['sender']['id'] ?? null;
-        $messageText = $event['message']['text'] ?? '';
+        $recipientId = $event['recipient']['id'] ?? null;
         $messageId = $event['message']['mid'] ?? null;
         $timestamp = isset($event['timestamp']) ? \Carbon\Carbon::createFromTimestamp($event['timestamp'] / 1000) : now();
 
-        if (!$senderId || !$pageId || empty($messageText)) {
+        if (!$senderId || !$pageId) {
             return;
         }
 
@@ -136,20 +140,30 @@ class FacebookWebhookController extends Controller
             return;
         }
 
-        // Resolve the thread ID for this sender
-        // In Facebook's Conversations API, the thread ID is typically: t_<sender_psid>
-        $threadId = $this->resolveThreadId($senderId, $page);
+        // If it's an echo, the user is the recipient. Otherwise, the user is the sender.
+        $userId = $isEcho ? $recipientId : $senderId;
 
-        // Try to fetch the sender's name if we don't have it
+        if (!$userId) {
+            return;
+        }
+
+        // Resolve the thread ID for this user
+        $threadId = $this->resolveThreadId($userId, $page);
+
+        // Try to fetch the sender's name if we don't have it (only if it's not an echo)
         $senderName = null;
-        try {
-            $graphService = app(\App\Services\FacebookGraphService::class);
-            $userProfile = $graphService->getUserProfile($senderId, $page->access_token);
-            if (isset($userProfile['name'])) {
-                $senderName = $userProfile['name'];
+        if (!$isEcho) {
+            try {
+                $graphService = app(\App\Services\FacebookGraphService::class);
+                $userProfile = $graphService->getUserProfile($userId, $page->access_token);
+                if (isset($userProfile['name'])) {
+                    $senderName = $userProfile['name'];
+                }
+            } catch (\Exception $e) {
+                Log::warning('Facebook Webhook: Failed to fetch user profile', ['error' => $e->getMessage()]);
             }
-        } catch (\Exception $e) {
-            Log::warning('Facebook Webhook: Failed to fetch user profile', ['error' => $e->getMessage()]);
+        } else {
+            $senderName = $page->page_name ?? 'Page';
         }
 
         // Log the incoming message to conversation logs (for AI training & context)
@@ -161,18 +175,22 @@ class FacebookWebhookController extends Controller
                     'thread_id' => $threadId,
                     'sender_id' => $senderId,
                     'sender_name' => $senderName,
-                    'is_page_reply' => false,
+                    'is_page_reply' => $isEcho,
                     'message' => $messageText,
                     'sent_at' => $timestamp,
                 ]
             );
         }
 
+        // If it is an echo message, we do NOT want the AI to reply. Stop here.
+        if ($isEcho) {
+            return;
+        }
+
         // Dispatch the AI reply job to run immediately AFTER sending the 200 OK to Facebook.
-        // This eliminates the need for a background queue daemon on CloudPanel FPM.
         ProcessAiReply::dispatchAfterResponse(
             $pageId,
-            $senderId,
+            $userId,
             $messageText,
             $threadId,
             $senderName
@@ -180,7 +198,7 @@ class FacebookWebhookController extends Controller
 
         Log::info('AI Agent: Dispatched ProcessAiReply job', [
             'page_id' => $pageId,
-            'sender_id' => $senderId,
+            'user_id' => $userId,
             'thread_id' => $threadId,
         ]);
     }
