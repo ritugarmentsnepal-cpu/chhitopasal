@@ -232,9 +232,6 @@ class AiAgentService
             }
         }
 
-        // Add the current incoming message
-        $messages[] = ['role' => 'user', 'content' => $messageText];
-
         // Sanitize all messages to ensure valid UTF-8 encoding before json_encode
         $messages = array_map(function ($msg) {
             if (isset($msg['content'])) {
@@ -291,7 +288,7 @@ class AiAgentService
         
         $phonePrompt = $customerPhone !== 'Not yet collected' 
             ? "- We already have the customer's phone number. DO NOT ask for it again." 
-            : "- Our primary goal is to get the customer's phone number to place the order. Naturally ask them for their phone number (e.g., 'number dinus call aauxa order ko lagi'). You can append it to your message, or send it as a separate text in the `messages` array. Do not ask forcefully if they are just browsing, but ask when they show interest in a product.";
+            : "- Our primary goal is to get the customer's phone number. You MUST ask for their phone number in EVERY SINGLE MESSAGE until they provide it (e.g., 'hajur order ko lagi phone number dinus na'). Even if they are just asking questions, append the request for their phone number at the end of your reply.";
 
         $prompt = <<<PROMPT
 You are a friendly sales representative for {$storeName} (छिटो पसल), a Nepali online store. 
