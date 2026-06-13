@@ -268,6 +268,129 @@
           <p class="text-[15px] font-medium text-gray-500 md:text-gray-600 leading-relaxed whitespace-pre-line">{{ $product->description }}</p>
         </div>
 
+        <!-- ========== INLINE ORDER FORM (Nepali) ========== -->
+        <div class="mt-6 mb-6 border-t border-gray-100 pt-6" x-show="!inlineSuccess">
+          <h3 class="text-[17px] md:text-lg font-black text-red-600 mb-5 leading-snug">
+            समान Order गर्न तलको Form भर्नुहोस्:
+          </h3>
+
+          <!-- Quantity -->
+          <div class="mb-5">
+            <label class="block text-sm font-bold text-gray-900 mb-2">Quantity / <span class="text-red-500">परिमाण*</span></label>
+            <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-1.5 border border-gray-200 w-max">
+              <button type="button" @click="inlineOrder.quantity = Math.max(1, inlineOrder.quantity - 1)" class="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition shadow-sm bg-gray-100 font-black text-lg">−</button>
+              <span class="font-black text-lg w-8 text-center" x-text="inlineOrder.quantity"></span>
+              <button type="button" @click="inlineOrder.quantity = Math.min(10, inlineOrder.quantity + 1)" class="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition shadow-sm bg-gray-100 font-black text-lg">+</button>
+            </div>
+          </div>
+
+          <!-- Name -->
+          <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-900 mb-2">Name<span class="text-red-500">*</span></label>
+            <div class="relative">
+              <span class="absolute left-0 top-0 h-full w-12 flex items-center justify-center text-gray-400">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              </span>
+              <input type="text" x-model="inlineOrder.name" placeholder="नाम" class="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 font-medium text-gray-900 placeholder-gray-400 transition-all">
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-900 mb-2">Phone<span class="text-red-500">*</span></label>
+            <div class="relative">
+              <span class="absolute left-0 top-0 h-full w-12 flex items-center justify-center text-gray-400">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+              </span>
+              <input type="tel" x-model="inlineOrder.phone" placeholder="फोन नं" class="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 font-medium text-gray-900 placeholder-gray-400 transition-all">
+            </div>
+          </div>
+
+          <!-- District -->
+          <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-900 mb-2">District<span class="text-red-500">*</span></label>
+            <div class="relative">
+              <span class="absolute left-0 top-0 h-full w-12 flex items-center justify-center text-gray-400">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              </span>
+              <input type="text" x-model="inlineOrder.district" placeholder="जिल्ला" class="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 font-medium text-gray-900 placeholder-gray-400 transition-all">
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="mb-5">
+            <label class="block text-sm font-bold text-gray-900 mb-2">Address<span class="text-red-500">*</span></label>
+            <div class="relative">
+              <span class="absolute left-0 top-0 h-full w-12 flex items-center justify-center text-gray-400 pt-1">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              </span>
+              <input type="text" x-model="inlineOrder.address" placeholder="ठेगाना (Location)" class="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 font-medium text-gray-900 placeholder-gray-400 transition-all">
+            </div>
+          </div>
+
+          <!-- Delivery Area -->
+          <div class="mb-5">
+            <label class="block text-sm font-bold text-gray-900 mb-3">Delivery Area</label>
+            <div class="space-y-2.5">
+              <label class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 cursor-pointer transition-all hover:border-amber-300" :class="inlineOrder.delivery_location === 'inside' ? 'border-amber-400 bg-amber-50/50 ring-1 ring-amber-400' : ''">
+                <div class="flex items-center gap-3">
+                  <input type="radio" x-model="inlineOrder.delivery_location" value="inside" class="w-4 h-4 text-amber-500 focus:ring-amber-400 border-gray-300">
+                  <span class="font-bold text-gray-900 text-sm">काठमाडौं भित्र <span class="text-gray-400 font-medium">(Inside Kathmandu)</span></span>
+                </div>
+                <span class="font-black text-amber-600 text-sm">Rs.{{ setting('delivery_charge_inside', 50) }}</span>
+              </label>
+              <label class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 cursor-pointer transition-all hover:border-amber-300" :class="inlineOrder.delivery_location === 'outside' ? 'border-amber-400 bg-amber-50/50 ring-1 ring-amber-400' : ''">
+                <div class="flex items-center gap-3">
+                  <input type="radio" x-model="inlineOrder.delivery_location" value="outside" class="w-4 h-4 text-amber-500 focus:ring-amber-400 border-gray-300">
+                  <span class="font-bold text-gray-900 text-sm">काठमाडौं बाहिर <span class="text-gray-400 font-medium">(Outside Kathmandu)</span></span>
+                </div>
+                <span class="font-black text-amber-600 text-sm">Rs.{{ setting('delivery_charge_outside', 100) }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="bg-gray-50 rounded-2xl border border-gray-200 p-4 mb-5">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm font-medium text-gray-500">Product Price</span>
+              <span class="text-sm font-bold text-gray-900">Rs.<span x-text="({{ $product->price }} * inlineOrder.quantity).toLocaleString()"></span></span>
+            </div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm font-medium text-gray-500">Delivery Charge</span>
+              <span class="text-sm font-bold text-gray-900">Rs.<span x-text="inlineDeliveryCharge.toLocaleString()"></span></span>
+            </div>
+            <div class="border-t border-gray-200 pt-2 mt-2 flex justify-between items-center">
+              <span class="text-base font-black text-gray-900">Total</span>
+              <span class="text-xl font-black text-gray-900">Rs.<span x-text="inlineTotal.toLocaleString()"></span></span>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <p x-show="inlineFormError" x-text="inlineFormError" x-transition class="text-red-500 text-sm font-bold bg-red-50 p-3 rounded-xl border border-red-100 mb-4"></p>
+
+          <!-- Submit Button -->
+          <button @click="placeInlineOrder()" :disabled="inlineSubmitting" class="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-black py-4 rounded-2xl text-base transition-all shadow-lg shadow-red-500/25 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <svg x-show="!inlineSubmitting" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+            <svg x-show="inlineSubmitting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <span x-text="inlineSubmitting ? 'Processing...' : 'अभी अर्डर गर्नुहोस् (Order Now)'"></span>
+          </button>
+
+          <p class="text-center text-xs text-gray-400 mt-3 font-medium">💵 Cash on Delivery — कुनै अग्रिम भुक्तानी आवश्यक छैन</p>
+        </div>
+
+        <!-- Inline Order Success Message -->
+        <div x-show="inlineSuccess" x-transition class="mt-6 mb-6 border-t border-gray-100 pt-6">
+          <div class="bg-green-50 border border-green-200 rounded-2xl p-6 text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+            </div>
+            <h3 class="text-xl font-black text-green-800 mb-2">Order सफलतापूर्वक प्राप्त भयो!</h3>
+            <p class="text-green-600 font-medium text-sm">हामी तपाईंलाई छिट्टै सम्पर्क गर्नेछौं।</p>
+            <p class="text-green-600 font-medium text-sm mt-1">(We will contact you shortly.)</p>
+          </div>
+        </div>
+        <!-- ========== END INLINE ORDER FORM ========== -->
+
         <!-- Trust badges / Attributes row -->
         <div class="flex justify-between md:grid md:grid-cols-2 gap-2 md:overflow-x-auto no-scrollbar mt-auto pt-6 border-t md:border-divider border-transparent">
           <div class="flex flex-col items-center gap-2 md:flex-row md:cp-trust-badge group">
@@ -559,6 +682,75 @@
         pendingVariantQty: 1,
         pendingVariantPrice: 0,
         pendingVariantIsBundle: false,
+
+        // Inline order form state
+        inlineOrder: { name: '', phone: '', district: '', address: '', delivery_location: 'inside', quantity: 1 },
+        inlineFormError: '',
+        inlineSubmitting: false,
+        inlineSuccess: false,
+
+        get inlineDeliveryCharge() {
+          return this.inlineOrder.delivery_location === 'inside' ? {{ (int) setting('delivery_charge_inside', 50) }} : {{ (int) setting('delivery_charge_outside', 100) }};
+        },
+
+        get inlineTotal() {
+          return ({{ $product->price }} * this.inlineOrder.quantity) + this.inlineDeliveryCharge;
+        },
+
+        async placeInlineOrder() {
+          // Validate
+          if (!this.inlineOrder.name.trim()) { this.inlineFormError = 'कृपया नाम भर्नुहोस् (Please enter your name)'; return; }
+          if (!this.inlineOrder.phone.trim()) { this.inlineFormError = 'कृपया फोन नम्बर भर्नुहोस् (Please enter phone number)'; return; }
+          if (!this.inlineOrder.district.trim()) { this.inlineFormError = 'कृपया जिल्ला भर्नुहोस् (Please enter your district)'; return; }
+          if (!this.inlineOrder.address.trim()) { this.inlineFormError = 'कृपया ठेगाना भर्नुहोस् (Please enter your address)'; return; }
+
+          this.inlineFormError = '';
+          this.inlineSubmitting = true;
+
+          try {
+            const response = await fetch('{{ url("checkout") }}', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                customer_name: this.inlineOrder.name.trim(),
+                customer_phone: this.inlineOrder.phone.trim(),
+                address: this.inlineOrder.district.trim() + ', ' + this.inlineOrder.address.trim(),
+                delivery_location: this.inlineOrder.delivery_location,
+                source: 'Web',
+                items: [{
+                  id: {{ $product->id }},
+                  quantity: this.inlineOrder.quantity
+                }]
+              })
+            });
+
+            if (response.ok) {
+              // Facebook Pixel: Purchase
+              if (typeof fbq !== 'undefined') {
+                fbq('track', 'Purchase', {
+                  value: this.inlineTotal,
+                  currency: 'NPR',
+                  content_type: 'product',
+                  contents: [{ id: '{{ $product->id }}', quantity: this.inlineOrder.quantity }]
+                });
+              }
+              this.trackEvent('purchase', { url: window.location.href });
+              this.inlineSuccess = true;
+              this.inlineSubmitting = false;
+            } else {
+              const errorData = await response.json();
+              this.inlineFormError = errorData.message || 'Error placing order. कृपया पुन: प्रयास गर्नुहोस्।';
+              this.inlineSubmitting = false;
+            }
+          } catch (error) {
+            this.inlineFormError = 'Network error. कृपया पुन: प्रयास गर्नुहोस्।';
+            this.inlineSubmitting = false;
+          }
+        },
 
         init() {
           this.$watch('cart', val => localStorage.setItem('cart', JSON.stringify(val)));
