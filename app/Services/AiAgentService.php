@@ -127,7 +127,8 @@ class AiAgentService
 
             // Handle phone number detection → create lead order
             if (!empty($aiResponse['detected_phone']) && !$threadState->order_id) {
-                $this->createLeadOrder($threadState, $aiResponse['detected_phone'], $senderName ?? $threadState->customer_name);
+                $orderDetails = $aiResponse['order_details'] ?? [];
+                $this->createLeadOrder($threadState, $aiResponse['detected_phone'], $senderName ?? $threadState->customer_name, $orderDetails);
             }
 
             // Handle complaint detection → create support ticket
@@ -288,7 +289,7 @@ class AiAgentService
         
         $phonePrompt = $customerPhone !== 'Not yet collected' 
             ? "- We already have the customer's phone number. DO NOT ask for it again." 
-            : "- Our primary goal is to get the customer's phone number. You MUST ask for their phone number in EVERY SINGLE MESSAGE until they provide it (e.g., 'hajur order ko lagi phone number dinus na'). Even if they are just asking questions, append the request for their phone number at the end of your reply.";
+            : "- We need the customer's phone number to process their order. HOWEVER, DO NOT ask for it immediately or in every message. ONLY ask for it organically ONCE they show clear intent to buy (e.g., they say 'I want this', 'Send me this', or they have finished asking questions).";
 
         $prompt = <<<PROMPT
 You are a friendly sales representative for {$storeName} (छिटो पसल), a Nepali online store. 
@@ -299,14 +300,18 @@ You are chatting with a customer on Facebook Messenger. You are a real employee,
   • If customer uses Roman Nepali ("k xa", "kati ho") → YOU MUST reply in Roman Nepali.
   • If customer uses Devanagari ("के छ", "कति हो") → YOU MUST reply in Devanagari.
   • If customer uses English → YOU MUST reply in English.
-- Keep it natural, casual, and short (1-2 sentences). Use words like "hajur", "dai", "didi".
-- DO NOT repeat the same greetings (like "Hajur, ma yeta nai chu", "Hajur ma yeta nai chu") in every message. Only greet in the very first message.
+- Keep your replies EXTREMELY short, natural, and conversational (strictly 1-2 short sentences). Use words like "hajur", "dai", "didi".
+- DO NOT write long paragraphs. Customers want quick, meaningful text messages.
+- DO NOT repeat greetings (like "Hajur, ma yeta nai chu"). Only greet in the very first message.
 
 ═══ CONTEXT & LOGIC RULES ═══
-- READ THE CHAT HISTORY. Understand exactly which product the customer is talking about.
+- READ THE CHAT HISTORY CAREFULLY. Remember what product you are talking about and what info you already provided.
+- DO NOT repeat answers or information you already gave in previous messages.
 - ONLY provide details and photos for the SPECIFIC product the user asks about. If they ask about a "transparent bag", do NOT send details or images of a "shoe bag" or any other product.
 - Answer EXACTLY what the user is asking. Do not give irrelevant info.
-- DO NOT push the price in every single message. It is illogical. Only mention the price if they ask for it, or if you are introducing a product for the first time.
+- If it is not clear which product they are talking about from the context, politely ask them to clarify or send a picture.
+- DO NOT push the price in every message. Only mention it if they ask, or when introducing a product.
+- If the user's message is "[Attachment/Image sent]", it means they sent a photo. Acknowledge it and ask how you can help them with it.
 
 ═══ MAIN OBJECTIVE: PHONE NUMBER ═══
 {$phonePrompt}
@@ -322,6 +327,9 @@ Delivery: Inside Valley Rs. {$deliveryInside}, Outside Rs. {$deliveryOutside} (C
 ═══ KNOWLEDGE BASE ═══
 {$this->buildKnowledgeBase()}
 
+═══ TRAINING EXAMPLES (HOW TO TALK NATURALLY) ═══
+{$this->buildTrainingExamples()}
+
 ═══ CURRENT STATE ═══
 Stage: {$threadState->conversation_stage}
 Customer: {$customerName}
@@ -330,11 +338,12 @@ Order: {$orderCreated}
 
 ═══ RESPONSE FORMAT ═══
 You MUST respond with ONLY a valid JSON object. Example:
-{"messages": ["Namaste hajur! Yo tshirt available cha.", "Order garna ko lagi number dinus call aauxa."], "attachment_url": "https://example.com/image.jpg", "detected_phone": null, "is_complaint": false, "complaint_category": null, "complaint_summary": null}
+{"messages": ["Namaste hajur! Yo tshirt available cha.", "Order garna ko lagi number dinus call aauxa."], "attachment_url": "https://example.com/image.jpg", "detected_phone": null, "order_details": null, "is_complaint": false, "complaint_category": null, "complaint_summary": null}
 
 - "messages": An array of 1 to 3 string messages to send. Separate your thoughts naturally instead of sending one huge paragraph. DO NOT repeat "Hajur ma yeta nai chu" or similar repetitive filler text.
 - "attachment_url": ONLY provide an Image URL if you are specifically introducing the product the user asked about, OR if they explicitly ask for a photo. Otherwise null.
 - "detected_phone": Extract Nepali phone number if provided (e.g. 98xxxxxxxx). Else null.
+- "order_details": If the user provides info for an order (or you already know it from context), extract it into an object: {"product_name": "exact name from catalog", "quantity": 1, "price": 1000, "address": "User's address if provided"}. Else null.
 - "is_complaint": true if they are complaining. Else false.
 - "complaint_category": e.g., "late_delivery", "wrong_product", "refund", "other".
 PROMPT;
@@ -537,6 +546,7 @@ PROMPT;
             'messages' => [$content],
             'attachment_url' => null,
             'detected_phone' => $this->extractPhoneNumber($originalMessage),
+            'order_details' => null,
             'is_complaint' => false,
             'complaint_category' => null,
             'complaint_summary' => null,
@@ -572,18 +582,47 @@ PROMPT;
     /**
      * Create a pending order (lead) from an AI conversation.
      */
-    protected function createLeadOrder(AiThreadState $threadState, string $phone, ?string $customerName): void
+    protected function createLeadOrder(AiThreadState $threadState, string $phone, ?string $customerName, array $orderDetails = []): void
     {
         try {
+            $address = !empty($orderDetails['address']) ? $orderDetails['address'] : 'To be confirmed';
+            $price = !empty($orderDetails['price']) ? (float)$orderDetails['price'] : 0;
+            $qty = !empty($orderDetails['quantity']) ? (int)$orderDetails['quantity'] : 1;
+            $totalAmount = $price > 0 ? ($price * $qty) : 0;
+
+            $productName = !empty($orderDetails['product_name']) ? $orderDetails['product_name'] : 'Unknown';
+
             $order = Order::create([
                 'customer_name' => $customerName ?? 'Facebook Lead',
                 'customer_phone' => $phone,
-                'address' => 'To be confirmed',
-                'total_amount' => 0,
+                'address' => $address,
+                'total_amount' => $totalAmount,
                 'status' => 'pending',
                 'source' => 'facebook_ai',
-                'remarks' => "Auto-created by AI Agent from Facebook conversation. Thread: {$threadState->thread_id}",
+                'remarks' => "Auto-created by AI Agent from Facebook conversation. Thread: {$threadState->thread_id}. Expected Product: {$productName}",
             ]);
+
+            // Try to link the product if provided
+            if (!empty($orderDetails['product_name'])) {
+                // Find matching product (loose match)
+                $product = Product::where('name', 'LIKE', '%' . $orderDetails['product_name'] . '%')->first();
+                
+                if ($product) {
+                    $itemPrice = $price > 0 ? $price : $product->price;
+                    
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $product->id,
+                        'quantity' => $qty,
+                        'price_at_purchase' => $itemPrice,
+                        'cost_at_purchase' => $product->cost_price ?? 0,
+                    ]);
+                    
+                    if ($totalAmount == 0) {
+                        $order->update(['total_amount' => $itemPrice * $qty]);
+                    }
+                }
+            }
 
             $threadState->update([
                 'order_id' => $order->id,
@@ -595,6 +634,7 @@ PROMPT;
                 'order_id' => $order->id,
                 'phone' => $phone,
                 'thread_id' => $threadState->thread_id,
+                'details' => $orderDetails
             ]);
 
         } catch (\Exception $e) {
