@@ -50,7 +50,7 @@
               @endif
               <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-2.5 py-1 rounded-lg shadow-sm text-xs font-black text-gray-900 border border-gray-100 flex gap-2 items-center">
                 @if($product->video_path)
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-wildOrchid" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" /></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-mango" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" /></svg>
                 @endif
                 @if($product->additional_images && count($product->additional_images) > 0)
                   <span class="text-gray-500 font-bold">+{{ count($product->additional_images) }}</span>
@@ -59,7 +59,7 @@
               </div>
             </div>
             <div class="p-5 flex-1 flex flex-col relative">
-              <span class="absolute top-0 right-5 -mt-3 bg-wildOrchid text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
+              <span class="absolute top-0 right-5 -mt-3 bg-mango text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
                 {{ $product->category->name ?? 'Uncategorized' }}
               </span>
               @if($product->bundle_only)
@@ -68,7 +68,7 @@
                 </span>
               @endif
               <h4 class="font-black text-lg mb-1 leading-tight text-gray-900 mt-1">{{ $product->name }}</h4>
-              <p class="text-wildOrchid font-bold text-lg mb-3">Rs.{{ number_format($product->price) }}</p>
+              <p class="text-mango font-bold text-lg mb-3">Rs.{{ number_format($product->price) }}</p>
               <p class="text-sm text-gray-500 mb-4 line-clamp-2 flex-1">{{ $product->description }}</p>
               
               <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between">

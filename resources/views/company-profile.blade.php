@@ -35,7 +35,7 @@
       pointer-events: none;
       background: 
         radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.15), transparent 50%),
-        radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.15), transparent 50%);
+        radial-gradient(circle at 85% 30%, rgba(101, 188, 180, 0.15), transparent 50%);
     }
 
     .text-gradient {

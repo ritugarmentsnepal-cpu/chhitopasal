@@ -36,7 +36,7 @@
                 <tr class="hover:bg-gray-50/50 transition-colors group">
                   <td class="p-4 pl-6 align-middle">
                     <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 bg-wildOrchid/10 text-wildOrchid rounded-xl flex items-center justify-center font-black text-sm border border-wildOrchid/20">
+                      <div class="w-10 h-10 bg-mango/10 text-mango rounded-xl flex items-center justify-center font-black text-sm border border-mango/20">
                         {{ strtoupper(substr($customer->latest_name, 0, 1)) }}
                       </div>
                       <div class="font-black text-gray-900 ">{{ $customer->latest_name }}</div>
@@ -57,7 +57,7 @@
                     {{ \Carbon\Carbon::parse($customer->last_order_date)->diffForHumans() }}
                   </td>
                   <td class="p-4 pr-6 align-middle text-right">
-                    <a href="{{ route('customers.show', $customer->customer_phone) }}" class="inline-flex items-center gap-1 text-wildOrchid font-bold hover:text-gray-900 transition-colors bg-wildOrchid/5 hover:bg-gray-100 px-4 py-2 rounded-lg">
+                    <a href="{{ route('customers.show', $customer->customer_phone) }}" class="inline-flex items-center gap-1 text-mango font-bold hover:text-gray-900 transition-colors bg-mango/5 hover:bg-gray-100 px-4 py-2 rounded-lg">
                       View Details
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                     </a>

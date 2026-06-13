@@ -74,7 +74,7 @@
   @endif
 
   <!-- Header -->
-  <header class="cp-header fixed top-0 left-0 right-0 z-40 hidden md:block">
+  <header class="cp-header fixed top-0 left-0 right-0 z-40 hidden md:block bg-white/80 backdrop-blur-xl shadow-glass border-b border-white/20">
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-full">
       
       <a href="{{ route('home') }}" class="flex items-center gap-2 group flex-shrink-0 min-w-0">
@@ -86,14 +86,14 @@
           $brandParts = explode(' ', $brandName, 2);
         @endphp
         <span class="text-[15px] md:text-lg font-black tracking-tight leading-none">
-          <span class="text-primary">{{ $brandParts[0] }}</span><span class="text-gray-900">{{ isset($brandParts[1]) ? ' '.$brandParts[1] : '' }}</span>
+          <span class="gradient-text">{{ $brandParts[0] }}</span><span class="text-gray-900">{{ isset($brandParts[1]) ? ' '.$brandParts[1] : '' }}</span>
         </span>
       </a>
 
       <div class="hidden md:flex items-center flex-1 max-w-2xl px-12 gap-8">
         <nav class="flex gap-6 font-bold text-gray-600">
-          <a href="{{ route('home') }}" class="hover:text-gray-900 transition-colors">Home</a>
-          <a href="{{ url('/#shop') }}" class="hover:text-gray-900 transition-colors">Shop</a>
+          <a href="{{ route('home') }}" class="hover:text-primary transition-colors">Home</a>
+          <a href="{{ url('/#shop') }}" class="hover:text-primary transition-colors">Shop</a>
         </nav>
       </div>
 
@@ -101,10 +101,10 @@
         <a href="{{ route('home') }}" class="md:hidden p-2 rounded-xl text-gray-600 active:scale-95 transition-transform hover:bg-gray-100">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         </a>
-        <button @click="toggleCart()" class="relative bg-gray-900 text-white p-3 rounded-xl hover:bg-gray-800 transition active:scale-95 shadow-sm hidden md:flex items-center gap-2 group">
+        <button @click="toggleCart()" class="relative gradient-bg-vibrant text-white p-3 rounded-xl hover:shadow-glow transition active:scale-95 shadow-btn hidden md:flex items-center gap-2 group">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
           <span class="font-bold">Cart</span>
-          <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" x-transition class="absolute -top-2 -right-2 bg-primary text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-sm"></span>
+          <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" x-transition class="absolute -top-2 -right-2 bg-white text-primary text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-primary/20 shadow-sm"></span>
         </button>
         <button @click="toggleCart()" class="relative p-2 rounded-xl text-gray-600 active:scale-95 transition-transform hover:bg-gray-100 md:hidden">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
@@ -116,13 +116,13 @@
 
   <!-- Mobile Header -->
   <header class="md:hidden absolute top-0 left-0 right-0 z-50 px-4 py-4 pt-safe flex items-center justify-between pointer-events-none">
-    <button class="w-10 h-10 flex items-center justify-center text-gray-900 bg-white/80 backdrop-blur-md rounded-full shadow-sm pointer-events-auto active:scale-95 transition-transform" onclick="history.back()">
+    <button class="w-10 h-10 flex items-center justify-center text-gray-900 bg-white/80 backdrop-blur-xl rounded-full shadow-glass pointer-events-auto active:scale-95 transition-transform border border-white/30" onclick="history.back()">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
     </button>
     <div class="flex items-center gap-2 pointer-events-auto">
-      <button @click="toggleCart()" class="w-10 h-10 relative flex items-center justify-center text-gray-900 bg-white/80 backdrop-blur-md rounded-full shadow-sm active:scale-95 transition-transform">
+      <button @click="toggleCart()" class="w-10 h-10 relative flex items-center justify-center text-gray-900 bg-white/80 backdrop-blur-xl rounded-full shadow-glass active:scale-95 transition-transform border border-white/30">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-        <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white rounded-full border border-white text-[10px] font-black flex items-center justify-center"></span>
+        <span x-show="totalCartQuantity > 0" x-text="totalCartQuantity" class="absolute -top-1 -right-1 w-5 h-5 gradient-bg-vibrant text-white rounded-full border-2 border-white text-[10px] font-black flex items-center justify-center shadow-btn"></span>
       </button>
     </div>
   </header>
@@ -200,9 +200,9 @@
         </div>
 
         <!-- Price block (Desktop only since mobile has sticky bar) -->
-        <div class="hidden md:block bg-gradient-to-br from-amber-50 to-amber-100/60 border border-primary/25 rounded-2xl p-4 md:p-5 mb-4 relative overflow-hidden">
-          <div class="absolute -right-5 -top-5 w-20 h-20 bg-primary/20 rounded-full blur-2xl"></div>
-          <p class="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-amber-700 mb-1 relative z-10">Our Price</p>
+        <div class="hidden md:block bg-gradient-to-br from-primary/5 to-accent-pink/5 border border-primary/15 rounded-2xl p-4 md:p-5 mb-4 relative overflow-hidden">
+          <div class="absolute -right-5 -top-5 w-20 h-20 bg-primary/10 rounded-full blur-2xl"></div>
+          <p class="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-primary mb-1 relative z-10">Our Price</p>
           <div class="flex items-baseline gap-1.5 relative z-10">
             @if($product->is_flash_sale)
               <span class="text-lg font-bold text-gray-400 line-through">Rs.{{ number_format($product->original_price) }}</span>
@@ -210,7 +210,7 @@
               <span class="text-3xl md:text-5xl font-black text-[#FF4C4C] tracking-tighter leading-none">{{ number_format($product->price) }}</span>
             @else
               <span class="text-base md:text-lg font-bold text-amber-600">Rs.</span>
-              <span class="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-none">{{ number_format($product->price) }}</span>
+              <span class="text-3xl md:text-5xl font-black gradient-text tracking-tighter leading-none">{{ number_format($product->price) }}</span>
             @endif
           </div>
         </div>
@@ -241,7 +241,7 @@
           <div class="grid grid-cols-2 gap-3">
             @foreach($product->bundles as $bundle)
             <a href="{{ url('product/' . $product->slug) }}?bundle={{ $bundle['qty'] }}" 
-              class="border-2 rounded-xl p-3 flex flex-col items-center justify-center transition-all {{ ($selectedBundle && $selectedBundle['qty'] == $bundle['qty']) ? 'border-mango bg-mango/10' : 'border-gray-200 hover:border-mango/50 hover:bg-gray-50' }}">
+              class="border-2 rounded-xl p-3 flex flex-col items-center justify-center transition-all {{ ($selectedBundle && $selectedBundle['qty'] == $bundle['qty']) ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50' }}">
               <span class="font-black text-gray-900">{{ $bundle['qty'] }} Pack</span>
               <span class="text-sm font-bold text-gray-500">Rs.{{ number_format($bundle['price']) }}</span>
             </a>
@@ -251,7 +251,7 @@
         @endif
 
         <!-- Buy button (hidden on mobile — shown as sticky bar instead) -->
-        <button @click="document.getElementById('inline-order-form').scrollIntoView({behavior: 'smooth', block: 'start'})" class="cp-btn-buy hidden md:flex w-full py-4 px-6 rounded-2xl text-base items-center justify-center gap-3 mb-5">
+        <button @click="document.getElementById('inline-order-form').scrollIntoView({behavior: 'smooth', block: 'start'})" class="cp-btn-buy hidden md:flex w-full py-4 px-6 rounded-2xl text-base items-center justify-center gap-3 mb-5 gradient-bg-vibrant text-white font-bold shadow-btn hover:shadow-glow transition-all active:scale-[0.98]">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
           Buy Now
         </button>
@@ -272,9 +272,9 @@
         <div id="inline-order-form" class="mt-8 mb-8" x-show="!inlineSuccess">
           <div class="max-w-md bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-5 md:p-7 mx-auto relative overflow-hidden">
             <!-- Decorative accent -->
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-500 to-red-500"></div>
+            <div class="absolute top-0 left-0 right-0 h-1 gradient-bg-vibrant"></div>
 
-            <h3 class="text-[17px] md:text-lg font-black text-red-600 mb-5 leading-snug flex items-center gap-2">
+            <h3 class="text-[17px] md:text-lg font-black text-primary mb-5 leading-snug flex items-center gap-2">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
               समान Order गर्न तलको Form भर्नुहोस्:
             </h3>
@@ -296,7 +296,7 @@
                 <span class="absolute left-0 top-0 h-full w-10 flex items-center justify-center text-gray-400">
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 </span>
-                <input type="text" x-model="inlineOrder.name" placeholder="नाम" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all">
+                <input type="text" x-model="inlineOrder.name" placeholder="नाम" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm font-medium text-gray-900 placeholder-gray-400 transition-all">
               </div>
             </div>
 
@@ -307,7 +307,7 @@
                 <span class="absolute left-0 top-0 h-full w-10 flex items-center justify-center text-gray-400">
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                 </span>
-                <input type="tel" x-model="inlineOrder.phone" placeholder="फोन नं" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all">
+                <input type="tel" x-model="inlineOrder.phone" placeholder="फोन नं" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm font-medium text-gray-900 placeholder-gray-400 transition-all">
               </div>
             </div>
 
@@ -318,7 +318,7 @@
                 <span class="absolute left-0 top-0 h-full w-10 flex items-center justify-center text-gray-400 pt-1">
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 </span>
-                <input type="text" x-model="inlineOrder.address" placeholder="जिल्ला, गाउँ / टोल (Location)" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all">
+                <input type="text" x-model="inlineOrder.address" placeholder="जिल्ला, गाउँ / टोल (Location)" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm font-medium text-gray-900 placeholder-gray-400 transition-all">
               </div>
             </div>
 
@@ -326,19 +326,19 @@
             <div class="mb-5">
               <label class="block text-[13px] font-bold text-gray-900 mb-2">Delivery Area</label>
               <div class="space-y-2">
-                <label class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 cursor-pointer transition-all hover:border-amber-300" :class="inlineOrder.delivery_location === 'inside' ? 'border-amber-400 bg-amber-50/50 ring-1 ring-amber-400' : ''">
+                <label class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 cursor-pointer transition-all hover:border-primary/40" :class="inlineOrder.delivery_location === 'inside' ? 'border-primary bg-primary/5 ring-1 ring-primary' : ''">
                   <div class="flex items-center gap-2.5">
-                    <input type="radio" x-model="inlineOrder.delivery_location" value="inside" class="w-3.5 h-3.5 text-amber-500 focus:ring-amber-400 border-gray-300">
+                    <input type="radio" x-model="inlineOrder.delivery_location" value="inside" class="w-3.5 h-3.5 text-primary focus:ring-primary border-gray-300">
                     <span class="font-bold text-gray-900 text-xs">काठमाडौं भित्र <span class="text-gray-400 font-medium">(Inside Ktm)</span></span>
                   </div>
-                  <span class="font-black text-amber-600 text-xs">Rs.{{ setting('delivery_charge_inside', 50) }}</span>
+                  <span class="font-black text-primary text-xs">Rs.{{ setting('delivery_charge_inside', 50) }}</span>
                 </label>
-                <label class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 cursor-pointer transition-all hover:border-amber-300" :class="inlineOrder.delivery_location === 'outside' ? 'border-amber-400 bg-amber-50/50 ring-1 ring-amber-400' : ''">
+                <label class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 cursor-pointer transition-all hover:border-primary/40" :class="inlineOrder.delivery_location === 'outside' ? 'border-primary bg-primary/5 ring-1 ring-primary' : ''">
                   <div class="flex items-center gap-2.5">
-                    <input type="radio" x-model="inlineOrder.delivery_location" value="outside" class="w-3.5 h-3.5 text-amber-500 focus:ring-amber-400 border-gray-300">
+                    <input type="radio" x-model="inlineOrder.delivery_location" value="outside" class="w-3.5 h-3.5 text-primary focus:ring-primary border-gray-300">
                     <span class="font-bold text-gray-900 text-xs">काठमाडौं बाहिर <span class="text-gray-400 font-medium">(Outside Ktm)</span></span>
                   </div>
-                  <span class="font-black text-amber-600 text-xs">Rs.{{ setting('delivery_charge_outside', 100) }}</span>
+                  <span class="font-black text-primary text-xs">Rs.{{ setting('delivery_charge_outside', 100) }}</span>
                 </label>
               </div>
             </div>
@@ -363,7 +363,7 @@
             <p x-show="inlineFormError" x-text="inlineFormError" x-transition class="text-red-500 text-xs font-bold bg-red-50 p-2.5 rounded-xl border border-red-100 mb-4"></p>
 
             <!-- Submit Button -->
-            <button @click="placeInlineOrder()" :disabled="inlineSubmitting" class="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-black py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-red-500/25 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <button @click="placeInlineOrder()" :disabled="inlineSubmitting" class="w-full gradient-bg-vibrant hover:shadow-glow text-white font-black py-3.5 rounded-xl text-sm transition-all shadow-btn active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               <svg x-show="!inlineSubmitting" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
               <svg x-show="inlineSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               <span x-text="inlineSubmitting ? 'Processing...' : 'अभी अर्डर गर्नुहोस् (Order Now)'"></span>
@@ -421,8 +421,10 @@
   </main>
 
   <!-- Footer -->
-  <footer class="bg-gray-900 text-white pt-12 md:pt-20 pb-28 md:pb-10 mt-6 md:mt-10">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+  <footer class="bg-gray-900 text-white pt-12 md:pt-20 pb-28 md:pb-10 mt-6 md:mt-10 relative overflow-hidden">
+    <div class="absolute -top-20 -right-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-20 -left-20 w-72 h-72 bg-accent-pink/10 rounded-full blur-3xl"></div>
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <!-- Mobile App-like Footer -->
       <div class="md:hidden flex flex-col items-center justify-center text-center">
         @if(setting('store_logo'))
@@ -441,18 +443,27 @@
         <p class="text-[9px] text-gray-600 mt-2 font-medium">
           &copy; {{ date('Y') }} {{ setting('store_name', 'Chhito Pasal') }}
         </p>
+
+        <a href="{{ route('login') }}" class="mt-4 px-4 py-1.5 rounded-full bg-gray-500/10 text-gray-400 hover:bg-primary/20 hover:text-primary transition-colors text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 w-max mx-auto border border-gray-500/20">
+            Staff Login
+        </a>
       </div>
 
       <!-- Desktop Copyright -->
       <div class="hidden md:block text-center text-gray-400 font-medium text-sm">
         <p>&copy; {{ date('Y') }} {{ setting('store_name', 'Chhito Pasal') }}. All rights reserved.</p>
+
+        <a href="{{ route('login') }}" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-primary/20 hover:text-primary transition-all text-xs font-bold flex items-center gap-2 text-white/70">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+            Staff Login
+        </a>
       </div>
     </div>
   </footer>
 
   <!-- Mobile Floating Buy Button -->
   <div class="md:hidden fixed bottom-4 left-4 right-4 z-40">
-    <button @click="document.getElementById('inline-order-form').scrollIntoView({behavior: 'smooth', block: 'start'})" class="w-full bg-[#18181b] text-white rounded-[2rem] p-2 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.25)] active:scale-95 transition-transform">
+    <button @click="document.getElementById('inline-order-form').scrollIntoView({behavior: 'smooth', block: 'start'})" class="w-full gradient-bg-vibrant text-white rounded-[2rem] p-2 flex items-center justify-between shadow-btn active:scale-95 transition-transform hover:shadow-glow">
       <span class="pl-5 font-bold text-sm tracking-wide">Buy</span>
       <div class="flex items-center gap-3 bg-white/10 rounded-full px-5 py-3">
         <div class="flex flex-col items-end">
@@ -538,7 +549,7 @@
           <p x-show="variantError && !selectedSize" class="text-red-500 text-xs font-bold mt-2">Please select a size</p>
         </div>
       </template>
-      <button @click="confirmVariantAddToCart()" class="mt-4 w-full bg-mango text-gray-900 font-black py-4 rounded-2xl hover:bg-yellow-400 active:scale-95 transition-all shadow-sm flex items-center justify-center gap-2">
+      <button @click="confirmVariantAddToCart()" class="mt-4 w-full gradient-bg-vibrant text-white font-black py-4 rounded-2xl hover:shadow-glow active:scale-95 transition-all shadow-btn flex items-center justify-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
         Buy
       </button>
@@ -590,8 +601,8 @@
                 </div>
               </template>
               <template x-if="item.isBundle">
-                <div class="flex items-center justify-between gap-3 bg-wildOrchid/10 w-max rounded-xl px-3 py-1 border border-wildOrchid/20 mt-1">
-                  <span class="text-wildOrchid font-black text-sm" x-text="item.quantity + ' pcs Bundle'"></span>
+                <div class="flex items-center justify-between gap-3 bg-mango/10 w-max rounded-xl px-3 py-1 border border-mango/20 mt-1">
+                  <span class="text-mango font-black text-sm" x-text="item.quantity + ' pcs Bundle'"></span>
                   <button @click="cart.splice(index, 1); if(cart.length===0) cartOpen=false;" class="text-red-500 hover:text-red-700 ml-2 p-1 bg-white rounded-md shadow-sm">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>

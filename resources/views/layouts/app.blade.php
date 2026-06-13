@@ -22,8 +22,8 @@
    body { font-family: 'Outfit', sans-serif; }
   </style>
  </head>
- <body class="font-sans antialiased text-gray-900 bg-slate-50 selection:bg-wildOrchid selection:text-white" x-data="{ sidebarOpen: false, sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true' }" x-init="$watch('sidebarCollapsed', val => localStorage.setItem('sidebarCollapsed', val))">
-  <div class="min-h-screen flex bg-slate-50 ">
+ <body class="font-sans antialiased text-gray-900 bg-[#FAFAFE] selection:bg-primary selection:text-white mesh-bg" x-data="{ sidebarOpen: false, sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true' }" x-init="$watch('sidebarCollapsed', val => localStorage.setItem('sidebarCollapsed', val))">
+  <div class="min-h-screen flex bg-[#FAFAFE]">
    @include('layouts.navigation')
 
    <!-- Main Content Wrapper -->

@@ -71,7 +71,7 @@
             $label = $roleLabels[$user->role] ?? str_replace('_', ' ', $user->role);
           @endphp
           <span class="{{ $badgeClass }} text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">{{ $label }}</span>
-          <a href="{{ route('users.index') }}" class="text-wildOrchid font-bold text-sm hover:text-gray-900 transition-colors ml-auto">Edit Permissions &rarr;</a>
+          <a href="{{ route('users.index') }}" class="text-mango font-bold text-sm hover:text-gray-900 transition-colors ml-auto">Edit Permissions &rarr;</a>
         </div>
       </div>
     @endforeach

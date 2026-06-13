@@ -204,7 +204,7 @@
                     <div class="text-sm text-gray-900 font-medium line-clamp-1">{{ $order->address }}</div>
                     <div class="text-xs text-gray-500">{{ $order->city ?? 'N/A' }}</div>
                     @if($order->pathao_consignment_id)
-                      <div class="mt-1 text-xs font-bold text-wildOrchid flex items-center gap-1">
+                      <div class="mt-1 text-xs font-bold text-mango flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         {{ $order->pathao_consignment_id }}
                       </div>

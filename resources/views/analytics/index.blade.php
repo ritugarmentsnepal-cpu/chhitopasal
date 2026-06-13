@@ -271,7 +271,7 @@
           <div class="space-y-3">
             @php
               $total = $categoryBreakdown->sum('count');
-              $chartColors = ['#6366f1','#f59e0b','#10b981','#ef4444','#3b82f6','#ec4899','#14b8a6','#f97316'];
+              $chartColors = ['#6366f1','#f59e0b','#10b981','#ef4444','#3b82f6','#EDC55B','#14b8a6','#f97316'];
             @endphp
             @foreach($categoryBreakdown as $i => $item)
             @php $pct = $total > 0 ? round(($item->count / $total) * 100) : 0; @endphp
@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function () {
         labels: {!! json_encode($categoryChartData['labels']) !!},
         datasets: [{
           data: {!! json_encode($categoryChartData['data']) !!},
-          backgroundColor: ['#6366f1','#f59e0b','#10b981','#ef4444','#3b82f6','#ec4899','#14b8a6','#f97316'],
+          backgroundColor: ['#6366f1','#f59e0b','#10b981','#ef4444','#3b82f6','#EDC55B','#14b8a6','#f97316'],
           borderWidth: 0,
           hoverOffset: 6
         }]

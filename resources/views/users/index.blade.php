@@ -87,7 +87,7 @@
             <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
               <span class="text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider"
                  :class="getRoleBadgeClass(user.role)" x-text="getRoleLabel(user.role)"></span>
-              <button @click="openEditModal(user)" class="text-wildOrchid font-bold text-sm hover:text-gray-900 transition-colors ml-auto">Edit & Permissions</button>
+              <button @click="openEditModal(user)" class="text-mango font-bold text-sm hover:text-gray-900 transition-colors ml-auto">Edit & Permissions</button>
             </div>
           </div>
         </template>

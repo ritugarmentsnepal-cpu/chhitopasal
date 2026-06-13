@@ -2,12 +2,12 @@
  <x-slot name="header">
   <div class="flex items-center justify-between">
    <div>
-    <h2 class="font-black text-2xl text-gray-900 leading-tight tracking-tight">
+    <h2 class="font-black text-2xl text-gray-900 leading-tight tracking-tight font-display">
      {{ __('Dashboard') }}
     </h2>
-    <p class="text-sm font-bold text-gray-500 mt-1">Here's what's happening today.</p>
+    <p class="text-sm font-medium text-gray-500 mt-1">Here's what's happening today.</p>
    </div>
-   <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'manual-order-modal')" class="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 transition duration-150 active:scale-95 flex items-center gap-2">
+   <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'manual-order-modal')" class="gradient-bg-vibrant text-white font-bold py-2.5 px-5 rounded-xl shadow-btn hover:shadow-glow transition-all duration-200 active:scale-95 flex items-center gap-2">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
     </svg>
@@ -20,9 +20,9 @@
   <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
    
    @if (session('success'))
-    <div class="mb-6 bg-green-50 text-green-700 px-6 py-4 rounded-2xl shadow-sm border border-green-100 flex items-center gap-3 animate-[fadeInUp_0.3s_ease-out]">
-     <div class="bg-green-100 p-1.5 rounded-full">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="mb-6 bg-emerald-50 text-emerald-700 px-6 py-4 rounded-2xl shadow-sm border border-emerald-100 flex items-center gap-3 animate-fade-up">
+     <div class="bg-emerald-100 p-1.5 rounded-full">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
       </svg>
      </div>
@@ -31,7 +31,7 @@
    @endif
 
    @if(isset($lowStockProducts) && $lowStockProducts->count() > 0)
-    <div class="mb-6 bg-red-50 text-red-700 px-6 py-4 rounded-2xl shadow-sm border border-red-100 flex flex-col sm:flex-row sm:items-center gap-4 animate-[fadeInUp_0.3s_ease-out]">
+    <div class="mb-6 bg-red-50 text-red-700 px-6 py-4 rounded-2xl shadow-sm border border-red-100 flex flex-col sm:flex-row sm:items-center gap-4 animate-fade-up">
      <div class="flex items-center gap-3 font-bold">
       <div class="bg-red-100 p-1.5 rounded-full animate-pulse">
        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -51,20 +51,22 @@
     </div>
    @endif
 
-   <!-- Analytics Widgets (Clean, No Sparklines) -->
-   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+   <!-- Analytics Widgets -->
+   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 stagger-grid">
     <!-- Pending -->
-    <div class="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_12px_40px_rgb(0,0,0,0.07)] transition-shadow">
-     <div class="absolute top-0 right-0 p-3 opacity-[0.07] group-hover:opacity-[0.12] transition-opacity">
-      <svg class="w-14 h-14 text-mango" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-card border border-gray-100/50 relative overflow-hidden group hover:shadow-card-hover hover:border-primary/20 transition-all duration-300 animate-fade-up">
+     <div class="absolute -right-4 -top-4 w-20 h-20 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors"></div>
+     <div class="absolute top-0 right-0 p-3 opacity-[0.07] group-hover:opacity-[0.15] transition-opacity">
+      <svg class="w-14 h-14 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
      </div>
      <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 relative z-10">Pending</p>
      <p class="text-3xl sm:text-4xl font-black text-gray-900 relative z-10">{{ $pendingOrdersCount }}</p>
     </div>
 
     <!-- Ready to Ship -->
-    <div class="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_12px_40px_rgb(0,0,0,0.07)] transition-shadow">
-     <div class="absolute top-0 right-0 p-3 opacity-[0.07] group-hover:opacity-[0.12] transition-opacity">
+    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-card border border-gray-100/50 relative overflow-hidden group hover:shadow-[0_20px_40px_rgba(59,130,246,0.1)] hover:border-blue-200 transition-all duration-300 animate-fade-up">
+     <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-500/5 rounded-full group-hover:bg-blue-500/10 transition-colors"></div>
+     <div class="absolute top-0 right-0 p-3 opacity-[0.07] group-hover:opacity-[0.15] transition-opacity">
       <svg class="w-14 h-14 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
      </div>
      <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 relative z-10">Ready to Ship</p>
@@ -72,17 +74,19 @@
     </div>
 
     <!-- Shipped -->
-    <div class="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_12px_40px_rgb(0,0,0,0.07)] transition-shadow">
-     <div class="absolute top-0 right-0 p-3 opacity-[0.07] group-hover:opacity-[0.12] transition-opacity">
-      <svg class="w-14 h-14 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-card border border-gray-100/50 relative overflow-hidden group hover:shadow-[0_20px_40px_rgba(16,185,129,0.1)] hover:border-emerald-200 transition-all duration-300 animate-fade-up">
+     <div class="absolute -right-4 -top-4 w-20 h-20 bg-emerald-500/5 rounded-full group-hover:bg-emerald-500/10 transition-colors"></div>
+     <div class="absolute top-0 right-0 p-3 opacity-[0.07] group-hover:opacity-[0.15] transition-opacity">
+      <svg class="w-14 h-14 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
      </div>
      <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 relative z-10">Shipped</p>
-     <p class="text-3xl sm:text-4xl font-black text-green-500 relative z-10">{{ $shippedOrdersCount }}</p>
+     <p class="text-3xl sm:text-4xl font-black text-emerald-500 relative z-10">{{ $shippedOrdersCount }}</p>
     </div>
 
     <!-- Pipeline Value -->
-    <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-[24px] p-5 sm:p-6 shadow-[0_10px_40px_rgb(17,24,39,0.2)] border border-gray-700 relative overflow-hidden group">
-     <div class="absolute -right-6 -top-6 w-28 h-28 bg-mango/20 rounded-full blur-2xl group-hover:bg-mango/30 transition-colors"></div>
+    <div class="bg-gradient-to-br from-[#0F172A] via-[#1E1B4B] to-[#0F172A] rounded-2xl p-5 sm:p-6 shadow-[0_10px_40px_rgba(236, 128, 40,0.15)] border border-primary/20 relative overflow-hidden group animate-fade-up">
+     <div class="absolute -right-6 -top-6 w-28 h-28 bg-primary/15 rounded-full blur-2xl group-hover:bg-primary/25 transition-colors"></div>
+     <div class="absolute -left-6 -bottom-6 w-20 h-20 bg-accent-pink/10 rounded-full blur-2xl"></div>
      <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 relative z-10">Pipeline Value</p>
      <p class="text-2xl sm:text-3xl font-black text-white relative z-10 truncate">
       Rs.{{ number_format($pendingOrders->sum('total_amount') + $confirmedOrders->sum('total_amount') + $shippedOrders->sum('total_amount')) }}
@@ -90,20 +94,20 @@
     </div>
    </div>
 
-   <!-- Quick Actions (Compact Toolbar) -->
+   <!-- Quick Actions -->
    @if(in_array(auth()->user()->role, ['admin', 'manager', 'accountant']))
-   <div class="mb-8 bg-white p-2 sm:p-3 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-gray-100 flex overflow-x-auto no-scrollbar gap-2">
-    <a href="{{ route('accounting.index') }}" class="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all">
+   <div class="mb-8 bg-white p-2 sm:p-3 rounded-2xl shadow-card border border-gray-100/50 flex overflow-x-auto no-scrollbar gap-2">
+    <a href="{{ route('accounting.index') }}" class="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">
      <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
      Financial Dashboard
     </a>
     <div class="w-px h-8 bg-gray-200 my-auto hidden sm:block"></div>
-    <a href="{{ route('purchases.index') }}" class="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all">
-     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+    <a href="{{ route('purchases.index') }}" class="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">
+     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
      Record Purchase
     </a>
     <div class="w-px h-8 bg-gray-200 my-auto hidden sm:block"></div>
-    <a href="{{ route('expenses.index') }}" class="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all">
+    <a href="{{ route('expenses.index') }}" class="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">
      <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
      Record Expense
     </a>
@@ -112,33 +116,33 @@
 
    <!-- Mobile Tabs -->
    <div class="md:hidden flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
-    <button @click="activeTab = 'pending'" :class="activeTab === 'pending' ? 'bg-mango text-gray-900 shadow-md' : 'bg-white text-gray-500 border border-gray-200'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all">Pending ({{ $pendingOrdersCount }})</button>
+    <button @click="activeTab = 'pending'" :class="activeTab === 'pending' ? 'gradient-bg-vibrant text-white shadow-btn' : 'bg-white text-gray-500 border border-gray-200'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all">Pending ({{ $pendingOrdersCount }})</button>
     <button @click="activeTab = 'confirmed'" :class="activeTab === 'confirmed' ? 'bg-blue-500 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all">Confirmed ({{ $confirmedOrdersCount }})</button>
-    <button @click="activeTab = 'shipped'" :class="activeTab === 'shipped' ? 'bg-green-500 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all">Shipped ({{ $shippedOrdersCount }})</button>
+    <button @click="activeTab = 'shipped'" :class="activeTab === 'shipped' ? 'bg-emerald-500 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200'" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all">Shipped ({{ $shippedOrdersCount }})</button>
    </div>
 
    <!-- Kanban Board -->
    <div class="flex flex-col md:flex-row gap-6 items-start overflow-x-auto pb-8 -mx-4 px-4 sm:mx-0 sm:px-0">
     
     <!-- Column: Pending -->
-    <div class="w-full md:w-[400px] shrink-0 bg-gray-100/50 rounded-[32px] p-4 border border-gray-200/60" x-show="!isMobile || activeTab === 'pending'">
+    <div class="w-full md:w-[400px] shrink-0 bg-gradient-to-b from-primary/[0.03] to-gray-50/50 rounded-2xl p-4 border border-primary/10" x-show="!isMobile || activeTab === 'pending'">
      <div class="flex items-center justify-between mb-4 px-2">
       <div class="flex items-center gap-2">
-       <div class="w-2.5 h-2.5 bg-mango rounded-full shadow-[0_0_8px_#FFD166] animate-pulse"></div>
-       <h3 class="text-base font-black text-gray-900 uppercase tracking-widest">Pending</h3>
+       <div class="w-2.5 h-2.5 gradient-bg-vibrant rounded-full shadow-glow animate-pulse"></div>
+       <h3 class="text-base font-black text-gray-900 uppercase tracking-widest font-display">Pending</h3>
       </div>
-      <span class="bg-white px-2.5 py-0.5 rounded-full text-xs font-bold text-gray-500 shadow-sm">{{ $pendingOrdersCount }}</span>
+      <span class="bg-white px-2.5 py-0.5 rounded-full text-xs font-bold text-gray-500 shadow-sm border border-gray-100">{{ $pendingOrdersCount }}</span>
      </div>
 
      <div class="flex flex-col gap-3">
       @forelse($pendingOrders as $order)
-       <div class="bg-white rounded-[20px] p-5 shadow-[0_4px_15px_rgb(0,0,0,0.02)] border border-white hover:border-mango/30 hover:shadow-[0_8px_25px_rgb(0,0,0,0.06)] transition-all">
+       <div class="bg-white rounded-2xl p-5 shadow-card border border-white hover:border-primary/20 hover:shadow-card-hover transition-all duration-300">
         <div class="flex justify-between items-start mb-3">
          <div>
           <p class="text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider">#{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</p>
           <h4 class="font-bold text-base text-gray-900 leading-tight">{{ $order->customer_name }}</h4>
          </div>
-         <span class="bg-gray-50 text-gray-500 border border-gray-100 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md">{{ $order->source }}</span>
+         <span class="bg-primary/5 text-primary border border-primary/10 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg">{{ $order->source }}</span>
         </div>
         
         <div class="text-sm text-gray-500 mb-3 space-y-1">
@@ -148,11 +152,10 @@
         
         <div class="flex items-center justify-between border-t border-gray-50 pt-3 mb-3">
          <span class="text-xs font-bold text-gray-400">{{ $order->orderItems->sum('quantity') }} items</span>
-         <span class="font-black text-mango">Rs.{{ number_format($order->total_amount) }}</span>
+         <span class="font-black gradient-text">Rs.{{ number_format($order->total_amount) }}</span>
         </div>
 
-        <!-- Always visible button -->
-        <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-order-modal-{{ $order->id }}')" class="w-full bg-gray-50 text-gray-700 font-bold py-2.5 rounded-xl text-sm hover:bg-gray-900 hover:text-white transition-all duration-200 active:scale-[0.98]">
+        <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-order-modal-{{ $order->id }}')" class="w-full bg-primary/5 text-primary font-bold py-2.5 rounded-xl text-sm hover:bg-primary hover:text-white hover:shadow-btn transition-all duration-200 active:scale-[0.98]">
          Verify Details
         </button>
        </div>
@@ -163,7 +166,7 @@
          @csrf
          <input type="hidden" name="status" value="confirmed">
          <div class="mb-6">
-          <h2 class="text-2xl font-black text-gray-900 ">Verify Order #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</h2>
+          <h2 class="text-2xl font-black text-gray-900 font-display">Verify Order #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</h2>
           <p class="text-sm font-medium text-gray-500 mt-1">Confirm quantities before sending to Pathao.</p>
          </div>
          
@@ -181,19 +184,19 @@
 
          <div class="flex justify-end gap-3">
           <button type="button" x-on:click="$dispatch('close')" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 shadow-lg active:scale-95 transition">Confirm Order</button>
+          <button type="submit" class="px-5 py-2.5 gradient-bg-vibrant text-white font-bold rounded-xl shadow-btn hover:shadow-glow active:scale-95 transition-all">Confirm Order</button>
          </div>
         </form>
        </x-modal>
       @empty
-       <div class="rounded-[20px] p-8 text-center text-gray-400 bg-white border border-dashed border-gray-200">
+       <div class="rounded-2xl p-8 text-center text-gray-400 bg-white border border-dashed border-gray-200">
         <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
         <p class="font-bold text-sm">No pending orders</p>
        </div>
       @endforelse
 
       @if($pendingOrdersCount > 20)
-       <a href="{{ route('orders.index', ['status' => 'pending']) }}" class="block text-center text-xs font-bold text-gray-500 hover:text-mango transition-colors py-2 uppercase tracking-wider">
+       <a href="{{ route('orders.index', ['status' => 'pending']) }}" class="block text-center text-xs font-bold text-gray-500 hover:text-primary transition-colors py-2 uppercase tracking-wider">
         View all {{ $pendingOrdersCount }}
        </a>
       @endif
@@ -201,18 +204,18 @@
     </div>
 
     <!-- Column: Confirmed -->
-    <div class="w-full md:w-[400px] shrink-0 bg-gray-100/50 rounded-[32px] p-4 border border-gray-200/60" x-show="!isMobile || activeTab === 'confirmed'">
+    <div class="w-full md:w-[400px] shrink-0 bg-gradient-to-b from-blue-500/[0.03] to-gray-50/50 rounded-2xl p-4 border border-blue-500/10" x-show="!isMobile || activeTab === 'confirmed'">
      <div class="flex items-center justify-between mb-4 px-2">
       <div class="flex items-center gap-2">
        <div class="w-2.5 h-2.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-       <h3 class="text-base font-black text-gray-900 uppercase tracking-widest">Confirmed</h3>
+       <h3 class="text-base font-black text-gray-900 uppercase tracking-widest font-display">Confirmed</h3>
       </div>
-      <span class="bg-white px-2.5 py-0.5 rounded-full text-xs font-bold text-gray-500 shadow-sm">{{ $confirmedOrdersCount }}</span>
+      <span class="bg-white px-2.5 py-0.5 rounded-full text-xs font-bold text-gray-500 shadow-sm border border-gray-100">{{ $confirmedOrdersCount }}</span>
      </div>
 
      <div class="flex flex-col gap-3">
       @forelse($confirmedOrders as $order)
-       <div class="bg-white rounded-[20px] p-5 shadow-[0_4px_15px_rgb(0,0,0,0.02)] border border-white hover:border-blue-500/30 hover:shadow-[0_8px_25px_rgb(0,0,0,0.06)] transition-all">
+       <div class="bg-white rounded-2xl p-5 shadow-card border border-white hover:border-blue-500/20 hover:shadow-[0_20px_40px_rgba(59,130,246,0.08)] transition-all duration-300">
         <div class="flex justify-between items-start mb-3">
          <div>
           <p class="text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider">#{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</p>
@@ -220,7 +223,7 @@
          </div>
         </div>
         
-        <div class="flex items-center justify-between bg-blue-50/50 rounded-xl p-3 mb-4">
+        <div class="flex items-center justify-between bg-blue-50/50 rounded-xl p-3 mb-4 border border-blue-100/50">
          <span class="text-xs font-bold text-gray-500">Amount</span>
          <span class="font-black text-blue-600">Rs.{{ number_format($order->total_amount) }}</span>
         </div>
@@ -234,7 +237,7 @@
         </form>
        </div>
       @empty
-       <div class="rounded-[20px] p-8 text-center text-gray-400 bg-white border border-dashed border-gray-200">
+       <div class="rounded-2xl p-8 text-center text-gray-400 bg-white border border-dashed border-gray-200">
         <p class="font-bold text-sm">No confirmed orders</p>
        </div>
       @endforelse
@@ -248,18 +251,18 @@
     </div>
 
     <!-- Column: Shipped -->
-    <div class="w-full md:w-[400px] shrink-0 bg-gray-100/50 rounded-[32px] p-4 border border-gray-200/60" x-show="!isMobile || activeTab === 'shipped'">
+    <div class="w-full md:w-[400px] shrink-0 bg-gradient-to-b from-emerald-500/[0.03] to-gray-50/50 rounded-2xl p-4 border border-emerald-500/10" x-show="!isMobile || activeTab === 'shipped'">
      <div class="flex items-center justify-between mb-4 px-2">
       <div class="flex items-center gap-2">
-       <div class="w-2.5 h-2.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-       <h3 class="text-base font-black text-gray-900 uppercase tracking-widest">Shipped</h3>
+       <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+       <h3 class="text-base font-black text-gray-900 uppercase tracking-widest font-display">Shipped</h3>
       </div>
-      <span class="bg-white px-2.5 py-0.5 rounded-full text-xs font-bold text-gray-500 shadow-sm">{{ $shippedOrdersCount }}</span>
+      <span class="bg-white px-2.5 py-0.5 rounded-full text-xs font-bold text-gray-500 shadow-sm border border-gray-100">{{ $shippedOrdersCount }}</span>
      </div>
 
      <div class="flex flex-col gap-3">
       @forelse($shippedOrders as $order)
-       <div class="bg-white rounded-[20px] p-5 shadow-[0_4px_15px_rgb(0,0,0,0.02)] border border-white hover:border-green-500/30 hover:shadow-[0_8px_25px_rgb(0,0,0,0.06)] transition-all">
+       <div class="bg-white rounded-2xl p-5 shadow-card border border-white hover:border-emerald-500/20 hover:shadow-[0_20px_40px_rgba(16,185,129,0.08)] transition-all duration-300">
         <div class="flex justify-between items-start mb-3">
          <div>
           <p class="text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider">#{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</p>
@@ -267,22 +270,22 @@
          </div>
         </div>
         
-        <div class="bg-green-50/50 p-3 rounded-xl border border-green-100/50 flex flex-col items-center justify-center">
-         <p class="text-[10px] font-black text-green-600/70 uppercase tracking-widest mb-1">Tracking ID</p>
-         <div class="font-black text-green-700 font-mono tracking-tight flex items-center gap-1.5">
-          <svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <div class="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100/50 flex flex-col items-center justify-center">
+         <p class="text-[10px] font-black text-emerald-600/70 uppercase tracking-widest mb-1">Tracking ID</p>
+         <div class="font-black text-emerald-700 font-mono tracking-tight flex items-center gap-1.5">
+          <svg class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           {{ $order->pathao_consignment_id }}
          </div>
         </div>
        </div>
       @empty
-       <div class="rounded-[20px] p-8 text-center text-gray-400 bg-white border border-dashed border-gray-200">
+       <div class="rounded-2xl p-8 text-center text-gray-400 bg-white border border-dashed border-gray-200">
         <p class="font-bold text-sm">No shipped orders</p>
        </div>
       @endforelse
 
       @if($shippedOrdersCount > 20)
-       <a href="{{ route('orders.index', ['status' => 'shipped']) }}" class="block text-center text-xs font-bold text-gray-500 hover:text-green-500 transition-colors py-2 uppercase tracking-wider">
+       <a href="{{ route('orders.index', ['status' => 'shipped']) }}" class="block text-center text-xs font-bold text-gray-500 hover:text-emerald-500 transition-colors py-2 uppercase tracking-wider">
         View all {{ $shippedOrdersCount }}
        </a>
       @endif
@@ -298,10 +301,10 @@
   <form method="POST" action="{{ route('orders.store') }}" class="p-8">
    @csrf
    <div class="mb-8">
-    <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
-     <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+    <div class="w-12 h-12 gradient-bg-vibrant rounded-2xl flex items-center justify-center mb-4 shadow-btn">
+     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
     </div>
-    <h2 class="text-2xl font-black text-gray-900 tracking-tight">Create Manual Order</h2>
+    <h2 class="text-2xl font-black text-gray-900 tracking-tight font-display">Create Manual Order</h2>
     <p class="text-sm font-medium text-gray-500 mt-1">Enter details for an offline or direct order.</p>
    </div>
    
@@ -309,28 +312,28 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
      <div>
       <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Customer Name</label>
-      <input name="customer_name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+      <input name="customer_name" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-primary focus:ring focus:ring-primary/10 py-3 font-medium transition-all" required />
      </div>
      <div>
       <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Phone Number</label>
-      <input name="customer_phone" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+      <input name="customer_phone" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-primary focus:ring focus:ring-primary/10 py-3 font-medium transition-all" required />
      </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
      <div>
       <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Street Address</label>
-      <input name="address" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" required />
+      <input name="address" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-primary focus:ring focus:ring-primary/10 py-3 font-medium transition-all" required />
      </div>
      <div>
       <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">City</label>
-      <input name="city" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
+      <input name="city" type="text" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-primary focus:ring focus:ring-primary/10 py-3 font-medium transition-all" />
      </div>
     </div>
 
     <div class="pt-4 border-t border-gray-100">
      <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Select Product</label>
-     <select name="product_id" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-bold text-gray-900 transition-colors" required>
+     <select name="product_id" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-primary focus:ring focus:ring-primary/10 py-3 font-bold text-gray-900 transition-all" required>
       <option value="" disabled selected>-- Choose a Product --</option>
       @foreach($products as $product)
        <option value="{{ $product->id }}">{{ $product->name }} (Rs.{{ number_format($product->price) }})</option>
@@ -340,13 +343,13 @@
 
     <div>
      <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Quantity</label>
-     <input name="quantity" type="number" min="1" value="1" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-bold text-gray-900 transition-colors" required />
+     <input name="quantity" type="number" min="1" value="1" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-primary focus:ring focus:ring-primary/10 py-3 font-bold text-gray-900 transition-all" required />
     </div>
    </div>
 
    <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
     <button type="button" x-on:click="$dispatch('close')" class="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancel</button>
-    <button type="submit" class="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">Create Order</button>
+    <button type="submit" class="px-6 py-3 gradient-bg-vibrant text-white font-bold rounded-xl shadow-btn hover:shadow-glow active:scale-95 transition-all">Create Order</button>
    </div>
   </form>
  </x-modal>

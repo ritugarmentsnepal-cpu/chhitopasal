@@ -50,7 +50,7 @@
                   <td class="py-4 px-6 font-medium text-gray-500">{{ $expense->description ?? '-' }}</td>
                   <td class="py-4 px-6 text-right">
                     @if(auth()->user()->role === 'admin')
-                      <button @click="openEditModal({{ $expense }})" class="text-wildOrchid hover:text-gray-900 font-bold text-sm transition-colors mr-3">Edit</button>
+                      <button @click="openEditModal({{ $expense }})" class="text-mango hover:text-gray-900 font-bold text-sm transition-colors mr-3">Edit</button>
                       <form action="{{ route('expenses.destroy', $expense) }}" method="POST" class="inline-block" onsubmit="return confirm('Delete this expense?');">
                         @csrf @method('DELETE')
                         <button type="submit" class="text-red-500 hover:text-red-700 font-bold text-sm transition-colors">Delete</button>

@@ -111,7 +111,7 @@ class User extends Authenticatable
             return true;
         }
 
-        $perms = $this->permissions ?? [];
+        $perms = $this->permissions ?? self::getDefaultPermissions($this->role);
         return in_array($key, $perms);
     }
 

@@ -124,7 +124,7 @@
               </div>
             </template>
 
-            <button type="button" @click="addItem" class="mt-2 text-wildOrchid font-bold text-sm hover:text-pink-700 transition-colors">+ Add Another Item</button>
+            <button type="button" @click="addItem" class="mt-2 text-mango font-bold text-sm hover:text-orange-700 transition-colors">+ Add Another Item</button>
           </div>
 
           <div class="flex justify-between items-center border-t border-gray-100 pt-6">
