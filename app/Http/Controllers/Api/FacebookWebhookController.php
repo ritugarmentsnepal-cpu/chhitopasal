@@ -187,18 +187,17 @@ class FacebookWebhookController extends Controller
             return;
         }
 
-        // Dispatch the AI reply job with a short delay (debounce).
-        // This allows multiple quick messages to arrive and be batched before the AI processes them.
-        ProcessAiReply::dispatch(
+        // Dispatch the AI reply job to run immediately AFTER sending the 200 OK to Facebook.
+        ProcessAiReply::dispatchAfterResponse(
             $pageId,
             $userId,
             $messageText,
             $threadId,
             $senderName,
             $messageId
-        )->delay(now()->addSeconds(8));
+        );
 
-        Log::info('AI Agent: Dispatched ProcessAiReply job with debounce delay', [
+        Log::info('AI Agent: Dispatched ProcessAiReply job instantly', [
             'page_id' => $pageId,
             'user_id' => $userId,
             'thread_id' => $threadId,
