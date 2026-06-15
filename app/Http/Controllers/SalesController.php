@@ -65,14 +65,18 @@ class SalesController extends Controller
 
         $productSales = $productQuery->select(
                 'products.name',
-                DB::raw('SUM(CASE WHEN orders.status = "shipped" THEN order_items.quantity ELSE 0 END) as pending_qty'),
-                DB::raw('SUM(CASE WHEN orders.status = "delivered" THEN order_items.quantity ELSE 0 END) as delivered_qty'),
-                DB::raw('SUM(CASE WHEN orders.status = "return_delivered" THEN order_items.quantity ELSE 0 END) as returned_qty'),
-                DB::raw('SUM(order_items.quantity) as total_qty'),
+                DB::raw('COUNT(DISTINCT CASE WHEN orders.status = "shipped" THEN orders.id END) as pending_orders'),
+                DB::raw('COUNT(DISTINCT CASE WHEN orders.status = "delivered" THEN orders.id END) as delivered_orders'),
+                DB::raw('COUNT(DISTINCT CASE WHEN orders.status = "return_delivered" THEN orders.id END) as returned_orders'),
+                DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
+                DB::raw('COUNT(DISTINCT CASE WHEN order_items.quantity = 1 THEN orders.id END) as qty_1_orders'),
+                DB::raw('COUNT(DISTINCT CASE WHEN order_items.quantity = 2 THEN orders.id END) as qty_2_orders'),
+                DB::raw('COUNT(DISTINCT CASE WHEN order_items.quantity = 3 THEN orders.id END) as qty_3_orders'),
+                DB::raw('COUNT(DISTINCT CASE WHEN order_items.quantity > 3 THEN orders.id END) as qty_4_plus_orders'),
                 DB::raw('SUM(order_items.quantity * order_items.price_at_purchase) as total_revenue')
             )
             ->groupBy('products.id', 'products.name')
-            ->orderByDesc('total_qty')
+            ->orderByDesc('total_orders')
             ->get();
 
         return view('sales.index', compact(

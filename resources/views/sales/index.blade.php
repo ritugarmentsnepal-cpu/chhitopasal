@@ -158,10 +158,14 @@
                             <thead>
                                 <tr class="bg-gray-50 border-b border-gray-100 text-xs font-black text-gray-400 uppercase tracking-wider">
                                     <th class="px-6 py-4">Product Name</th>
-                                    <th class="px-6 py-4 text-center">Pending Delivery</th>
-                                    <th class="px-6 py-4 text-center">Delivered</th>
-                                    <th class="px-6 py-4 text-center">Returned</th>
-                                    <th class="px-6 py-4 text-center border-l border-gray-200">Total Sold</th>
+                                    <th class="px-6 py-4 text-center" title="Orders pending delivery">Pending Delivery</th>
+                                    <th class="px-6 py-4 text-center" title="Orders successfully delivered">Delivered</th>
+                                    <th class="px-6 py-4 text-center" title="Orders returned">Returned</th>
+                                    <th class="px-6 py-4 text-center border-l border-gray-200" title="Orders with 1 piece of this product">1 Pcs</th>
+                                    <th class="px-6 py-4 text-center" title="Orders with 2 pieces of this product">2 Pcs</th>
+                                    <th class="px-6 py-4 text-center" title="Orders with 3 pieces of this product">3 Pcs</th>
+                                    <th class="px-6 py-4 text-center" title="Orders with 4 or more pieces of this product">4+ Pcs</th>
+                                    <th class="px-6 py-4 text-center border-l border-gray-200">Total Orders</th>
                                     <th class="px-6 py-4 text-right">Gross Revenue</th>
                                 </tr>
                             </thead>
@@ -172,16 +176,28 @@
                                             {{ $stat->name }}
                                         </td>
                                         <td class="px-6 py-4 text-center">
-                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-700 font-bold border border-blue-100">{{ $stat->pending_qty }}</span>
+                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-700 font-bold border border-blue-100">{{ $stat->pending_orders }}</span>
                                         </td>
                                         <td class="px-6 py-4 text-center">
-                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 font-bold border border-emerald-100">{{ $stat->delivered_qty }}</span>
+                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 font-bold border border-emerald-100">{{ $stat->delivered_orders }}</span>
                                         </td>
                                         <td class="px-6 py-4 text-center">
-                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-700 font-bold border border-red-100">{{ $stat->returned_qty }}</span>
+                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-700 font-bold border border-red-100">{{ $stat->returned_orders }}</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center border-l border-gray-50 font-bold text-gray-600">
+                                            {{ $stat->qty_1_orders }}
+                                        </td>
+                                        <td class="px-6 py-4 text-center font-bold text-gray-600">
+                                            {{ $stat->qty_2_orders }}
+                                        </td>
+                                        <td class="px-6 py-4 text-center font-bold text-gray-600">
+                                            {{ $stat->qty_3_orders }}
+                                        </td>
+                                        <td class="px-6 py-4 text-center font-bold text-gray-600">
+                                            {{ $stat->qty_4_plus_orders }}
                                         </td>
                                         <td class="px-6 py-4 text-center border-l border-gray-50 font-black text-gray-800 text-lg">
-                                            {{ $stat->total_qty }}
+                                            {{ $stat->total_orders }}
                                         </td>
                                         <td class="px-6 py-4 text-right">
                                             <span class="font-black text-gray-900">Rs. {{ number_format($stat->total_revenue) }}</span>
