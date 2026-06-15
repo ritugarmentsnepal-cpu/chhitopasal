@@ -49,6 +49,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
         Route::get('/orders/{order}/pathao-details', [OrderController::class, 'getPathaoDetails'])->middleware('throttle:10,1')->name('orders.pathaoDetails');
         Route::get('/orders/reports/damage', [OrderController::class, 'damageReport'])->name('orders.damageReport');
+        
+        // Sales List
+        Route::get('/sales', [\App\Http\Controllers\SalesController::class, 'index'])->name('sales.index');
     });
 
     // POS — permission:pos

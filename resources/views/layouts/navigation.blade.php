@@ -74,6 +74,16 @@
      </a>
      @endif
      @endif
+     @if(Route::has('sales.index'))
+     <a href="{{ route('sales.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-semibold text-sm transition-all relative {{ request()->routeIs('sales.*') ? 'bg-white/10 text-white' : 'text-white/50 hover:bg-white/5 hover:text-white/80' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Sales List">
+      @if(request()->routeIs('sales.*'))
+      <div class="absolute left-0 w-1 h-6 gradient-bg-vibrant rounded-r-full" :class="sidebarCollapsed ? 'hidden' : ''"></div>
+      @endif
+      <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('sales.*') ? 'text-primary-light' : 'text-white/30' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <span x-show="!sidebarCollapsed" x-transition.opacity>Sales</span>
+     </a>
+     @endif
+     @endif
      @if(auth()->user()->hasPermission('products'))
      <a href="{{ route('products.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-semibold text-sm transition-all relative {{ request()->routeIs('products.*') ? 'bg-white/10 text-white' : 'text-white/50 hover:bg-white/5 hover:text-white/80' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Products">
       @if(request()->routeIs('products.*'))
