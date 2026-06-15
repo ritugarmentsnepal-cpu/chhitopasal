@@ -83,7 +83,6 @@
       <span x-show="!sidebarCollapsed" x-transition.opacity>Sales</span>
      </a>
      @endif
-     @endif
      @if(auth()->user()->hasPermission('products'))
      <a href="{{ route('products.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-semibold text-sm transition-all relative {{ request()->routeIs('products.*') ? 'bg-white/10 text-white' : 'text-white/50 hover:bg-white/5 hover:text-white/80' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Products">
       @if(request()->routeIs('products.*'))
