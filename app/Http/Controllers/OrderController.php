@@ -727,7 +727,7 @@ class OrderController extends Controller
     {
         $batches = Order::whereNotNull('bulk_ship_batch_id')
             ->select('bulk_ship_batch_id')
-            ->selectRaw('MIN(updated_at) as shipped_at')
+            ->selectRaw('MIN(COALESCE(shipped_at, created_at)) as shipped_at')
             ->selectRaw('COUNT(*) as order_count')
             ->selectRaw('SUM(total_amount) as total_amount')
             ->groupBy('bulk_ship_batch_id')
@@ -1483,7 +1483,7 @@ class OrderController extends Controller
                 'payment_status' => $order->payment_status,
                 'pathao_consignment_id' => $order->pathao_consignment_id,
                 'created_at' => $order->created_at->format('M d, Y g:i A'),
-                'shipped_date' => ($order->shipped_at ?? $order->updated_at)->format('M d, Y'),
+                'shipped_date' => ($order->shipped_at ?? $order->created_at)->format('M d, Y'),
                 'items' => $order->orderItems->map(fn($item) => [
                     'name' => $item->product->name ?? 'Unknown Product',
                     'quantity' => $item->quantity,
