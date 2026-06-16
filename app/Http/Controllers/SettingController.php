@@ -75,6 +75,12 @@ class SettingController extends Controller
             if (!in_array($key, $allowedKeys)) {
                 continue; // SEC-MED-02: Skip any unknown keys
             }
+            
+            // Trim strings to prevent accidental spaces when copy-pasting API keys
+            if (is_string($value)) {
+                $value = trim($value);
+            }
+
             // SEC-PHASE-04: Auto-encrypt sensitive settings before saving
             $value = encrypt_setting_value($key, $value ?? '');
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
