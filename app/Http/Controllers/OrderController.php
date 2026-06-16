@@ -989,7 +989,7 @@ class OrderController extends Controller
 
     public function masterSyncPathao()
     {
-        set_time_limit(180); // Sync can take up to 60s for 30 orders × 2s delay each
+        set_time_limit(600); // 10 minutes max for force sync
 
         // MED-05: Cooldown lock to prevent Pathao API flooding
         $lockKey = 'pathao_master_sync_lock';
@@ -998,8 +998,13 @@ class OrderController extends Controller
         }
         \Illuminate\Support\Facades\Cache::put($lockKey, true, now()->addMinutes(5));
 
-        \Illuminate\Support\Facades\Artisan::call('pathao:sync');
-        return redirect()->back()->with('success', 'Master sync completed. ' . \Illuminate\Support\Facades\Artisan::output());
+        $exitCode = \Illuminate\Support\Facades\Artisan::call('pathao:sync', ['--force' => true]);
+        
+        if ($exitCode !== 0) {
+            return redirect()->back()->with('error', \Illuminate\Support\Facades\Artisan::output());
+        }
+        
+        return redirect()->back()->with('success', 'Master sync completed successfully. ' . \Illuminate\Support\Facades\Artisan::output());
     }
 
     public function updateAmount(Request $request, Order $order)

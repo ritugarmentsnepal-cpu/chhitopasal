@@ -38,6 +38,17 @@ class PathaoService
     }
 
     /**
+     * Verify credentials by attempting to get a token directly.
+     * Throws an exception if authentication fails.
+     */
+    public function verifyCredentials(): bool
+    {
+        Cache::forget('pathao_access_token');
+        $this->requestNewToken();
+        return true;
+    }
+
+    /**
      * INT-02: Request a fresh token and cache it.
      */
     private function requestNewToken(): string

@@ -14,7 +14,7 @@ class SyncPathaoOrders extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'pathao:sync';
+    protected $signature = 'pathao:sync {--force : Ignore the 30-order limit and sync all shipped/recently delivered orders}';
 
     /**
      * The console command description.
@@ -28,11 +28,22 @@ class SyncPathaoOrders extends Command
     {
         $this->info('Starting Pathao status sync...');
 
+        // 1. Verify Authentication First
+        try {
+            $pathao->verifyCredentials();
+            $this->info('Authentication successful.');
+        } catch (\Exception $e) {
+            $this->error('Sync Aborted: Pathao Authentication Failed. Please check your credentials in Settings.');
+            Log::error('SyncPathaoOrders Aborted: ' . $e->getMessage());
+            return Command::FAILURE;
+        }
+
         $count = 0;
         $errors = 0;
         $processed = 0;
-        $maxPerRun = 30;      // Cap per cycle — runs every 5 min, so 360 orders/hour
-        $maxErrors = 5;       // Abort threshold — if >5 failures, Pathao is likely rate-limiting
+        $isForce = $this->option('force');
+        $maxPerRun = $isForce ? 1000 : 30; // Use high limit if force sync
+        $maxErrors = 5;
 
         // Sync stalest orders first — prioritize orders that haven't been checked recently
         $orders = Order::with('orderItems.product')
