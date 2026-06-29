@@ -32,17 +32,17 @@ class OrderController extends Controller
         $query = Order::with('orderItems.product')->where('order_type', $orderType);
 
         if ($orderType === 'custom_print') {
-            $validStatuses = ['design', 'production', 'ready_to_ship', 'shipped', 'delivered', 'rejected'];
+            $validStatuses = ['pending', 'design', 'production', 'ready_to_ship', 'shipped', 'delivered', 'rejected'];
             if (!$status || !in_array($status, $validStatuses)) {
-                $status = 'design';
+                $status = 'pending';
             }
 
-            if ($status === 'design') {
+            if ($status === 'pending') {
+                $query->where('status', 'pending')
+                      ->whereNull('production_status');
+            } elseif ($status === 'design') {
                 $query->whereIn('status', ['pending', 'confirmed'])
-                      ->where(function($q) {
-                          $q->whereNull('production_status')
-                            ->orWhereIn('production_status', ['design_received', 'design_approved']);
-                      });
+                      ->whereIn('production_status', ['design_received', 'design_approved']);
             } elseif ($status === 'production') {
                 $query->whereIn('status', ['pending', 'confirmed'])
                       ->whereIn('production_status', ['in_production', 'quality_check']);

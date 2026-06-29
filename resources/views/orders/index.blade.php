@@ -69,6 +69,7 @@
         @php
           if ($orderType === 'custom_print') {
             $tabs = [
+              'pending' => 'New Requests',
               'design' => 'Design Phase',
               'production' => 'In Production',
               'ready_to_ship' => 'Ready to Ship',
@@ -161,7 +162,7 @@
                 <svg x-show="bulkProcessing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 <span x-text="bulkProcessing ? 'Shipping...' : 'Ship All via Pathao'"></span>
               </button>
-            @elseif(!in_array($status, ['design', 'production']))
+            @elseif(!in_array($status, ['pending', 'design', 'production']))
               <form action="{{ route('orders.bulkPrint') }}" method="POST" target="_blank" class="inline">
                 @csrf
                 <input type="hidden" name="order_ids" :value="JSON.stringify(selectedOrders)">
