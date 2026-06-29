@@ -30,7 +30,14 @@
                     
                     <select x-model="selectedTemplateId" @change="loadTemplate()" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium">
                         <option value="">-- Select Template --</option>
-                        @foreach(\App\Models\MockupTemplate::all() as $template)
+                        @php
+                            try {
+                                $templates = \App\Models\MockupTemplate::all();
+                            } catch (\Exception $e) {
+                                $templates = collect();
+                            }
+                        @endphp
+                        @foreach($templates as $template)
                             <option value="{{ $template->id }}" data-url="{{ Storage::url($template->image_path) }}">
                                 {{ $template->name }} ({{ ucfirst($template->product_type) }})
                             </option>

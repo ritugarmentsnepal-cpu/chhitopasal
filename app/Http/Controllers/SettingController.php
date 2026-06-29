@@ -27,7 +27,11 @@ class SettingController extends Controller
         } elseif ($tab === 'staff') {
             $data['users'] = \App\Models\User::all();
         } elseif ($tab === 'mockups') {
-            $data['mockupTemplates'] = \App\Models\MockupTemplate::all();
+            try {
+                $data['mockupTemplates'] = \App\Models\MockupTemplate::all();
+            } catch (\Exception $e) {
+                $data['mockupTemplates'] = collect();
+            }
         }
 
         return view('settings.index', $data);
