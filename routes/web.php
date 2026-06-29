@@ -12,10 +12,6 @@ Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('p
 Route::get('/product/{slug}', [HomeController::class, 'show'])->name('product.show');
 Route::post('/checkout', [\App\Http\Controllers\OrderController::class, 'storeWeb'])->middleware('throttle:5,1')->name('checkout.web');
 
-Route::get('/debug-logs-temp', function() {
-    $lines = file(storage_path('logs/laravel.log'));
-    return implode("<br>", array_slice($lines, -100));
-});
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
@@ -59,6 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/custom-print', [OrderController::class, 'storeCustomPrint'])->name('orders.storeCustomPrint');
         Route::post('/orders/{order}/production-status', [OrderController::class, 'updateProductionStatus'])->name('orders.updateProductionStatus');
         Route::post('/orders/{order}/custom-print-update', [OrderController::class, 'updateCustomPrint'])->name('orders.updateCustomPrint');
+        Route::post('/orders/{order}/save-mockup', [OrderController::class, 'saveMockup'])->name('orders.saveMockup');
         
         // Sales List
         Route::get('/sales', [\App\Http\Controllers\SalesController::class, 'index'])->name('sales.index');

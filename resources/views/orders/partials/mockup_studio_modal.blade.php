@@ -1,5 +1,5 @@
 <x-modal name="mockup-studio-{{ $order->id }}" :show="false" maxWidth="6xl">
-    <div class="p-6 bg-gray-50 flex flex-col h-[90vh]" x-data="mockupStudio({{ $order->id }}, {{ json_encode($order->design_files ?? []) }})">
+    <div class="p-6 bg-gray-50 flex flex-col h-[90vh]" x-data="mockupStudio({{ $order->id }}, {{ json_encode(($order->design_files ?? null) ?: []) }})">
         
         <!-- Header -->
         <div class="flex items-center justify-between mb-6 shrink-0">

@@ -46,7 +46,7 @@
   @endif
 
   {{-- Design File & Notes --}}
-  @if($order->design_files)
+  @if($order->design_files ?? null)
     <div class="mt-2 space-y-1">
       @foreach($order->design_files as $position => $path)
         <a href="{{ asset('storage/' . $path) }}" target="_blank" class="text-xs font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1">
