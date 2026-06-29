@@ -53,6 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Custom Print Orders
         Route::post('/orders/custom-print', [OrderController::class, 'storeCustomPrint'])->name('orders.storeCustomPrint');
         Route::post('/orders/{order}/production-status', [OrderController::class, 'updateProductionStatus'])->name('orders.updateProductionStatus');
+        Route::post('/orders/{order}/custom-print-update', [OrderController::class, 'updateCustomPrint'])->name('orders.updateCustomPrint');
         
         // Sales List
         Route::get('/sales', [\App\Http\Controllers\SalesController::class, 'index'])->name('sales.index');

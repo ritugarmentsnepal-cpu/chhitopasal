@@ -1678,4 +1678,88 @@ class OrderController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
+    public function updateCustomPrint(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'total_amount' => 'required|numeric|min:0',
+            'advance_amount' => 'nullable|numeric|min:0',
+            'status' => 'required|string|in:pending,confirmed,rejected',
+            'print_method' => 'required|string|in:dtf,screen_print',
+            'print_positions' => 'required|array',
+            'design_files' => 'nullable|array',
+            'design_files.*' => 'file|max:20480',
+            'size_breakdown' => 'nullable|array',
+            'custom_sizes' => 'nullable|string',
+            'total_quantity' => 'required|integer|min:1',
+            'estimated_delivery_date' => 'nullable|date',
+            'remarks' => 'nullable|string|max:1000',
+            'design_notes' => 'nullable|string|max:2000',
+        ]);
+
+        DB::transaction(function () use ($validated, $request, $order) {
+            $designFilesPaths = $order->design_files ?? [];
+
+            // Handle new file uploads, replacing existing ones for the same position
+            if ($request->hasFile('design_files')) {
+                foreach ($request->file('design_files') as $position => $file) {
+                    if ($file->isValid()) {
+                        $path = $file->store('custom_designs/' . date('Y/m'), 'public');
+                        $designFilesPaths[$position] = $path;
+                    }
+                }
+            }
+
+            // Build size breakdown
+            $sizeBreakdown = collect($validated['size_breakdown'] ?? [])
+                ->filter(fn($qty) => $qty > 0)
+                ->toArray();
+
+            if (!empty($validated['custom_sizes'])) {
+                $customParts = explode(',', $validated['custom_sizes']);
+                foreach ($customParts as $part) {
+                    $part = trim($part);
+                    if (str_contains($part, ':')) {
+                        [$size, $qty] = explode(':', $part, 2);
+                        $size = trim($size);
+                        $qty = (int) trim($qty);
+                        if ($size && $qty > 0) {
+                            $sizeBreakdown[$size] = $qty;
+                        }
+                    }
+                }
+            }
+
+            $totalQuantity = !empty($sizeBreakdown) ? array_sum($sizeBreakdown) : (int) $validated['total_quantity'];
+
+            $order->update([
+                'customer_name' => $validated['customer_name'],
+                'customer_phone' => $validated['customer_phone'],
+                'address' => $validated['address'],
+                'city' => $validated['city'] ?? null,
+                'total_amount' => $validated['total_amount'],
+                'advance_amount' => $validated['advance_amount'] ?? 0,
+                'status' => $validated['status'],
+                'print_method' => $validated['print_method'],
+                'print_positions' => $validated['print_positions'],
+                'design_files' => $designFilesPaths,
+                'estimated_delivery_date' => $validated['estimated_delivery_date'] ?? null,
+                'remarks' => $validated['remarks'] ?? null,
+                'design_notes' => $validated['design_notes'] ?? null,
+            ]);
+
+            if ($orderItem = $order->orderItems()->first()) {
+                $orderItem->update([
+                    'quantity' => $totalQuantity,
+                    'price_at_purchase' => $totalQuantity > 0 ? $validated['total_amount'] / $totalQuantity : 0,
+                    'size_breakdown' => !empty($sizeBreakdown) ? $sizeBreakdown : null,
+                ]);
+            }
+        });
+
+        return back()->with('success', 'Custom print order updated successfully.');
+    }
 }
