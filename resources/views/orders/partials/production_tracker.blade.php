@@ -19,11 +19,11 @@
   {{-- Pipeline Steps --}}
   @php
     $steps = [
-      'design_received' => ['label' => 'Design Received', 'icon' => '📥', 'color' => 'blue'],
-      'design_approved' => ['label' => 'Design Approved', 'icon' => '✅', 'color' => 'green'],
-      'in_production' => ['label' => 'In Production', 'icon' => '⚙️', 'color' => 'yellow'],
-      'quality_check' => ['label' => 'Quality Check', 'icon' => '🔍', 'color' => 'orange'],
-      'ready_to_ship' => ['label' => 'Ready to Ship', 'icon' => '📦', 'color' => 'emerald'],
+      'design_received' => ['label' => 'Design Received'],
+      'design_approved' => ['label' => 'Design Approved'],
+      'in_production' => ['label' => 'In Production'],
+      'quality_check' => ['label' => 'Quality Check'],
+      'ready_to_ship' => ['label' => 'Ready to Ship'],
     ];
     $statuses = array_keys($steps);
     $currentIndex = array_search($order->production_status, $statuses);
@@ -40,9 +40,13 @@
       @endphp
       <div class="flex items-center {{ !$loop->last ? 'flex-1' : '' }}">
         <div class="flex flex-col items-center min-w-[70px]">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm
-            {{ $isCompleted ? 'bg-green-100 text-green-700' : ($isCurrent ? 'bg-purple-100 text-purple-700 ring-2 ring-purple-300' : 'bg-gray-100 text-gray-400') }}">
-            {{ $step['icon'] }}
+          <div class="w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors
+            {{ $isCompleted ? 'bg-green-500 border-green-500 text-white' : ($isCurrent ? 'bg-white border-purple-500 ring-4 ring-purple-50' : 'bg-white border-gray-200') }}">
+            @if($isCompleted)
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            @elseif($isCurrent)
+              <div class="w-2.5 h-2.5 bg-purple-600 rounded-full"></div>
+            @endif
           </div>
           <span class="text-[9px] font-bold mt-1 text-center leading-tight
             {{ $isCurrent ? 'text-purple-700' : ($isCompleted ? 'text-green-600' : 'text-gray-400') }}">
