@@ -16,45 +16,6 @@
     @endif
   </div>
 
-  {{-- Pipeline Steps --}}
-  @php
-    $steps = [
-      'design_received' => ['label' => 'Design Received', 'icon' => '📥', 'color' => 'blue'],
-      'design_approved' => ['label' => 'Design Approved', 'icon' => '✅', 'color' => 'green'],
-      'in_production' => ['label' => 'In Production', 'icon' => '⚙️', 'color' => 'yellow'],
-      'quality_check' => ['label' => 'Quality Check', 'icon' => '🔍', 'color' => 'orange'],
-      'ready_to_ship' => ['label' => 'Ready to Ship', 'icon' => '📦', 'color' => 'emerald'],
-    ];
-    $statuses = array_keys($steps);
-    $currentIndex = array_search($order->production_status, $statuses);
-    if ($currentIndex === false) $currentIndex = -1;
-  @endphp
-
-  <div class="flex items-center gap-1 overflow-x-auto pb-2">
-    @foreach($steps as $key => $step)
-      @php
-        $stepIndex = array_search($key, $statuses);
-        $isCompleted = $stepIndex < $currentIndex;
-        $isCurrent = $stepIndex === $currentIndex;
-        $isPending = $stepIndex > $currentIndex;
-      @endphp
-      <div class="flex items-center {{ !$loop->last ? 'flex-1' : '' }}">
-        <div class="flex flex-col items-center min-w-[70px]">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm
-            {{ $isCompleted ? 'bg-green-100 text-green-700' : ($isCurrent ? 'bg-purple-100 text-purple-700 ring-2 ring-purple-300' : 'bg-gray-100 text-gray-400') }}">
-            {{ $step['icon'] }}
-          </div>
-          <span class="text-[9px] font-bold mt-1 text-center leading-tight
-            {{ $isCurrent ? 'text-purple-700' : ($isCompleted ? 'text-green-600' : 'text-gray-400') }}">
-            {{ $step['label'] }}
-          </span>
-        </div>
-        @if(!$loop->last)
-          <div class="flex-1 h-0.5 mx-1 rounded {{ $isCompleted ? 'bg-green-300' : 'bg-gray-200' }}"></div>
-        @endif
-      </div>
-    @endforeach
-  </div>
 
   {{-- Print Details Summary --}}
   <div class="mt-3 flex flex-wrap gap-2 text-[10px] font-bold">
