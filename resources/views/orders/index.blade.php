@@ -295,6 +295,19 @@
                         <strong>Remarks:</strong><br>{{ $order->remarks }}
                       </div>
                     @endif
+                    
+                    @if($order->mockup_files && count($order->mockup_files) > 0)
+                      <div class="mt-3">
+                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Generated Mockups</div>
+                        <div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                          @foreach($order->mockup_files as $mockup)
+                            <a href="{{ Storage::url($mockup) }}" target="_blank" class="shrink-0 w-16 h-16 rounded-lg border border-gray-200 overflow-hidden hover:border-indigo-500 transition block">
+                              <img src="{{ Storage::url($mockup) }}" class="w-full h-full object-cover">
+                            </a>
+                          @endforeach
+                        </div>
+                      </div>
+                    @endif
                     @if($orderType === 'custom_print')
                       <div class="mt-4">
                         @include('orders.partials.production_tracker', ['order' => $order])
@@ -306,10 +319,18 @@
                       @if(in_array($status, ['pending', 'confirmed', 'design', 'production', 'ready_to_ship']))
                         @if($orderType === 'custom_print')
                           @include('orders.partials.custom_print_edit_modal')
-                          <button x-on:click.prevent="$dispatch('open-modal', 'custom-print-edit-modal-{{ $order->id }}')" class="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-200 active:scale-95 transition-all w-full justify-center">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            {{ in_array($status, ['pending', 'design']) ? 'Review & Process' : 'Edit Details' }}
-                          </button>
+                          @include('orders.partials.mockup_studio_modal')
+                          
+                          <div class="flex gap-2 w-full">
+                            <button x-on:click.prevent="$dispatch('open-modal', 'custom-print-edit-modal-{{ $order->id }}')" class="flex-1 text-center px-3 py-2 bg-gray-50 text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors text-xs flex items-center justify-center gap-1">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                              {{ in_array($status, ['pending', 'design']) ? 'Review' : 'Edit' }}
+                            </button>
+                            <button x-on:click.prevent="$dispatch('open-modal', 'mockup-studio-{{ $order->id }}')" class="flex-1 text-center px-3 py-2 bg-indigo-50 text-indigo-700 font-bold rounded-xl border border-indigo-200 hover:bg-indigo-100 transition-colors text-xs flex items-center justify-center gap-1">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                              Mockup
+                            </button>
+                          </div>
                         @else
                           <button @click="openEditModal({{ $order }})" class="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-200 active:scale-95 transition-all w-full justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>

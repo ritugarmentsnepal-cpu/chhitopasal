@@ -12,7 +12,7 @@ class SettingController extends Controller
     {
         $settings = Setting::pluck('value', 'key')->toArray();
         $tab = $request->query('tab', 'frontend');
-        $allowedTabs = ['frontend', 'erp', 'integrations', 'automation', 'staff', 'danger'];
+        $allowedTabs = ['frontend', 'erp', 'integrations', 'automation', 'staff', 'danger', 'mockups'];
         if (!in_array($tab, $allowedTabs)) {
             $tab = 'frontend';
         }
@@ -26,6 +26,8 @@ class SettingController extends Controller
             $data['accounts'] = \App\Models\Account::all();
         } elseif ($tab === 'staff') {
             $data['users'] = \App\Models\User::all();
+        } elseif ($tab === 'mockups') {
+            $data['mockupTemplates'] = \App\Models\MockupTemplate::all();
         }
 
         return view('settings.index', $data);

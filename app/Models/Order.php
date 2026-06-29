@@ -44,6 +44,7 @@ class Order extends Model
         'remarks',
         'session_id',
         'shipped_at',
+        'mockup_files',
     ];
 
     protected $casts = [
@@ -51,6 +52,7 @@ class Order extends Model
         'estimated_delivery_date' => 'date',
         'print_positions' => 'array',
         'design_files' => 'array',
+        'mockup_files' => 'array',
         'advance_amount' => 'decimal:2',
     ];
 

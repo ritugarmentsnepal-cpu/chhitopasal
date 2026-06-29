@@ -1762,4 +1762,37 @@ class OrderController extends Controller
 
         return back()->with('success', 'Custom print order updated successfully.');
     }
+
+    public function saveMockup(Request $request, Order $order)
+    {
+        $request->validate([
+            'image' => 'required|string', // base64 string
+        ]);
+
+        $base64 = $request->input('image');
+        
+        if (preg_match('/^data:image\/(\w+);base64,/', $base64, $type)) {
+            $base64 = substr($base64, strpos($base64, ',') + 1);
+            $type = strtolower($type[1]); // jpg, png, gif
+
+            if (!in_array($type, ['jpg', 'jpeg', 'png'])) {
+                return response()->json(['success' => false, 'message' => 'Invalid image type']);
+            }
+
+            $base64 = str_replace(' ', '+', $base64);
+            $imageName = 'mockup_' . $order->id . '_' . time() . '.' . $type;
+            $path = 'mockups/' . date('Y/m') . '/' . $imageName;
+
+            Storage::disk('public')->put($path, base64_decode($base64));
+
+            $mockups = $order->mockup_files ?? [];
+            $mockups[] = $path;
+
+            $order->update(['mockup_files' => $mockups]);
+
+            return response()->json(['success' => true, 'path' => $path]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Invalid base64 format']);
+    }
 }

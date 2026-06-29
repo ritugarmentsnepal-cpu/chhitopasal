@@ -128,9 +128,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin Only Routes
     Route::middleware(['admin'])->group(function () {
-        // Settings
-        Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
-        Route::post('/settings', [\App\Http\Controllers\SettingController::class, 'store'])->name('settings.store');
+        // Settings — permission:settings
+        Route::middleware(['permission:settings'])->group(function () {
+            Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
+            Route::post('/settings', [\App\Http\Controllers\SettingController::class, 'store'])->name('settings.store');
+            Route::post('/settings/test-email', [\App\Http\Controllers\SettingController::class, 'testEmail'])->name('settings.test-email');
+            
+            // Mockup Templates
+            Route::post('/mockup-templates', [\App\Http\Controllers\MockupTemplateController::class, 'store'])->name('mockup_templates.store');
+            Route::delete('/mockup-templates/{template}', [\App\Http\Controllers\MockupTemplateController::class, 'destroy'])->name('mockup_templates.destroy');
+        });
         Route::post('/settings/test-pathao', [\App\Http\Controllers\SettingController::class, 'testPathao'])->name('settings.testPathao');
         Route::post('/settings/factory-reset', [\App\Http\Controllers\SettingController::class, 'factoryReset'])->name('settings.factoryReset');
         
