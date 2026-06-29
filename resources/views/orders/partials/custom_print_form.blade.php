@@ -3,6 +3,8 @@
   <form method="POST" action="{{ route('orders.storeCustomPrint') }}" enctype="multipart/form-data" class="p-6" x-data="{
     sizeBreakdown: { S: 0, M: 0, L: 0, XL: 0, '2XL': 0, '3XL': 0 },
     customSizes: '',
+    selectedPositions: [],
+    positionLabels: { front: 'Front', back: 'Back', left_sleeve: 'Left Sleeve', right_sleeve: 'Right Sleeve', pocket: 'Pocket' },
     totalQty() {
       let sum = Object.values(this.sizeBreakdown).reduce((a, b) => parseInt(a || 0) + parseInt(b || 0), 0);
       if (this.customSizes) {
@@ -69,12 +71,12 @@
         <div class="mt-4">
           <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Print Positions *</label>
           <div class="flex flex-wrap gap-3">
-            @foreach(['front' => 'Front', 'back' => 'Back', 'left_sleeve' => 'Left Sleeve', 'right_sleeve' => 'Right Sleeve'] as $key => $label)
+            <template x-for="(label, key) in positionLabels" :key="key">
               <label class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 cursor-pointer hover:bg-purple-50 hover:border-purple-200 transition">
-                <input type="checkbox" name="print_positions[]" value="{{ $key }}" class="rounded text-purple-600 focus:ring-purple-500">
-                <span class="text-sm font-bold text-gray-700">{{ $label }}</span>
+                <input type="checkbox" name="print_positions[]" :value="key" x-model="selectedPositions" class="rounded text-purple-600 focus:ring-purple-500">
+                <span class="text-sm font-bold text-gray-700" x-text="label"></span>
               </label>
-            @endforeach
+            </template>
           </div>
         </div>
       </div>
@@ -108,10 +110,23 @@
         <h4 class="font-black text-gray-900 mb-4">Design & Notes</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Design File</label>
-            <input type="file" name="design_file" accept=".png,.jpg,.jpeg,.pdf,.ai,.svg,.webp"
-              class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
-            <p class="text-[10px] text-gray-400 mt-1">PNG, JPG, PDF, AI, SVG, WebP — max 20MB</p>
+            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Design Files</label>
+            
+            <div x-show="selectedPositions.length === 0" class="text-sm text-gray-400 italic py-2">
+              Select print positions above to upload files.
+            </div>
+
+            <div class="space-y-3">
+              <template x-for="pos in selectedPositions" :key="pos">
+                <div class="bg-white border border-gray-200 p-3 rounded-xl flex items-center justify-between gap-3 shadow-sm">
+                  <div class="shrink-0 font-bold text-sm text-gray-700 w-24" x-text="positionLabels[pos]"></div>
+                  <input type="file" :name="`design_files[${pos}]`" accept="*/*"
+                    class="w-full text-xs font-medium file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                </div>
+              </template>
+            </div>
+            
+            <p class="text-[10px] text-gray-400 mt-2">Any file type accepted. Max 20MB per file.</p>
           </div>
           <div>
             <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Estimated Delivery Date</label>

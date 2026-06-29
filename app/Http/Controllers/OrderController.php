@@ -1576,8 +1576,9 @@ class OrderController extends Controller
             'advance_amount' => 'nullable|numeric|min:0',
             'print_method' => 'required|string|in:dtf,screen_print',
             'print_positions' => 'required|array|min:1',
-            'print_positions.*' => 'string|in:front,back,left_sleeve,right_sleeve',
-            'design_file' => 'nullable|file|mimes:png,jpg,jpeg,pdf,ai,svg,webp|max:20480',
+            'print_positions.*' => 'string|in:front,back,left_sleeve,right_sleeve,pocket',
+            'design_files' => 'nullable|array',
+            'design_files.*' => 'nullable|file|max:20480',
             'design_notes' => 'nullable|string|max:2000',
             'estimated_delivery_date' => 'nullable|date',
             'remarks' => 'nullable|string|max:1000',
@@ -1589,10 +1590,15 @@ class OrderController extends Controller
         $order = DB::transaction(function () use ($validated, $request) {
             $product = Product::findOrFail($validated['product_id']);
 
-            // Handle design file upload
-            $designPath = null;
-            if ($request->hasFile('design_file')) {
-                $designPath = $request->file('design_file')->store('custom-prints', 'public');
+            // Handle design files upload mapping to print positions
+            $designFilesPaths = null;
+            if ($request->hasFile('design_files')) {
+                $designFilesPaths = [];
+                foreach ($request->file('design_files') as $position => $file) {
+                    if ($file) {
+                        $designFilesPaths[$position] = $file->store('custom-prints', 'public');
+                    }
+                }
             }
 
             // Build size breakdown — merge standard sizes with custom sizes
@@ -1628,11 +1634,11 @@ class OrderController extends Controller
                 'status' => 'pending',
                 'source' => 'manual',
                 'order_type' => 'custom_print',
-                'design_file' => $designPath,
+                'design_files' => $designFilesPaths,
                 'design_notes' => $validated['design_notes'] ?? null,
                 'print_method' => $validated['print_method'],
                 'print_positions' => $validated['print_positions'],
-                'production_status' => 'design_received',
+                'production_status' => null,
                 'estimated_delivery_date' => $validated['estimated_delivery_date'] ?? null,
                 'remarks' => $validated['remarks'] ?? null,
             ]);

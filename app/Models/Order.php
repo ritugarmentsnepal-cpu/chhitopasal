@@ -24,6 +24,7 @@ class Order extends Model
         'source',
         'order_type',
         'design_file',
+        'design_files',
         'design_notes',
         'print_method',
         'print_positions',
@@ -49,6 +50,7 @@ class Order extends Model
         'shipped_at' => 'datetime',
         'estimated_delivery_date' => 'date',
         'print_positions' => 'array',
+        'design_files' => 'array',
         'advance_amount' => 'decimal:2',
     ];
 
