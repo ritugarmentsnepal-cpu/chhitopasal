@@ -73,6 +73,10 @@
       <span x-show="!sidebarCollapsed" x-transition.opacity>Shipments History</span>
      </a>
      @endif
+     <a href="{{ route('orders.index', ['order_type' => 'custom_print']) }}" class="flex items-center gap-3 py-2 rounded-xl font-semibold text-xs transition-all {{ request()->get('order_type') === 'custom_print' ? 'bg-purple-500/15 text-purple-400' : 'text-white/30 hover:bg-white/5 hover:text-white/60' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3 ml-8'" title="Custom Print Orders">
+      <svg class="w-4 h-4 shrink-0 {{ request()->get('order_type') === 'custom_print' ? 'text-purple-400' : 'text-white/20' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+      <span x-show="!sidebarCollapsed" x-transition.opacity>Custom Print</span>
+     </a>
      @endif
      @if(Route::has('sales.index'))
      <a href="{{ route('sales.index') }}" class="flex items-center gap-3 py-2.5 rounded-xl font-semibold text-sm transition-all relative {{ request()->routeIs('sales.*') ? 'bg-white/10 text-white' : 'text-white/50 hover:bg-white/5 hover:text-white/80' }}" :class="sidebarCollapsed ? 'justify-center px-0' : 'px-3'" title="Sales List">

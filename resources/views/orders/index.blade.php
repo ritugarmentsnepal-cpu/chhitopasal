@@ -2,9 +2,16 @@
   <x-slot name="header">
     <div class="flex items-center justify-between">
       <h2 class="font-black text-2xl text-gray-900 leading-tight tracking-tight">
-        {{ __('Order Management') }}
+        {{ $orderType === 'custom_print' ? __('Custom Print Orders') : __('Order Management') }}
       </h2>
-      @if($status === 'pending')
+      @if($status === 'pending' && $orderType === 'custom_print')
+        <div class="flex gap-2">
+          <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-custom-print-modal')" class="bg-purple-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:bg-purple-700 transition duration-150 active:scale-95 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            <span class="hidden sm:inline">New Print Order</span>
+          </button>
+        </div>
+      @elseif($status === 'pending' && $orderType === 'standard')
         <div class="flex gap-2">
           <button x-data="" @click="window.dispatchEvent(new CustomEvent('open-bulk-modal'))" class="bg-white border border-gray-200 text-gray-700 font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-50 transition duration-150 active:scale-95 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
@@ -44,6 +51,18 @@
           <span class="font-bold">{{ session('error') }}</span>
         </div>
       @endif
+
+      <!-- Order Type Toggle -->
+      <div class="flex items-center gap-2 mb-4">
+        <a href="{{ request()->fullUrlWithQuery(['order_type' => 'standard']) }}" class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all {{ $orderType === 'standard' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:text-gray-900' }}">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+          Standard Orders
+        </a>
+        <a href="{{ request()->fullUrlWithQuery(['order_type' => 'custom_print']) }}" class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all {{ $orderType === 'custom_print' ? 'bg-purple-600 text-white shadow-lg' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:text-gray-900' }}">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+          Custom Print Orders
+        </a>
+      </div>
 
       <!-- Tabs Navigation -->
       <div class="bg-white p-2 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex overflow-x-auto no-scrollbar mb-6">
@@ -262,6 +281,11 @@
                     @if($order->remarks)
                       <div class="mt-2 text-xs p-2 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-lg whitespace-pre-wrap break-words">
                         <strong>Remarks:</strong><br>{{ $order->remarks }}
+                      </div>
+                    @endif
+                    @if($orderType === 'custom_print')
+                      <div class="mt-4">
+                        @include('orders.partials.production_tracker', ['order' => $order])
                       </div>
                     @endif
                   </td>
@@ -2224,4 +2248,10 @@
       }));
     });
   </script>
+
+{{-- Custom Print Order Modal --}}
+@if(isset($orderType) && $orderType === 'custom_print')
+  @include('orders.partials.custom_print_form')
+@endif
+
 </x-app-layout>

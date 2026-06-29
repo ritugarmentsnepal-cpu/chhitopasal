@@ -50,6 +50,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/orders/{order}/pathao-details', [OrderController::class, 'getPathaoDetails'])->middleware('throttle:10,1')->name('orders.pathaoDetails');
         Route::get('/orders/reports/damage', [OrderController::class, 'damageReport'])->name('orders.damageReport');
         
+        // Custom Print Orders
+        Route::post('/orders/custom-print', [OrderController::class, 'storeCustomPrint'])->name('orders.storeCustomPrint');
+        Route::post('/orders/{order}/production-status', [OrderController::class, 'updateProductionStatus'])->name('orders.updateProductionStatus');
+        
         // Sales List
         Route::get('/sales', [\App\Http\Controllers\SalesController::class, 'index'])->name('sales.index');
     });

@@ -55,6 +55,9 @@ class SettingController extends Controller
             'facebook_inbox_enabled', 'ai_agent_enabled', 'ai_agent_model', 'ai_agent_greeting',
             'ai_agent_max_messages', 'ai_agent_response_delay',
             'ai_agent_working_hours_start', 'ai_agent_working_hours_end',
+            // Custom Print Settings
+            'custom_print_enabled', 'custom_print_default_advance_percent',
+            
             // Integrations (Analytics)
             'google_tag_manager_id', 'facebook_pixel_id',
             // Automation

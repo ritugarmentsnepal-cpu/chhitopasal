@@ -2,6 +2,42 @@
   @csrf
   <input type="hidden" name="redirect_tab" value="automation">
   
+  {{-- Custom Print Configuration --}}
+  <div class="bg-white rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-8">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+        </div>
+        <div>
+          <h3 class="text-xl font-black text-gray-900">Custom Print Orders</h3>
+          <p class="text-sm text-gray-500 font-medium">Configure rules for corporate/bulk printing orders.</p>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="flex items-center justify-between bg-gray-50 rounded-xl p-4 border border-gray-200 md:col-span-2">
+          <div>
+            <h4 class="font-black text-gray-900">Enable Custom Print Feature</h4>
+            <p class="text-xs text-gray-500 font-bold">Show custom print forms and production trackers.</p>
+          </div>
+          <div x-data="{ enabled: {{ setting('custom_print_enabled', '1') == '1' ? 'true' : 'false' }} }">
+            <input type="hidden" name="custom_print_enabled" :value="enabled ? '1' : '0'">
+            <button type="button" @click="enabled = !enabled" :class="enabled ? 'bg-purple-600' : 'bg-gray-300'" class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none">
+              <span :class="enabled ? 'translate-x-8' : 'translate-x-1'" class="inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 ease-in-out shadow-sm"></span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Default Advance Payment (%)</label>
+          <input type="number" name="custom_print_default_advance_percent" value="{{ setting('custom_print_default_advance_percent', '50') }}" min="0" max="100" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-bold focus:border-purple-500 focus:ring focus:ring-purple-500/10 py-3">
+          <p class="text-[10px] text-gray-400 mt-1 font-bold">Standard policy (e.g. 50%)</p>
+        </div>
+      </div>
+      
+    </div>
+
+  {{-- Global Pathao Rules --}}
   <div class="bg-white rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-8">
     <h3 class="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
       Inventory & Operations Automation

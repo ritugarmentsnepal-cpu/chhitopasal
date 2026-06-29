@@ -18,9 +18,28 @@ class OrderItem extends Model
         'cost_at_purchase',
         'color',
         'size',
+        'size_breakdown',
+        'custom_notes',
         'returned_good_qty',
         'returned_damaged_qty',
     ];
+
+    protected $casts = [
+        'size_breakdown' => 'array',
+    ];
+
+    /**
+     * Calculate total quantity from size breakdown JSON.
+     * Falls back to the quantity column if no breakdown exists.
+     */
+    public function getTotalQuantityFromBreakdown(): int
+    {
+        if (!empty($this->size_breakdown) && is_array($this->size_breakdown)) {
+            return array_sum($this->size_breakdown);
+        }
+
+        return $this->quantity;
+    }
 
     public function order()
     {

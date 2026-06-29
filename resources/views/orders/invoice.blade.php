@@ -63,6 +63,33 @@
       </div>
     </div>
 
+    <!-- Custom Print Details -->
+    @if($order->isCustomPrint())
+    <div class="mb-10 p-4 bg-gray-50 rounded-xl border border-gray-200">
+      <h3 class="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Custom Print Specifications</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-gray-600"><span class="font-bold">Print Method:</span> {{ $order->print_method ? strtoupper(str_replace('_', ' ', $order->print_method)) : 'N/A' }}</p>
+          <p class="text-sm text-gray-600"><span class="font-bold">Positions:</span> 
+            @if($order->print_positions)
+              {{ implode(', ', array_map(fn($p) => ucwords(str_replace('_', ' ', $p)), $order->print_positions)) }}
+            @else
+              N/A
+            @endif
+          </p>
+        </div>
+        <div>
+          @if($order->design_file)
+            <p class="text-sm text-gray-600 font-bold mb-1">Design Attached</p>
+          @endif
+          @if($order->design_notes)
+            <p class="text-xs text-gray-500 italic">"{{ $order->design_notes }}"</p>
+          @endif
+        </div>
+      </div>
+    </div>
+    @endif
+
     <!-- Items Table -->
     <table class="w-full text-left mb-8">
       <thead class="border-b-2 border-gray-900">
@@ -76,10 +103,19 @@
       <tbody class="divide-y divide-gray-100">
         @foreach($order->orderItems as $item)
         <tr>
-          <td class="py-4 font-bold text-gray-800">{{ $item->product ? $item->product->name : 'Deleted Product' }}</td>
-          <td class="py-4 text-center text-gray-600">{{ $item->quantity }}</td>
-          <td class="py-4 text-right text-gray-600">Rs. {{ number_format($item->price_at_purchase, 2) }}</td>
-          <td class="py-4 text-right font-bold text-gray-900">Rs. {{ number_format($item->quantity * $item->price_at_purchase, 2) }}</td>
+          <td class="py-4 align-top">
+            <div class="font-bold text-gray-800">{{ $item->product ? $item->product->name : 'Deleted Product' }}</div>
+            @if(!empty($item->size_breakdown))
+              <div class="mt-1 flex flex-wrap gap-1">
+                @foreach($item->size_breakdown as $size => $qty)
+                  <span class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-md text-[10px] font-bold border border-gray-200">{{ $size }}: {{ $qty }}</span>
+                @endforeach
+              </div>
+            @endif
+          </td>
+          <td class="py-4 align-top text-center text-gray-600">{{ $item->quantity }}</td>
+          <td class="py-4 align-top text-right text-gray-600">Rs. {{ number_format($item->price_at_purchase, 2) }}</td>
+          <td class="py-4 align-top text-right font-bold text-gray-900">Rs. {{ number_format($item->quantity * $item->price_at_purchase, 2) }}</td>
         </tr>
         @endforeach
       </tbody>
@@ -92,10 +128,25 @@
           <span class="font-bold text-gray-500">Subtotal</span>
           <span class="font-bold text-gray-900">Rs. {{ number_format($order->total_amount, 2) }}</span>
         </div>
+        <div class="flex justify-between py-2 border-b-2 border-gray-900">
+          <span class="font-bold text-gray-500">Total</span>
+          <span class="font-bold text-gray-900">Rs. {{ number_format($order->total_amount, 2) }}</span>
+        </div>
+        @if($order->advance_amount > 0)
+        <div class="flex justify-between py-2 border-b border-gray-100">
+          <span class="font-bold text-green-600">Advance Paid</span>
+          <span class="font-bold text-green-600">- Rs. {{ number_format($order->advance_amount, 2) }}</span>
+        </div>
+        <div class="flex justify-between py-4 border-b-4 border-gray-900 bg-gray-50 px-2 rounded-b-lg">
+          <span class="text-xl font-black text-gray-900">Balance Due</span>
+          <span class="text-xl font-black text-gray-900">Rs. {{ number_format($order->total_amount - $order->advance_amount, 2) }}</span>
+        </div>
+        @else
         <div class="flex justify-between py-4 border-b-4 border-gray-900">
           <span class="text-xl font-black text-gray-900">Total</span>
           <span class="text-xl font-black text-gray-900">Rs. {{ number_format($order->total_amount, 2) }}</span>
         </div>
+        @endif
       </div>
     </div>
 

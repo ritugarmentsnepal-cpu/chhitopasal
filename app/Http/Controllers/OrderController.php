@@ -29,7 +29,12 @@ class OrderController extends Controller
         $search = $request->get('search');
         $dateFilter = $request->get('date_filter');
 
-        $query = Order::with('orderItems.product')->where('status', $status);
+        $orderType = $request->get('order_type', 'standard');
+        if (!in_array($orderType, ['standard', 'custom_print'])) {
+            $orderType = 'standard';
+        }
+
+        $query = Order::with('orderItems.product')->where('status', $status)->where('order_type', $orderType);
 
         if ($search) {
             $escaped = OrderService::escapeLike($search);
@@ -88,7 +93,7 @@ class OrderController extends Controller
         $products = Product::select('id', 'name', 'price', 'stock', 'bundles')->get();
         $accounts = \App\Models\Account::all();
 
-        return view('orders.index', compact('orders', 'status', 'products', 'accounts'));
+        return view('orders.index', compact('orders', 'status', 'products', 'accounts', 'orderType'));
     }
 
     public function store(Request $request)
@@ -1529,5 +1534,117 @@ class OrderController extends Controller
             ],
             'status_updated_at' => $order->pathao_status_updated_at ? \Carbon\Carbon::parse($order->pathao_status_updated_at)->diffForHumans() : 'Never',
         ]);
+    }
+
+    // ── Custom Print Orders ─────────────────────────────────────────────
+
+    public function storeCustomPrint(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'product_id' => 'required|exists:products,id',
+            'total_quantity' => 'required|integer|min:1',
+            'total_amount' => 'required|numeric|min:0',
+            'advance_amount' => 'nullable|numeric|min:0',
+            'print_method' => 'required|string|in:dtf,screen_print',
+            'print_positions' => 'required|array|min:1',
+            'print_positions.*' => 'string|in:front,back,left_sleeve,right_sleeve',
+            'design_file' => 'nullable|file|mimes:png,jpg,jpeg,pdf,ai,svg,webp|max:20480',
+            'design_notes' => 'nullable|string|max:2000',
+            'estimated_delivery_date' => 'nullable|date',
+            'remarks' => 'nullable|string|max:1000',
+            'size_breakdown' => 'nullable|array',
+            'size_breakdown.*' => 'integer|min:0',
+            'custom_sizes' => 'nullable|string|max:500',
+        ]);
+
+        $order = DB::transaction(function () use ($validated, $request) {
+            $product = Product::findOrFail($validated['product_id']);
+
+            // Handle design file upload
+            $designPath = null;
+            if ($request->hasFile('design_file')) {
+                $designPath = $request->file('design_file')->store('custom-prints', 'public');
+            }
+
+            // Build size breakdown — merge standard sizes with custom sizes
+            $sizeBreakdown = collect($validated['size_breakdown'] ?? [])
+                ->filter(fn($qty) => $qty > 0)
+                ->toArray();
+
+            // Parse custom sizes (format: "4XL:5, 5XL:3")
+            if (!empty($validated['custom_sizes'])) {
+                $customParts = explode(',', $validated['custom_sizes']);
+                foreach ($customParts as $part) {
+                    $part = trim($part);
+                    if (str_contains($part, ':')) {
+                        [$size, $qty] = explode(':', $part, 2);
+                        $size = trim($size);
+                        $qty = (int) trim($qty);
+                        if ($size && $qty > 0) {
+                            $sizeBreakdown[$size] = $qty;
+                        }
+                    }
+                }
+            }
+
+            $totalQuantity = !empty($sizeBreakdown) ? array_sum($sizeBreakdown) : (int) $validated['total_quantity'];
+
+            $order = Order::create([
+                'customer_name' => $validated['customer_name'],
+                'customer_phone' => $validated['customer_phone'],
+                'address' => $validated['address'],
+                'city' => $validated['city'] ?? null,
+                'total_amount' => $validated['total_amount'],
+                'advance_amount' => $validated['advance_amount'] ?? 0,
+                'status' => 'pending',
+                'source' => 'manual',
+                'order_type' => 'custom_print',
+                'design_file' => $designPath,
+                'design_notes' => $validated['design_notes'] ?? null,
+                'print_method' => $validated['print_method'],
+                'print_positions' => $validated['print_positions'],
+                'production_status' => 'design_received',
+                'estimated_delivery_date' => $validated['estimated_delivery_date'] ?? null,
+                'remarks' => $validated['remarks'] ?? null,
+            ]);
+
+            $order->orderItems()->create([
+                'product_id' => $product->id,
+                'quantity' => $totalQuantity,
+                'price_at_purchase' => $totalQuantity > 0 ? $validated['total_amount'] / $totalQuantity : 0,
+                'cost_at_purchase' => $product->cost_price,
+                'size_breakdown' => !empty($sizeBreakdown) ? $sizeBreakdown : null,
+            ]);
+
+            return $order;
+        });
+
+        return redirect()->route('orders.index', ['status' => 'pending', 'order_type' => 'custom_print'])
+            ->with('success', 'Custom print order #' . $order->id . ' created successfully.');
+    }
+
+    public function updateProductionStatus(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'production_status' => 'required|string|in:' . implode(',', Order::productionStatuses()),
+            'production_notes' => 'nullable|string|max:2000',
+        ]);
+
+        try {
+            $orderService = app(OrderService::class);
+            $orderService->transitionProductionStatus(
+                $order,
+                $validated['production_status'],
+                $validated['production_notes'] ?? null
+            );
+
+            return back()->with('success', 'Production status updated to: ' . $order->fresh()->production_status_label);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 }

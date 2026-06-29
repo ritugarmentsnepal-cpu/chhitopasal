@@ -22,6 +22,15 @@ class Order extends Model
         'delivery_charge',
         'status',
         'source',
+        'order_type',
+        'design_file',
+        'design_notes',
+        'print_method',
+        'print_positions',
+        'production_status',
+        'production_notes',
+        'estimated_delivery_date',
+        'advance_amount',
         'bulk_batch_id',
         'bulk_ship_batch_id',
         'pathao_consignment_id',
@@ -38,7 +47,65 @@ class Order extends Model
 
     protected $casts = [
         'shipped_at' => 'datetime',
+        'estimated_delivery_date' => 'date',
+        'print_positions' => 'array',
+        'advance_amount' => 'decimal:2',
     ];
+
+    // ── Helpers ──────────────────────────────────────────
+
+    public function isCustomPrint(): bool
+    {
+        return $this->order_type === 'custom_print';
+    }
+
+    public function isStandard(): bool
+    {
+        return $this->order_type === 'standard';
+    }
+
+    /**
+     * Human-readable production status label.
+     */
+    public function getProductionStatusLabelAttribute(): string
+    {
+        return match ($this->production_status) {
+            'design_received' => 'Design Received',
+            'design_approved' => 'Design Approved',
+            'in_production' => 'In Production',
+            'quality_check' => 'Quality Check',
+            'ready_to_ship' => 'Ready to Ship',
+            default => 'N/A',
+        };
+    }
+
+    /**
+     * All valid production statuses in order.
+     */
+    public static function productionStatuses(): array
+    {
+        return [
+            'design_received',
+            'design_approved',
+            'in_production',
+            'quality_check',
+            'ready_to_ship',
+        ];
+    }
+
+    // ── Scopes ───────────────────────────────────────────
+
+    public function scopeCustomPrint($query)
+    {
+        return $query->where('order_type', 'custom_print');
+    }
+
+    public function scopeStandard($query)
+    {
+        return $query->where('order_type', 'standard');
+    }
+
+    // ── Relationships ────────────────────────────────────
 
     public function orderItems()
     {

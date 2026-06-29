@@ -42,16 +42,19 @@ class OrderService
             throw new \InvalidArgumentException("Cannot transition order #{$order->id} from '{$oldStatus}' to '{$newStatus}'.");
         }
 
-        $stockDeductedStatuses = ['shipped', 'delivered'];
+        // Custom print orders deduct stock at production start, not at shipping
+        if ($order->isCustomPrint()) {
+            // Stock already handled by transitionProductionStatus()
+        } else {
+            $stockDeductedStatuses = ['shipped', 'delivered'];
 
-        // If stock was deducted and we're moving to a non-deducted status
-        if (in_array($oldStatus, $stockDeductedStatuses) && in_array($newStatus, ['failed', 'rejected'])) {
-            $this->restoreStock($order);
-        }
+            if (in_array($oldStatus, $stockDeductedStatuses) && in_array($newStatus, ['failed', 'rejected'])) {
+                $this->restoreStock($order);
+            }
 
-        // If stock was not deducted and we're moving to a deducted status
-        if (!in_array($oldStatus, $stockDeductedStatuses) && in_array($newStatus, $stockDeductedStatuses)) {
-            $this->deductStock($order);
+            if (!in_array($oldStatus, $stockDeductedStatuses) && in_array($newStatus, $stockDeductedStatuses)) {
+                $this->deductStock($order);
+            }
         }
 
         // Revenue / Accounts Receivable Logic for Pathao Delivery
@@ -69,6 +72,57 @@ class OrderService
         $order->update($updateData);
 
         // BUG-FIX: Clear dashboard cache so orders move between columns immediately
+        $this->clearDashboardCache();
+    }
+
+    /**
+     * Transition production status for custom print orders.
+     * Stock is deducted when moving to 'in_production' (blank t-shirts consumed).
+     */
+    public function transitionProductionStatus(Order $order, string $newProductionStatus, ?string $notes = null): void
+    {
+        if (!$order->isCustomPrint()) {
+            throw new \InvalidArgumentException('Production status can only be changed for custom print orders.');
+        }
+
+        $validProductionTransitions = [
+            null               => ['design_received'],
+            'design_received'  => ['design_approved', 'design_received'],
+            'design_approved'  => ['in_production', 'design_received'],
+            'in_production'    => ['quality_check'],
+            'quality_check'    => ['ready_to_ship', 'in_production'],
+            'ready_to_ship'    => [],
+        ];
+
+        $currentStatus = $order->production_status;
+
+        if (!in_array($newProductionStatus, $validProductionTransitions[$currentStatus] ?? [])) {
+            throw new \InvalidArgumentException(
+                "Cannot transition production from '" . ($currentStatus ?? 'none') . "' to '{$newProductionStatus}'."
+            );
+        }
+
+        // Deduct blank t-shirt stock when production starts
+        if ($newProductionStatus === 'in_production' && $currentStatus !== 'in_production') {
+            $this->deductStock($order);
+        }
+
+        // Restore stock if reverting from in_production back to design phase
+        if ($currentStatus === 'in_production' && in_array($newProductionStatus, ['design_received', 'design_approved'])) {
+            $this->restoreStock($order);
+        }
+
+        $updateData = ['production_status' => $newProductionStatus];
+        if ($notes) {
+            $updateData['production_notes'] = $notes;
+        }
+
+        // Auto-transition order status when production reaches ready_to_ship
+        if ($newProductionStatus === 'ready_to_ship' && $order->status === 'confirmed') {
+            $updateData['status'] = 'confirmed'; // stays confirmed, ready for shipping
+        }
+
+        $order->update($updateData);
         $this->clearDashboardCache();
     }
 
@@ -194,7 +248,7 @@ class OrderService
      * Check if a status transition is valid.
      * ORD-02: Prevents invalid transitions that cause stock inflation.
      */
-    public function isValidTransition(string $from, string $to): bool
+    public function isValidTransition(string $from, string $to, ?Order $order = null): bool
     {
         $validTransitions = [
             'pending' => ['confirmed', 'rejected'],
