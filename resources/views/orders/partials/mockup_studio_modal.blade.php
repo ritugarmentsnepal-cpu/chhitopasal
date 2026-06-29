@@ -33,7 +33,7 @@
                         @php
                             try {
                                 $templates = \App\Models\MockupTemplate::all();
-                            } catch (\Exception $e) {
+                            } catch (\Throwable $e) {
                                 $templates = collect();
                             }
                         @endphp

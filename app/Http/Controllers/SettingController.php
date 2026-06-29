@@ -29,7 +29,7 @@ class SettingController extends Controller
         } elseif ($tab === 'mockups') {
             try {
                 $data['mockupTemplates'] = \App\Models\MockupTemplate::all();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $data['mockupTemplates'] = collect();
             }
         }

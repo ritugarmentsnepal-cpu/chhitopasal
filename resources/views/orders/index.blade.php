@@ -296,7 +296,7 @@
                       </div>
                     @endif
                     
-                    @if($order->mockup_files && count($order->mockup_files) > 0)
+                    @if(is_array($order->mockup_files) && count($order->mockup_files) > 0)
                       <div class="mt-3">
                         <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Generated Mockups</div>
                         <div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
