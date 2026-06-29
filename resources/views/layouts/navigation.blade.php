@@ -111,7 +111,7 @@
     </div>
    </div>
 
-   @if(auth()->user()->hasPermission('facebook_inbox'))
+   @if(auth()->user()->hasPermission('facebook_inbox') && setting('facebook_inbox_enabled', '1') == '1')
    <!-- Marketing Section -->
    <div>
     <div x-show="!sidebarCollapsed" class="text-[10px] font-black text-white/30 uppercase tracking-[0.15em] mb-3 px-3">Marketing</div>

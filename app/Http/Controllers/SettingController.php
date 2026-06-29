@@ -51,8 +51,8 @@ class SettingController extends Controller
             'pathao_password', 'pathao_store_id', 'pathao_base_url',
             // Integrations (OpenRouter AI)
             'openrouter_api_key', 'openrouter_model',
-            // AI Agent
-            'ai_agent_enabled', 'ai_agent_model', 'ai_agent_greeting',
+            // Facebook & AI Agent
+            'facebook_inbox_enabled', 'ai_agent_enabled', 'ai_agent_model', 'ai_agent_greeting',
             'ai_agent_max_messages', 'ai_agent_response_delay',
             'ai_agent_working_hours_start', 'ai_agent_working_hours_end',
             // Integrations (Analytics)

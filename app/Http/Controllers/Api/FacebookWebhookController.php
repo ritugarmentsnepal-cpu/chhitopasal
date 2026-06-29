@@ -84,6 +84,10 @@ class FacebookWebhookController extends Controller
 
     public function handle(Request $request)
     {
+        if (setting('facebook_inbox_enabled', '1') != '1') {
+            return response('EVENT_RECEIVED', 200);
+        }
+
         set_time_limit(120);
         $payload = $request->all();
         

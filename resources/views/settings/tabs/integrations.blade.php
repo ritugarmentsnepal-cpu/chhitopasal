@@ -63,6 +63,47 @@
     </form>
   </div>
 
+  {{-- Facebook Inbox & AI Master Toggle --}}
+  <form method="POST" action="{{ route('settings.store') }}" class="mt-8">
+    @csrf
+    <input type="hidden" name="redirect_tab" value="integrations">
+    
+    <div class="bg-white rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+        </div>
+        <div>
+          <h3 class="text-xl font-black text-gray-900 ">Facebook Inbox & AI Agent</h3>
+          <p class="text-sm text-gray-500 font-medium">Enable or disable the Facebook Inbox and AI Agent features globally.</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center justify-between bg-gray-50 rounded-xl p-4 border border-gray-200">
+        <div>
+          <h4 class="font-black text-gray-900">Feature Status</h4>
+          <p class="text-sm text-gray-500 font-bold">When disabled, the Marketing menu, Facebook Webhook processing, and AI Agent will be hidden and stopped.</p>
+        </div>
+        <div x-data="{ enabled: {{ setting('facebook_inbox_enabled', '1') == '1' ? 'true' : 'false' }} }" class="flex items-center">
+          <input type="hidden" name="facebook_inbox_enabled" :value="enabled ? '1' : '0'">
+          <button type="button" @click="enabled = !enabled"
+            :class="enabled ? 'bg-gray-900' : 'bg-gray-300'"
+            class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2">
+            <span :class="enabled ? 'translate-x-8' : 'translate-x-1'"
+              class="inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 ease-in-out shadow-sm">
+            </span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="flex items-center justify-end pt-6 mt-6 border-t border-gray-100">
+        <button type="submit" class="bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-[0_8px_20px_rgb(17,24,39,0.2)] hover:bg-gray-800 active:scale-95 transition">
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </form>
+
   {{-- OpenRouter AI Section --}}
   <form method="POST" action="{{ route('settings.store') }}" class="mt-8">
     @csrf
