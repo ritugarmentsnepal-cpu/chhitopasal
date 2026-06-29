@@ -12,6 +12,11 @@ Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('p
 Route::get('/product/{slug}', [HomeController::class, 'show'])->name('product.show');
 Route::post('/checkout', [\App\Http\Controllers\OrderController::class, 'storeWeb'])->middleware('throttle:5,1')->name('checkout.web');
 
+Route::get('/debug-logs-temp', function() {
+    $lines = file(storage_path('logs/laravel.log'));
+    return implode("<br>", array_slice($lines, -100));
+});
+
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
 
