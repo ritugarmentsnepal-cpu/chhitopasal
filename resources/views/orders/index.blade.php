@@ -67,18 +67,29 @@
       <!-- Tabs Navigation -->
       <div class="bg-white p-2 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex overflow-x-auto no-scrollbar mb-6">
         @php
-          $tabs = [
-            'pending' => 'Pending',
-            'confirmed' => 'Confirmed',
-            'shipped' => 'Shipped',
-            'delivered' => 'Delivered',
-            'return_delivered' => 'Returned',
-            'failed' => 'Failed',
-            'rejected' => 'Rejected'
-          ];
+          if ($orderType === 'custom_print') {
+            $tabs = [
+              'design' => 'Design Phase',
+              'production' => 'In Production',
+              'ready_to_ship' => 'Ready to Ship',
+              'shipped' => 'Shipped',
+              'delivered' => 'Delivered',
+              'rejected' => 'Rejected'
+            ];
+          } else {
+            $tabs = [
+              'pending' => 'Pending',
+              'confirmed' => 'Confirmed',
+              'shipped' => 'Shipped',
+              'delivered' => 'Delivered',
+              'return_delivered' => 'Returned',
+              'failed' => 'Failed',
+              'rejected' => 'Rejected'
+            ];
+          }
         @endphp
         @foreach($tabs as $key => $label)
-          <a href="{{ request()->fullUrlWithQuery(['status' => $key]) }}" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex-1 text-center {{ $status === $key ? 'bg-mango text-gray-900 shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+          <a href="{{ request()->fullUrlWithQuery(['status' => $key]) }}" class="px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex-1 text-center {{ $status === $key ? ($orderType === 'custom_print' ? 'bg-purple-600 text-white shadow-sm' : 'bg-mango text-gray-900 shadow-sm') : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
             {{ $label }}
           </a>
         @endforeach
@@ -135,22 +146,22 @@
       <!-- Orders Table -->
       <div class="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
         <div x-show="selectedOrders.length > 0" x-cloak class="border-b px-6 py-3 flex items-center justify-between transition-all
-          {{ $status === 'pending' ? 'bg-red-50 border-red-100' : ($status === 'confirmed' ? 'bg-emerald-50 border-emerald-100' : 'bg-blue-50 border-blue-100') }}">
-          <span class="text-sm font-bold {{ $status === 'pending' ? 'text-red-900' : ($status === 'confirmed' ? 'text-emerald-900' : 'text-blue-900') }}"><span x-text="selectedOrders.length"></span> orders selected</span>
+          {{ in_array($status, ['pending', 'design']) ? 'bg-red-50 border-red-100' : (in_array($status, ['confirmed', 'production', 'ready_to_ship']) ? 'bg-emerald-50 border-emerald-100' : 'bg-blue-50 border-blue-100') }}">
+          <span class="text-sm font-bold {{ in_array($status, ['pending', 'design']) ? 'text-red-900' : (in_array($status, ['confirmed', 'production', 'ready_to_ship']) ? 'text-emerald-900' : 'text-blue-900') }}"><span x-text="selectedOrders.length"></span> orders selected</span>
           <div class="flex items-center gap-2">
-            @if($status === 'pending')
+            @if(in_array($status, ['pending', 'design']))
               <button type="button" @click="bulkDeleteOrders()" :disabled="bulkProcessing" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-sm flex items-center gap-2 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg x-show="!bulkProcessing" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 <svg x-show="bulkProcessing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 <span x-text="bulkProcessing ? 'Deleting...' : 'Delete Selected'"></span>
               </button>
-            @elseif($status === 'confirmed')
+            @elseif($status === 'confirmed' || $status === 'ready_to_ship')
               <button type="button" @click="bulkShipOrders()" :disabled="bulkProcessing" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-sm flex items-center gap-2 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg x-show="!bulkProcessing" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
                 <svg x-show="bulkProcessing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 <span x-text="bulkProcessing ? 'Shipping...' : 'Ship All via Pathao'"></span>
               </button>
-            @else
+            @elseif(!in_array($status, ['design', 'production']))
               <form action="{{ route('orders.bulkPrint') }}" method="POST" target="_blank" class="inline">
                 @csrf
                 <input type="hidden" name="order_ids" :value="JSON.stringify(selectedOrders)">
@@ -291,15 +302,15 @@
                   </td>
                   <td class="p-4 align-top text-right w-[320px]">
                     <div class="flex flex-col gap-2 w-full ml-auto">
-                      @if(in_array($status, ['pending', 'confirmed']))
+                      @if(in_array($status, ['pending', 'confirmed', 'design', 'production', 'ready_to_ship']))
                         <button @click="openEditModal({{ $order }})" class="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-200 active:scale-95 transition-all w-full justify-center">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                          {{ $status === 'pending' ? 'Review & Process' : 'Edit Details' }}
+                          {{ in_array($status, ['pending', 'design']) ? 'Review & Process' : 'Edit Details' }}
                         </button>
                       @endif
 
-                      @if($status === 'pending' || $status === 'confirmed')
-                        <form action="{{ route('orders.status', $order) }}" method="POST" class="w-full">
+                      @if(in_array($status, ['pending', 'confirmed', 'design', 'production', 'ready_to_ship']))
+                        <form action="{{ route('orders.status', $order) }}" method="POST" class="w-full mt-1">
                           @csrf
                           <input type="hidden" name="status" value="rejected">
                           <button type="submit" class="w-full bg-red-50 text-red-600 hover:bg-red-100 font-bold py-2 px-2 rounded-lg text-xs transition flex items-center justify-center">
@@ -308,11 +319,19 @@
                         </form>
                       @endif
 
-                      @if($status === 'confirmed')
-                        <form action="{{ route('orders.ship', $order) }}" method="POST" class="w-full">
+                      @if($status === 'confirmed' || $status === 'ready_to_ship')
+                        <form action="{{ route('orders.ship', $order) }}" method="POST" class="w-full mt-1">
                           @csrf
                           <button type="submit" name="print_type" value="both" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded-lg transition text-xs shadow-sm text-center">Ship via Pathao</button>
                         </form>
+                        
+                        @if($orderType === 'custom_print' && $status === 'ready_to_ship')
+                        <form action="{{ route('orders.status', $order) }}" method="POST" class="w-full mt-1">
+                          @csrf
+                          <input type="hidden" name="status" value="delivered">
+                          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-2 rounded-lg transition text-xs shadow-sm text-center">Mark Delivered (Manual)</button>
+                        </form>
+                        @endif
                       @elseif($status === 'shipped')
                         <button @click="openTrackingModal({{ $order->id }})" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-2 rounded-lg transition text-xs shadow-sm text-center flex items-center justify-center gap-1.5 mb-1">
                           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>

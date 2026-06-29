@@ -19,22 +19,47 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->get('status', 'pending');
-        $validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'failed', 'rejected', 'return_delivered'];
-        
-        if (!in_array($status, $validStatuses)) {
-            $status = 'pending';
-        }
-
-        $search = $request->get('search');
-        $dateFilter = $request->get('date_filter');
-
         $orderType = $request->get('order_type', 'standard');
         if (!in_array($orderType, ['standard', 'custom_print'])) {
             $orderType = 'standard';
         }
 
-        $query = Order::with('orderItems.product')->where('status', $status)->where('order_type', $orderType);
+        $search = $request->get('search');
+        $dateFilter = $request->get('date_filter');
+
+        $status = $request->get('status');
+        
+        $query = Order::with('orderItems.product')->where('order_type', $orderType);
+
+        if ($orderType === 'custom_print') {
+            $validStatuses = ['design', 'production', 'ready_to_ship', 'shipped', 'delivered', 'rejected'];
+            if (!$status || !in_array($status, $validStatuses)) {
+                $status = 'design';
+            }
+
+            if ($status === 'design') {
+                $query->whereIn('status', ['pending', 'confirmed'])
+                      ->where(function($q) {
+                          $q->whereNull('production_status')
+                            ->orWhereIn('production_status', ['design_received', 'design_approved']);
+                      });
+            } elseif ($status === 'production') {
+                $query->whereIn('status', ['pending', 'confirmed'])
+                      ->whereIn('production_status', ['in_production', 'quality_check']);
+            } elseif ($status === 'ready_to_ship') {
+                $query->where('status', 'confirmed')
+                      ->where('production_status', 'ready_to_ship');
+            } else {
+                // shipped, delivered, rejected fall back to standard status filtering
+                $query->where('status', $status);
+            }
+        } else {
+            $validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'failed', 'rejected', 'return_delivered'];
+            if (!$status || !in_array($status, $validStatuses)) {
+                $status = 'pending';
+            }
+            $query->where('status', $status);
+        }
 
         if ($search) {
             $escaped = OrderService::escapeLike($search);
