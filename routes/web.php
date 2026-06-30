@@ -273,6 +273,22 @@ Route::post('/webhook/pathao', [\App\Http\Controllers\Api\PathaoWebhookControlle
 // Live Server Debug Route
 Route::get('/debug-webhook', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'debugLiveServer']);
 
-
 Route::get('/force-subscribe', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'forceSubscribe']);
+
+// Temporary route to run migrations
+Route::get('/run-migrations-secret', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Migrations ran successfully.',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
 
