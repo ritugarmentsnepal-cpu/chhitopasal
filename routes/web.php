@@ -57,6 +57,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/{order}/custom-print-update', [OrderController::class, 'updateCustomPrint'])->name('orders.updateCustomPrint');
         Route::post('/orders/{order}/save-mockup', [OrderController::class, 'saveMockup'])->name('orders.saveMockup');
         
+        // Mockup Library
+        Route::get('/mockups', [\App\Http\Controllers\MockupLibraryController::class, 'index'])->name('mockups.index');
+        Route::post('/mockups', [\App\Http\Controllers\MockupLibraryController::class, 'store'])->name('mockups.store');
+        Route::delete('/mockups/{mockup}', [\App\Http\Controllers\MockupLibraryController::class, 'destroy'])->name('mockups.destroy');
+        Route::get('/mockups/{mockup}/download', [\App\Http\Controllers\MockupLibraryController::class, 'download'])->name('mockups.download');
+        
         // Sales List
         Route::get('/sales', [\App\Http\Controllers\SalesController::class, 'index'])->name('sales.index');
     });

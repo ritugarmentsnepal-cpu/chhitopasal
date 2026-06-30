@@ -125,4 +125,9 @@ class Order extends Model
                 \App\SystemAccounts::REF_SALE_RETURN,
             ]);
     }
+
+    public function libraryMockups()
+    {
+        return $this->hasMany(Mockup::class);
+    }
 }

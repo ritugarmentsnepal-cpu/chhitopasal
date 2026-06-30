@@ -1790,6 +1790,15 @@ class OrderController extends Controller
 
             $order->update(['mockup_files' => $mockups]);
 
+            // Also create a library record so it appears in the Mockup Library
+            \App\Models\Mockup::create([
+                'title' => 'Order #' . $order->id . ' Mockup ' . count($mockups),
+                'image_path' => $path,
+                'order_id' => $order->id,
+                'created_by' => auth()->id(),
+                'tags' => [],
+            ]);
+
             return response()->json(['success' => true, 'path' => $path]);
         }
 
