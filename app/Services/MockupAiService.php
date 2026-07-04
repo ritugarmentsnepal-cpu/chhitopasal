@@ -132,9 +132,9 @@ class MockupAiService
      * applied logo should cover.
      */
     public const LOGO_SIZES = [
-        'small'  => 'small and subtle, like an embroidered chest/pocket mark — roughly 10–15% of the product\'s visible width',
-        'medium' => 'a standard merchandise print — roughly 35–45% of the product\'s visible width, clearly readable at a glance',
-        'large'  => 'a bold statement print — roughly 60–70% of the product\'s visible width, dominating the print area',
+        'small'  => 'a chest/pocket mark — the logo width must span AT LEAST 25% of the product\'s visible width (clearly visible, not a tiny token)',
+        'medium' => 'a standard merchandise print — the logo width must span AT LEAST 55% of the product\'s visible width, prominent and clearly readable',
+        'large'  => 'a bold full-area statement print — the logo width must span AT LEAST 85% of the product\'s visible width, filling almost the entire print area edge to edge',
     ];
 
     protected function buildMockupPrompt(MockupTemplate $template, ?string $instructions, string $logoSize = 'medium'): string
@@ -145,7 +145,7 @@ class MockupAiService
         $lines[] = "The first attached image is a product mockup template that contains one or more placeholder logos reading \"YOUR LOGO\".";
         $lines[] = "The second attached image is the customer's real logo/branding.";
         $lines[] = "Replace EVERY placeholder \"YOUR LOGO\" mark on the product with the customer's logo from the second image.";
-        $lines[] = "LOGO SIZE: apply the logo {$sizeRule}. Use the placeholder only to locate WHERE the branding goes — do NOT copy the placeholder's exact dimensions. If the placeholder is smaller or larger than this size rule, ignore its size and follow the size rule.";
+        $lines[] = "LOGO SIZE (very important): apply the logo as {$sizeRule}. Use the placeholder ONLY to locate WHERE the branding goes — completely IGNORE the placeholder's size. The placeholder is usually much smaller than the final logo should be; scale the customer's logo UP to meet the size rule above, even if that means it is several times larger than the placeholder box. Make the logo big and prominent.";
         $lines[] = "LOGO POSITION: center the logo on the product's natural print area at each placeholder location, visually balanced and straight (aligned with the product, not tilted), at the height a professional garment/merch printer would place it.";
         $lines[] = "The logo must be applied realistically: follow the surface contours, fabric folds, lighting and perspective of the product, as a high-quality print or embroidery would look.";
         $lines[] = "CRITICAL: Everything else in the image must remain EXACTLY as it is — the product, its color, fabric, texture, the background, lighting and composition must not change in any way. Only the placeholder branding is replaced.";
