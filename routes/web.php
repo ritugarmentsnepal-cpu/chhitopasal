@@ -57,11 +57,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/{order}/custom-print-update', [OrderController::class, 'updateCustomPrint'])->name('orders.updateCustomPrint');
         Route::post('/orders/{order}/save-mockup', [OrderController::class, 'saveMockup'])->name('orders.saveMockup');
         
-        // Mockup Library
+        // Mockup Studio (AI generation + library)
         Route::get('/mockups', [\App\Http\Controllers\MockupLibraryController::class, 'index'])->name('mockups.index');
-        Route::post('/mockups', [\App\Http\Controllers\MockupLibraryController::class, 'store'])->name('mockups.store');
+        Route::post('/mockups/generate', [\App\Http\Controllers\MockupLibraryController::class, 'generate'])->middleware('throttle:10,1')->name('mockups.generate');
+        Route::post('/mockups/save-generated', [\App\Http\Controllers\MockupLibraryController::class, 'saveGenerated'])->name('mockups.saveGenerated');
         Route::delete('/mockups/{mockup}', [\App\Http\Controllers\MockupLibraryController::class, 'destroy'])->name('mockups.destroy');
         Route::get('/mockups/{mockup}/download', [\App\Http\Controllers\MockupLibraryController::class, 'download'])->name('mockups.download');
+        Route::get('/mockups/{mockup}/download-logo', [\App\Http\Controllers\MockupLibraryController::class, 'downloadLogo'])->name('mockups.downloadLogo');
+
+        // Mockup Template AI generation (manual upload/delete stays admin-only below)
+        Route::post('/mockup-templates/generate', [\App\Http\Controllers\MockupTemplateController::class, 'generate'])->middleware('throttle:10,1')->name('mockup_templates.generate');
+        Route::post('/mockup-templates/save-generated', [\App\Http\Controllers\MockupTemplateController::class, 'saveGenerated'])->name('mockup_templates.saveGenerated');
         
         // Sales List
         Route::get('/sales', [\App\Http\Controllers\SalesController::class, 'index'])->name('sales.index');

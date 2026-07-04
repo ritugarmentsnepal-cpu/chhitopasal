@@ -13,6 +13,7 @@ class Mockup extends Model
         'title',
         'template_id',
         'image_path',
+        'logo_path',
         'order_id',
         'created_by',
         'tags',

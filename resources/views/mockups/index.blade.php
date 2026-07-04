@@ -3,609 +3,852 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-black text-gray-900 tracking-tight">Mockup Studio</h2>
-                <p class="text-sm font-medium text-gray-500 mt-0.5">Generate, browse & manage product mockups</p>
+                <p class="text-sm font-medium text-gray-500 mt-0.5">AI-powered templates, mockups & print logos</p>
             </div>
-            <button x-data x-on:click="$dispatch('open-modal', 'mockup-generator')" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black px-6 py-2.5 rounded-xl shadow-lg hover:shadow-xl hover:from-indigo-500 hover:to-purple-500 transition-all active:scale-95 flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Create Mockup
-            </button>
+            <div class="flex gap-3">
+                <button x-data x-on:click="$dispatch('open-modal', 'template-generator')" class="bg-white border border-gray-200 text-gray-900 font-black px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-95 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    Generate Template
+                </button>
+                <button x-data x-on:click="$dispatch('open-modal', 'mockup-generator')" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black px-6 py-2.5 rounded-xl shadow-lg hover:shadow-xl hover:from-indigo-500 hover:to-purple-500 transition-all active:scale-95 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Generate Mockup
+                </button>
+            </div>
         </div>
     </x-slot>
 
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" x-data="{ tab: '{{ request('tab', 'mockups') }}' }">
 
         {{-- Stats Bar --}}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Total Mockups</div>
-                <div class="text-2xl font-black text-gray-900 mt-1">{{ $mockups->total() + $orderMockups->count() }}</div>
-            </div>
-            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Standalone</div>
-                <div class="text-2xl font-black text-indigo-600 mt-1">{{ $mockups->total() }}</div>
-            </div>
-            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">From Orders</div>
-                <div class="text-2xl font-black text-purple-600 mt-1">{{ $orderMockups->count() }}</div>
+                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Mockups</div>
+                <div class="text-2xl font-black text-gray-900 mt-1">{{ $mockups->total() }}</div>
             </div>
             <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Templates</div>
                 <div class="text-2xl font-black text-amber-600 mt-1">{{ $templates->count() }}</div>
             </div>
+            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Logos Ready to Print</div>
+                <div class="text-2xl font-black text-emerald-600 mt-1">{{ $readyLogos->count() }}</div>
+            </div>
+            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Awaiting Confirmation</div>
+                <div class="text-2xl font-black text-gray-500 mt-1">{{ $waitingLogos->count() }}</div>
+            </div>
         </div>
 
-        {{-- Filter Bar --}}
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <form method="GET" class="flex flex-wrap items-center gap-3">
-                <div class="relative flex-1 min-w-[200px]">
-                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search mockups..." class="w-full pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5 focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <select name="source" class="rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5 min-w-[140px]">
-                    <option value="">All Sources</option>
-                    <option value="standalone" {{ request('source') === 'standalone' ? 'selected' : '' }}>Standalone</option>
-                    <option value="order" {{ request('source') === 'order' ? 'selected' : '' }}>From Orders</option>
-                </select>
-                <select name="product_type" class="rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5 min-w-[140px]">
-                    <option value="">All Types</option>
-                    <option value="tshirt" {{ request('product_type') === 'tshirt' ? 'selected' : '' }}>T-Shirt</option>
-                    <option value="hoodie" {{ request('product_type') === 'hoodie' ? 'selected' : '' }}>Hoodie</option>
-                    <option value="pouch" {{ request('product_type') === 'pouch' ? 'selected' : '' }}>Pouch</option>
-                    <option value="other" {{ request('product_type') === 'other' ? 'selected' : '' }}>Other</option>
-                </select>
-                <button type="submit" class="bg-gray-900 text-white font-bold text-sm px-5 py-2.5 rounded-xl hover:bg-gray-800 transition active:scale-95">Filter</button>
-                @if(request()->anyFilled(['search', 'source', 'product_type']))
-                    <a href="{{ route('mockups.index') }}" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition">Clear</a>
+        {{-- Tabs --}}
+        <div class="flex gap-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-2">
+            <button @click="tab = 'mockups'" :class="tab === 'mockups' ? 'bg-gray-900 text-white shadow' : 'text-gray-500 hover:bg-gray-50'" class="flex-1 py-2.5 rounded-xl font-black text-sm transition">Mockups</button>
+            <button @click="tab = 'templates'" :class="tab === 'templates' ? 'bg-gray-900 text-white shadow' : 'text-gray-500 hover:bg-gray-50'" class="flex-1 py-2.5 rounded-xl font-black text-sm transition">Templates</button>
+            <button @click="tab = 'logos'" :class="tab === 'logos' ? 'bg-gray-900 text-white shadow' : 'text-gray-500 hover:bg-gray-50'" class="flex-1 py-2.5 rounded-xl font-black text-sm transition">
+                Print Logos
+                @if($readyLogos->count())
+                    <span class="ml-1 bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{{ $readyLogos->count() }}</span>
                 @endif
-            </form>
+            </button>
         </div>
 
-        {{-- Mockup Gallery Grid --}}
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-            {{-- Library Mockups (from database) --}}
-            @foreach($mockups as $mockup)
-                <div class="group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg hover:border-indigo-200 transition-all duration-300 hover:-translate-y-0.5">
-                    <div class="aspect-square bg-gray-50 overflow-hidden relative flex items-center justify-center p-3">
-                        <img src="{{ '/storage/' . $mockup->image_path }}" alt="{{ $mockup->title }}" class="max-w-full max-h-full object-contain rounded-lg">
-                        
-                        {{-- Overlay Actions --}}
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3">
-                            <div class="flex gap-2">
-                                <a href="{{ '/storage/' . $mockup->image_path }}" target="_blank" class="bg-white/90 backdrop-blur-sm text-gray-900 p-2 rounded-lg hover:bg-white transition shadow-sm" title="View Full Size">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                </a>
-                                <a href="{{ route('mockups.download', $mockup) }}" class="bg-white/90 backdrop-blur-sm text-gray-900 p-2 rounded-lg hover:bg-white transition shadow-sm" title="Download">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                </a>
-                                <form action="{{ route('mockups.destroy', $mockup) }}" method="POST" class="inline" onsubmit="return confirm('Delete this mockup?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="bg-red-500/90 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-red-600 transition shadow-sm" title="Delete">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-
-                        {{-- Source Badge --}}
-                        @if($mockup->order_id)
-                            <div class="absolute top-2 left-2">
-                                <a href="{{ route('orders.index', ['search' => $mockup->order_id]) }}" class="bg-purple-500/90 backdrop-blur-sm text-white text-[10px] font-black px-2 py-0.5 rounded-full hover:bg-purple-600 transition">
-                                    Order #{{ $mockup->order_id }}
-                                </a>
-                            </div>
-                        @else
-                            <div class="absolute top-2 left-2">
-                                <span class="bg-indigo-500/90 backdrop-blur-sm text-white text-[10px] font-black px-2 py-0.5 rounded-full">Standalone</span>
-                            </div>
-                        @endif
+        {{-- ═══════════════ TAB: MOCKUPS ═══════════════ --}}
+        <div x-show="tab === 'mockups'" class="space-y-6">
+            {{-- Filter Bar --}}
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                <form method="GET" class="flex flex-wrap items-center gap-3">
+                    <div class="relative flex-1 min-w-[200px]">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search mockups..." class="w-full pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5 focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
-                    <div class="p-3 border-t border-gray-50">
-                        <h4 class="font-bold text-sm text-gray-900 truncate">{{ $mockup->title }}</h4>
-                        <div class="flex items-center justify-between mt-1">
-                            <p class="text-[10px] font-bold text-gray-400">{{ $mockup->created_at->format('M j, Y') }}</p>
-                            @if($mockup->template)
-                                <span class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded-full">{{ ucfirst($mockup->template->product_type) }}</span>
+                    <select name="source" class="rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5 min-w-[140px]">
+                        <option value="">All Sources</option>
+                        <option value="standalone" {{ request('source') === 'standalone' ? 'selected' : '' }}>Standalone</option>
+                        <option value="order" {{ request('source') === 'order' ? 'selected' : '' }}>Linked to Order</option>
+                    </select>
+                    <select name="product_type" class="rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5 min-w-[140px]">
+                        <option value="">All Types</option>
+                        @foreach($productTypes as $type)
+                            <option value="{{ $type }}" {{ request('product_type') === $type ? 'selected' : '' }}>{{ ucwords(str_replace('_', ' ', $type)) }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="bg-gray-900 text-white font-bold text-sm px-5 py-2.5 rounded-xl hover:bg-gray-800 transition active:scale-95">Filter</button>
+                    @if(request()->anyFilled(['search', 'source', 'product_type']))
+                        <a href="{{ route('mockups.index') }}" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition">Clear</a>
+                    @endif
+                </form>
+            </div>
+
+            {{-- Gallery Grid --}}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                @foreach($mockups as $mockup)
+                    <div class="group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg hover:border-indigo-200 transition-all duration-300 hover:-translate-y-0.5">
+                        <div class="aspect-square bg-gray-50 overflow-hidden relative flex items-center justify-center p-3">
+                            <img src="{{ '/storage/' . $mockup->image_path }}" alt="{{ $mockup->title }}" loading="lazy" class="max-w-full max-h-full object-contain rounded-lg">
+
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3">
+                                <div class="flex gap-2">
+                                    <a href="{{ '/storage/' . $mockup->image_path }}" target="_blank" class="bg-white/90 backdrop-blur-sm text-gray-900 p-2 rounded-lg hover:bg-white transition shadow-sm" title="View Full Size">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    </a>
+                                    <a href="{{ route('mockups.download', $mockup) }}" class="bg-white/90 backdrop-blur-sm text-gray-900 p-2 rounded-lg hover:bg-white transition shadow-sm" title="Download Mockup">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    </a>
+                                    @if($mockup->logo_path)
+                                        <a href="{{ route('mockups.downloadLogo', $mockup) }}" class="bg-emerald-500/90 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-emerald-600 transition shadow-sm" title="Download Logo for Print">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                                        </a>
+                                    @endif
+                                    <form action="{{ route('mockups.destroy', $mockup) }}" method="POST" class="inline" onsubmit="return confirm('Delete this mockup?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="bg-red-500/90 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-red-600 transition shadow-sm" title="Delete">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            @if($mockup->order_id)
+                                <div class="absolute top-2 left-2">
+                                    <a href="{{ route('orders.index', ['search' => $mockup->order_id]) }}" class="bg-purple-500/90 backdrop-blur-sm text-white text-[10px] font-black px-2 py-0.5 rounded-full hover:bg-purple-600 transition">
+                                        Order #{{ $mockup->order_id }}
+                                    </a>
+                                </div>
+                            @else
+                                <div class="absolute top-2 left-2">
+                                    <span class="bg-indigo-500/90 backdrop-blur-sm text-white text-[10px] font-black px-2 py-0.5 rounded-full">Standalone</span>
+                                </div>
                             @endif
                         </div>
-                        @if(!empty($mockup->tags))
-                            <div class="flex flex-wrap gap-1 mt-2">
-                                @foreach($mockup->tags as $tag)
-                                    <span class="text-[9px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">{{ $tag }}</span>
-                                @endforeach
+                        <div class="p-3 border-t border-gray-50">
+                            <h4 class="font-bold text-sm text-gray-900 truncate">{{ $mockup->title }}</h4>
+                            <div class="flex items-center justify-between mt-1">
+                                <p class="text-[10px] font-bold text-gray-400">{{ $mockup->created_at->format('M j, Y') }}</p>
+                                @if($mockup->template)
+                                    <span class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded-full">{{ ucwords(str_replace('_', ' ', $mockup->template->product_type)) }}</span>
+                                @endif
                             </div>
-                        @endif
-                    </div>
-                </div>
-            @endforeach
-
-            {{-- Order-inline Mockups (not yet in library) --}}
-            @foreach($orderMockups as $om)
-                <div class="group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg hover:border-purple-200 transition-all duration-300 hover:-translate-y-0.5">
-                    <div class="aspect-square bg-gray-50 overflow-hidden relative flex items-center justify-center p-3">
-                        <img src="{{ '/storage/' . $om->image_path }}" alt="{{ $om->title }}" class="max-w-full max-h-full object-contain rounded-lg">
-                        
-                        {{-- Overlay Actions --}}
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3">
-                            <div class="flex gap-2">
-                                <a href="{{ '/storage/' . $om->image_path }}" target="_blank" class="bg-white/90 backdrop-blur-sm text-gray-900 p-2 rounded-lg hover:bg-white transition shadow-sm" title="View Full Size">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                </a>
-                            </div>
-                        </div>
-
-                        {{-- Source Badge --}}
-                        <div class="absolute top-2 left-2">
-                            <a href="{{ route('orders.index', ['search' => $om->order_id]) }}" class="bg-purple-500/90 backdrop-blur-sm text-white text-[10px] font-black px-2 py-0.5 rounded-full hover:bg-purple-600 transition">
-                                Order #{{ $om->order_id }}
-                            </a>
-                        </div>
-                    </div>
-                    <div class="p-3 border-t border-gray-50">
-                        <h4 class="font-bold text-sm text-gray-900 truncate">{{ $om->title }}</h4>
-                        <p class="text-[10px] font-bold text-gray-400 mt-1">{{ $om->created_at->format('M j, Y') }}</p>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-
-        {{-- Empty State --}}
-        @if($mockups->isEmpty() && $orderMockups->isEmpty())
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-                <div class="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                </div>
-                <h3 class="text-lg font-black text-gray-900">No mockups yet</h3>
-                <p class="text-sm font-medium text-gray-500 mt-1 max-w-md mx-auto">Create your first product mockup by clicking the "Create Mockup" button above. You can overlay designs onto blank templates.</p>
-                <button x-data x-on:click="$dispatch('open-modal', 'mockup-generator')" class="mt-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95">
-                    Create Your First Mockup
-                </button>
-            </div>
-        @endif
-
-        {{-- Pagination --}}
-        @if($mockups->hasPages())
-            <div class="flex justify-center">
-                {{ $mockups->withQueryString()->links() }}
-            </div>
-        @endif
-
-        {{-- Templates Section (Collapsible) --}}
-        <div x-data="{ showTemplates: false }" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <button @click="showTemplates = !showTemplates" class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-                        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    </div>
-                    <div class="text-left">
-                        <h3 class="font-black text-gray-900">Base Templates</h3>
-                        <p class="text-xs font-medium text-gray-500">{{ $templates->count() }} template{{ $templates->count() !== 1 ? 's' : '' }} available — blank products used as canvas backgrounds</p>
-                    </div>
-                </div>
-                <svg class="w-5 h-5 text-gray-400 transition-transform" :class="showTemplates ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
-            <div x-show="showTemplates" x-collapse>
-                <div class="border-t border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <p class="text-sm font-bold text-gray-500">These templates are used as the base layer in the mockup generator.</p>
-                        <button x-on:click="$dispatch('open-modal', 'add-template-from-library')" class="bg-mango text-gray-900 px-4 py-2 rounded-xl font-bold text-sm hover:shadow-md transition active:scale-95">
-                            + Upload Template
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        @forelse($templates as $template)
-                            <div class="group border border-gray-200 rounded-xl p-3 bg-gray-50 flex flex-col relative">
-                                <div class="aspect-square bg-white border border-gray-100 rounded-lg overflow-hidden mb-2 flex items-center justify-center">
-                                    <img src="{{ '/storage/' . $template->image_path }}" alt="{{ $template->name }}" class="max-w-full max-h-full object-contain mix-blend-multiply">
+                            @if(!empty($mockup->tags))
+                                <div class="flex flex-wrap gap-1 mt-2">
+                                    @foreach($mockup->tags as $tag)
+                                        <span class="text-[9px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">{{ $tag }}</span>
+                                    @endforeach
                                 </div>
-                                <div class="font-bold text-xs text-gray-900 truncate">{{ $template->name }}</div>
-                                <div class="text-[10px] font-bold text-gray-500 uppercase">{{ str_replace('_', ' ', $template->product_type) }}</div>
-                                <form action="{{ route('mockup_templates.destroy', $template) }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" onclick="return confirm('Delete this template?')" class="bg-red-500 text-white p-1 rounded-lg hover:bg-red-600 shadow-sm">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
-                                </form>
-                            </div>
-                        @empty
-                            <div class="col-span-full text-center py-8 text-gray-400">
-                                <p class="font-bold text-sm">No templates yet. Upload blank product images to get started.</p>
-                            </div>
-                        @endforelse
+                            @endif
+                        </div>
                     </div>
-                </div>
+                @endforeach
             </div>
+
+            @if($mockups->isEmpty())
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+                    <div class="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="text-lg font-black text-gray-900">No mockups yet</h3>
+                    <p class="text-sm font-medium text-gray-500 mt-1 max-w-md mx-auto">Generate a template first, then create mockups by uploading a customer's logo — the AI does the rest.</p>
+                </div>
+            @endif
+
+            @if($mockups->hasPages())
+                <div class="flex justify-center">
+                    {{ $mockups->withQueryString()->links() }}
+                </div>
+            @endif
         </div>
 
-    </div>
-
-    {{-- ═══════════════════════════════════════════════════════ --}}
-    {{-- MOCKUP GENERATOR MODAL (Fabric.js Canvas Studio)      --}}
-    {{-- ═══════════════════════════════════════════════════════ --}}
-    <x-modal name="mockup-generator" :show="false" maxWidth="6xl">
-        <div class="p-6 bg-gray-50 flex flex-col h-[90vh]" x-data="mockupLibraryStudio()">
-            
-            {{-- Header --}}
-            <div class="flex items-center justify-between mb-6 shrink-0">
-                <div>
-                    <h3 class="text-2xl font-black text-gray-900">Create Mockup</h3>
-                    <p class="text-sm font-medium text-gray-500">Select a template, add your designs, and save to library.</p>
-                </div>
-                <div class="flex gap-3">
-                    <button type="button" x-on:click="$dispatch('close')" class="px-5 py-2.5 rounded-xl font-bold text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition shadow-sm">Cancel</button>
-                    <button type="button" @click="saveMockup()" :disabled="isSaving || !selectedTemplateId" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black px-6 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition active:scale-95 disabled:opacity-50 flex items-center gap-2">
-                        <span x-show="!isSaving">Save to Library</span>
-                        <span x-show="isSaving" class="flex items-center gap-2">
-                            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            Saving...
-                        </span>
+        {{-- ═══════════════ TAB: TEMPLATES ═══════════════ --}}
+        <div x-show="tab === 'templates'" x-cloak class="space-y-6">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-between">
+                <p class="text-sm font-bold text-gray-500">Templates are reusable product scenes with a <span class="text-gray-900">"YOUR LOGO"</span> placeholder. Generate them with AI or upload manually.</p>
+                <div class="flex gap-2 shrink-0">
+                    @if(auth()->user()->role === 'admin')
+                        <button x-data x-on:click="$dispatch('open-modal', 'add-template-manual')" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-bold text-sm hover:bg-gray-200 transition active:scale-95">
+                            Upload Manually
+                        </button>
+                    @endif
+                    <button x-data x-on:click="$dispatch('open-modal', 'template-generator')" class="bg-mango text-gray-900 px-4 py-2 rounded-xl font-bold text-sm hover:shadow-md transition active:scale-95">
+                        + Generate with AI
                     </button>
                 </div>
             </div>
 
-            {{-- Main Workspace --}}
-            <div class="flex gap-6 flex-1 min-h-0">
-                {{-- Sidebar: Tools & Assets --}}
-                <div class="w-80 flex flex-col gap-4 shrink-0 overflow-y-auto pr-2 custom-scrollbar">
-                    
-                    {{-- Mockup Title --}}
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Mockup Title</label>
-                        <input type="text" x-model="mockupTitle" placeholder="e.g. White Tee - Butterfly Design" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5 focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-
-                    {{-- Step 1: Select Template --}}
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-                        <h4 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                            <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs flex items-center justify-center font-black">1</span>
-                            Base Template
-                        </h4>
-                        <select x-model="selectedTemplateId" @change="loadTemplate()" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium">
-                            <option value="">-- Select Template --</option>
-                            @foreach($templates as $template)
-                                <option value="{{ $template->id }}" data-url="{{ '/storage/' . $template->image_path }}" data-type="{{ $template->product_type }}">
-                                    {{ $template->name }} ({{ ucfirst($template->product_type) }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @if($templates->isEmpty())
-                            <p class="text-xs text-amber-600 font-bold mt-2">⚠️ No templates. Upload one from the Templates section below.</p>
-                        @endif
-                    </div>
-
-                    {{-- Step 2: Upload Designs --}}
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-                        <h4 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                            <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs flex items-center justify-center font-black">2</span>
-                            Design Images
-                        </h4>
-                        <p class="text-xs text-gray-500 mb-3">Upload design images to overlay onto the template.</p>
-                        
-                        <label class="block w-full cursor-pointer">
-                            <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition">
-                                <svg class="w-6 h-6 text-gray-400 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                                <span class="text-xs font-bold text-gray-500">Click to upload designs</span>
-                            </div>
-                            <input type="file" accept="image/*" multiple @change="handleFileUpload($event)" class="hidden">
-                        </label>
-
-                        {{-- Uploaded design thumbnails --}}
-                        <div class="grid grid-cols-3 gap-2 mt-3" x-show="uploadedDesigns.length > 0">
-                            <template x-for="(design, idx) in uploadedDesigns" :key="idx">
-                                <div @click="addDesignToCanvas(design.url)" class="aspect-square bg-gray-100 rounded-lg border-2 border-transparent hover:border-indigo-400 cursor-pointer transition flex items-center justify-center p-1 relative group overflow-hidden">
-                                    <img :src="design.url" class="max-w-full max-h-full object-contain">
-                                    <button @click.stop="removeDesign(idx)" class="absolute top-0.5 right-0.5 bg-red-500 text-white p-0.5 rounded opacity-0 group-hover:opacity-100 transition">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                @forelse($templates as $template)
+                    <div class="group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg hover:border-amber-200 transition-all duration-300">
+                        <div class="aspect-square bg-gray-50 overflow-hidden relative flex items-center justify-center p-3">
+                            <img src="{{ '/storage/' . $template->image_path }}" alt="{{ $template->name }}" loading="lazy" class="max-w-full max-h-full object-contain rounded-lg">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3">
+                                <div class="flex gap-2">
+                                    <a href="{{ '/storage/' . $template->image_path }}" target="_blank" class="bg-white/90 backdrop-blur-sm text-gray-900 p-2 rounded-lg hover:bg-white transition shadow-sm" title="View Full Size">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    </a>
+                                    @if(auth()->user()->role === 'admin')
+                                        <form action="{{ route('mockup_templates.destroy', $template) }}" method="POST" class="inline" onsubmit="return confirm('Delete this template?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="bg-red-500/90 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-red-600 transition shadow-sm" title="Delete">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
+                            </div>
+                            @if($template->is_ai_generated)
+                                <span class="absolute top-2 left-2 bg-amber-500/90 backdrop-blur-sm text-white text-[10px] font-black px-2 py-0.5 rounded-full">AI</span>
+                            @endif
+                        </div>
+                        <div class="p-3 border-t border-gray-50">
+                            <h4 class="font-bold text-sm text-gray-900 truncate">{{ $template->name }}</h4>
+                            <div class="flex flex-wrap gap-1 mt-1.5">
+                                <span class="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full uppercase">{{ str_replace('_', ' ', $template->product_type) }}</span>
+                                @if($template->theme)
+                                    <span class="text-[9px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">{{ ucwords(str_replace('_', ' ', $template->theme)) }}</span>
+                                @endif
+                                @if($template->size)
+                                    <span class="text-[9px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">{{ ucfirst($template->size) }}</span>
+                                @endif
+                            </div>
+                            @if($template->placements)
+                                <p class="text-[10px] font-medium text-gray-400 mt-1.5 truncate" title="{{ $template->placements }}">{{ $template->placements }}</p>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-span-full bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+                        <h3 class="text-lg font-black text-gray-900">No templates yet</h3>
+                        <p class="text-sm font-medium text-gray-500 mt-1">Generate your first template — upload a product photo and the AI turns it into a clean reusable mockup scene.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- ═══════════════ TAB: PRINT LOGOS ═══════════════ --}}
+        <div x-show="tab === 'logos'" x-cloak class="space-y-6">
+            {{-- Ready for print --}}
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-gray-900">Ready for Print</h3>
+                        <p class="text-xs font-medium text-gray-500">Logos from confirmed orders — download and send to printing</p>
+                    </div>
+                </div>
+                <div class="divide-y divide-gray-50">
+                    @forelse($readyLogos as $m)
+                        <div class="px-6 py-3 flex items-center gap-4 hover:bg-gray-50/50 transition">
+                            <div class="w-14 h-14 bg-gray-50 border border-gray-100 rounded-xl overflow-hidden flex items-center justify-center p-1.5 shrink-0">
+                                <img src="{{ '/storage/' . $m->logo_path }}" loading="lazy" class="max-w-full max-h-full object-contain">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('orders.index', ['search' => $m->order_id]) }}" class="font-black text-sm text-gray-900 hover:text-indigo-600 transition">Order #{{ $m->order_id }}</a>
+                                    <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full {{ $m->order->status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700' }}">{{ str_replace('_', ' ', $m->order->status) }}</span>
+                                </div>
+                                <p class="text-xs font-medium text-gray-500 truncate">{{ $m->title }} · {{ $m->created_at->format('M j, Y') }}</p>
+                            </div>
+                            <div class="flex gap-2 shrink-0">
+                                <a href="{{ '/storage/' . $m->image_path }}" target="_blank" class="bg-gray-100 text-gray-700 px-3 py-2 rounded-xl font-bold text-xs hover:bg-gray-200 transition">View Mockup</a>
+                                <a href="{{ route('mockups.downloadLogo', $m) }}" class="bg-emerald-500 text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-emerald-600 transition shadow-sm">Download Logo</a>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-6 py-10 text-center text-gray-400 text-sm font-bold">No confirmed-order logos yet. When an order linked to a mockup gets confirmed, its logo appears here.</div>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Awaiting confirmation --}}
+            @if($waitingLogos->isNotEmpty())
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden opacity-80">
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <h3 class="font-black text-gray-600">Awaiting Order Confirmation</h3>
+                        <p class="text-xs font-medium text-gray-400">These logos become print-ready once their order is confirmed</p>
+                    </div>
+                    <div class="divide-y divide-gray-50">
+                        @foreach($waitingLogos as $m)
+                            <div class="px-6 py-3 flex items-center gap-4">
+                                <div class="w-12 h-12 bg-gray-50 border border-gray-100 rounded-xl overflow-hidden flex items-center justify-center p-1.5 shrink-0">
+                                    <img src="{{ '/storage/' . $m->logo_path }}" loading="lazy" class="max-w-full max-h-full object-contain grayscale">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('orders.index', ['search' => $m->order_id]) }}" class="font-black text-sm text-gray-700">Order #{{ $m->order_id }}</a>
+                                        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{{ str_replace('_', ' ', $m->order->status ?? 'unknown') }}</span>
+                                    </div>
+                                    <p class="text-xs font-medium text-gray-400 truncate">{{ $m->title }}</p>
+                                </div>
+                                <a href="{{ route('mockups.downloadLogo', $m) }}" class="text-gray-400 hover:text-gray-600 px-3 py-2 rounded-xl font-bold text-xs transition shrink-0">Download anyway</a>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════════ --}}
+    {{-- MODAL: AI TEMPLATE GENERATOR                             --}}
+    {{-- ═══════════════════════════════════════════════════════ --}}
+    <x-modal name="template-generator" :show="false" maxWidth="4xl">
+        <div class="p-6" x-data="templateGenerator()">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-xl font-black text-gray-900">Generate Mockup Template</h3>
+                    <p class="text-sm font-medium text-gray-500">The AI creates a clean product scene with a "YOUR LOGO" placeholder. <span class="text-amber-600 font-bold">~$0.04 per generation.</span></p>
+                </div>
+                <button type="button" x-on:click="$dispatch('close')" class="text-gray-400 hover:text-gray-600 transition p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                {{-- Left: form --}}
+                <div class="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Template Name</label>
+                        <input type="text" x-model="form.name" placeholder="e.g. White Polo - Studio Front & Back" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Product</label>
+                            <select x-model="form.product_type" @change="applyPlacementPreset()" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                                <option value="polo_tshirt">Polo T-Shirt</option>
+                                <option value="tshirt">T-Shirt</option>
+                                <option value="drawstring_pouch">Drawstring Pouch</option>
+                                <option value="carry_bag">Carry Bag</option>
+                                <option value="polymailer_bag">Polymailer Bag</option>
+                                <option value="cap">Cap</option>
+                                <option value="mug">Mug</option>
+                                <option value="other">Other…</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Size / Ratio</label>
+                            <select x-model="form.size" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                                <option value="square">Square (1:1)</option>
+                                <option value="portrait">Portrait (3:4)</option>
+                                <option value="landscape">Landscape (4:3)</option>
+                                <option value="wide">Wide (16:9)</option>
+                                <option value="story">Story (9:16)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div x-show="form.product_type === 'other'">
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Custom Product</label>
+                        <input type="text" x-model="form.custom_product" placeholder="e.g. canvas tote bag" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Scene Theme</label>
+                        <select x-model="form.theme" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                            <option value="studio">Studio (clean backdrop)</option>
+                            <option value="lifestyle">Lifestyle</option>
+                            <option value="flat_lay">Flat Lay</option>
+                            <option value="hanging">Hanging</option>
+                            <option value="outdoor">Outdoor</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Colours & Mood <span class="normal-case font-bold text-gray-300">(optional)</span></label>
+                        <input type="text" x-model="form.color_scheme" placeholder="e.g. white product, soft beige backdrop, warm light" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Logo Placements</label>
+                        <input type="text" x-model="form.placements" placeholder="e.g. left chest pocket + large back print" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <template x-for="preset in placementPresets" :key="preset">
+                                <button type="button" @click="form.placements = preset" class="text-[10px] font-bold text-gray-500 bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 px-2 py-1 rounded-full transition" x-text="preset"></button>
                             </template>
                         </div>
                     </div>
 
-                    {{-- Canvas Controls --}}
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm" x-show="canvas">
-                        <h4 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                            Canvas Controls
-                        </h4>
-                        <div class="space-y-2">
-                            <button type="button" @click="bringToFront()" class="w-full py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-1.5">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11l7-7 7 7M5 19l7-7 7 7"></path></svg>
-                                Bring to Front
-                            </button>
-                            <button type="button" @click="sendToBack()" class="w-full py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-1.5">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path></svg>
-                                Send to Back
-                            </button>
-                            <button type="button" @click="deleteSelected()" class="w-full py-2 bg-red-50 text-red-600 font-bold text-xs rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-1.5">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                Delete Selected
-                            </button>
-                            <button type="button" @click="clearCanvas()" class="w-full py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-1.5">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                                Reset Canvas
-                            </button>
-                        </div>
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Extra Style Notes <span class="normal-case font-bold text-gray-300">(optional)</span></label>
+                        <textarea x-model="form.style_notes" rows="2" placeholder="Anything else — angle, props, folds..." class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium"></textarea>
                     </div>
 
-                    {{-- Tags --}}
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-                        <h4 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                            Tags
-                        </h4>
-                        <div class="flex flex-wrap gap-2">
-                            <template x-for="tag in availableTags" :key="tag">
-                                <button type="button" @click="toggleTag(tag)" :class="selectedTags.includes(tag) ? 'bg-indigo-100 text-indigo-700 border-indigo-300' : 'bg-gray-50 text-gray-600 border-gray-200'" class="px-3 py-1 text-xs font-bold rounded-full border transition hover:scale-105 active:scale-95" x-text="tag"></button>
-                            </template>
-                        </div>
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Product Reference Photo <span class="normal-case font-bold text-emerald-500">(recommended)</span></label>
+                        <p class="text-[11px] font-medium text-gray-400 mb-2">The AI keeps your product exactly as-is — colour, fabric &amp; texture untouched. It only adjusts angle, zoom and photo quality.</p>
+                        <label class="block w-full cursor-pointer">
+                            <div class="border-2 border-dashed border-gray-200 rounded-xl p-3 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition flex items-center justify-center gap-3 min-h-[64px]">
+                                <template x-if="referencePreview">
+                                    <img :src="referencePreview" class="h-14 rounded-lg object-contain">
+                                </template>
+                                <span class="text-xs font-bold text-gray-500" x-text="referencePreview ? 'Change photo' : 'Click to upload your product photo'"></span>
+                            </div>
+                            <input type="file" accept="image/png,image/jpeg,image/webp" @change="handleReference($event)" class="hidden">
+                        </label>
                     </div>
                 </div>
 
-                {{-- Canvas Area --}}
-                <div class="flex-1 bg-white rounded-2xl border border-gray-200 shadow-inner overflow-hidden flex items-center justify-center relative" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iI2ZmZiIvPgo8cmVjdCB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmM2Y0ZjYiLz4KPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmM2Y0ZjYiLz4KPC9zdmc+');">
-                    <div class="relative w-full h-full flex items-center justify-center" id="library-canvas-wrapper">
-                        <canvas id="library-mockup-canvas"></canvas>
-                    </div>
-                    
-                    <div x-show="!selectedTemplateId" class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 pointer-events-none">
-                        <div class="text-center">
-                            <div class="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                {{-- Right: preview / result --}}
+                <div class="flex flex-col">
+                    <div class="flex-1 bg-gray-50 border border-gray-200 rounded-2xl flex items-center justify-center p-4 min-h-[320px] relative overflow-hidden">
+                        <template x-if="isGenerating">
+                            <div class="text-center">
+                                <svg class="animate-spin w-10 h-10 text-indigo-500 mx-auto mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                <p class="font-black text-gray-600">Generating template…</p>
+                                <p class="text-xs font-medium text-gray-400 mt-1">Usually takes 10–20 seconds</p>
                             </div>
-                            <p class="font-black text-gray-600 text-lg">Select a Base Template</p>
-                            <p class="text-sm font-medium text-gray-400 mt-1">Choose a template from the sidebar to start designing</p>
-                        </div>
+                        </template>
+                        <template x-if="!isGenerating && result.url">
+                            <img :src="result.url" class="max-w-full max-h-[52vh] object-contain rounded-xl shadow-lg">
+                        </template>
+                        <template x-if="!isGenerating && !result.url">
+                            <div class="text-center text-gray-400">
+                                <svg class="w-12 h-12 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <p class="text-sm font-bold">Preview appears here</p>
+                            </div>
+                        </template>
+                    </div>
+
+                    <p x-show="error" x-text="error" class="text-xs font-bold text-red-500 mt-2"></p>
+
+                    <div class="flex gap-2 mt-4">
+                        <button type="button" @click="generate()" :disabled="isGenerating" class="flex-1 bg-gray-900 text-white font-black py-2.5 rounded-xl hover:bg-gray-800 transition active:scale-95 disabled:opacity-50" x-text="result.url ? 'Regenerate (same settings)' : 'Generate Template'"></button>
+                        <button type="button" @click="save()" x-show="result.url" :disabled="isGenerating || isSavingTpl" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black py-2.5 rounded-xl shadow-lg hover:shadow-xl transition active:scale-95 disabled:opacity-50">
+                            <span x-show="!isSavingTpl">Save to Library</span>
+                            <span x-show="isSavingTpl">Saving…</span>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </x-modal>
 
-    {{-- Upload Template Modal (accessible from library page) --}}
-    <x-modal name="add-template-from-library" :show="false" maxWidth="md">
-        <form method="POST" action="{{ route('mockup_templates.store') }}" enctype="multipart/form-data" class="p-6">
-            @csrf
-            <h3 class="text-xl font-black text-gray-900 mb-6">Upload Template</h3>
-            
-            <div class="space-y-4">
+    {{-- ═══════════════════════════════════════════════════════ --}}
+    {{-- MODAL: AI MOCKUP GENERATOR                               --}}
+    {{-- ═══════════════════════════════════════════════════════ --}}
+    <x-modal name="mockup-generator" :show="false" maxWidth="6xl">
+        <div class="p-6" x-data="mockupGenerator()">
+            <div class="flex items-center justify-between mb-5">
                 <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Template Name</label>
-                    <input type="text" name="name" required placeholder="e.g. White T-Shirt Front" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                    <h3 class="text-xl font-black text-gray-900">Generate Mockup</h3>
+                    <p class="text-sm font-medium text-gray-500">Pick template(s), upload the customer's logo — the AI swaps the placeholder branding. <span class="text-amber-600 font-bold">~$0.04 per image.</span></p>
                 </div>
-                
-                <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Product Type</label>
-                    <select name="product_type" required class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
-                        <option value="tshirt">T-Shirt</option>
-                        <option value="hoodie">Hoodie</option>
-                        <option value="pouch">Drawstring Pouch</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Template Image (PNG/JPG)</label>
-                    <input type="file" name="image" required accept="image/*" class="w-full text-sm font-medium file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700">
-                </div>
-            </div>
-
-            <div class="mt-8 flex justify-end gap-3">
-                <button type="button" x-on:click="$dispatch('close')" class="px-6 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition">Cancel</button>
-                <button type="submit" class="bg-gray-900 text-white font-black px-8 py-2.5 rounded-xl shadow-lg hover:bg-gray-800 transition active:scale-95">
-                    Upload Template
+                <button type="button" x-on:click="$dispatch('close')" class="text-gray-400 hover:text-gray-600 transition p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-        </form>
+
+            <div class="grid md:grid-cols-5 gap-6">
+                {{-- Left: setup --}}
+                <div class="md:col-span-2 space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Mockup Title</label>
+                        <input type="text" x-model="title" placeholder="e.g. ABC Company - Polo & Pouch" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Customer Logo</label>
+                        <label class="block w-full cursor-pointer">
+                            <div class="border-2 border-dashed border-gray-200 rounded-xl p-3 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition flex items-center justify-center gap-3 min-h-[64px]">
+                                <template x-if="logoPreview">
+                                    <img :src="logoPreview" class="h-14 rounded-lg object-contain">
+                                </template>
+                                <span class="text-xs font-bold text-gray-500" x-text="logoPreview ? 'Change logo' : 'Click to upload the customer logo (PNG best)'"></span>
+                            </div>
+                            <input type="file" accept="image/png,image/jpeg,image/webp" @change="handleLogo($event)" class="hidden">
+                        </label>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Templates <span class="normal-case font-bold text-gray-300">(select one or more)</span></label>
+                            <span class="text-[10px] font-black text-indigo-500" x-show="selectedTemplates.length" x-text="selectedTemplates.length + ' selected'"></span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1">
+                            @forelse($templates as $template)
+                                <div @click="toggleTemplate({{ $template->id }})"
+                                     :class="selectedTemplates.includes({{ $template->id }}) ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-200 hover:border-gray-300'"
+                                     class="border-2 rounded-xl p-1.5 cursor-pointer transition bg-white relative">
+                                    <div class="aspect-square bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
+                                        <img src="{{ '/storage/' . $template->image_path }}" loading="lazy" class="max-w-full max-h-full object-contain">
+                                    </div>
+                                    <p class="text-[10px] font-bold text-gray-700 truncate mt-1">{{ $template->name }}</p>
+                                    <div x-show="selectedTemplates.includes({{ $template->id }})" class="absolute top-1 right-1 bg-indigo-500 text-white rounded-full p-0.5">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="col-span-3 text-xs font-bold text-amber-600 py-4 text-center">⚠️ No templates yet — generate one first.</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Link to Order <span class="normal-case font-bold text-gray-300">(optional)</span></label>
+                        <input type="number" x-model="orderId" min="1" placeholder="Order ID, e.g. 1234" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                        <p class="text-[10px] font-medium text-gray-400 mt-1">Linked mockups appear on the order, and the logo lands in the Print Logos tab once the order is confirmed.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Extra Instructions <span class="normal-case font-bold text-gray-300">(optional)</span></label>
+                        <textarea x-model="instructions" rows="2" placeholder="e.g. keep the logo small and subtle on the pocket" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium"></textarea>
+                    </div>
+
+                    <button type="button" @click="generate()" :disabled="isGenerating || !selectedTemplates.length || (!logoFile && !logoPath)" class="w-full bg-gray-900 text-white font-black py-3 rounded-xl hover:bg-gray-800 transition active:scale-95 disabled:opacity-40">
+                        <span x-show="!isGenerating" x-text="'Generate ' + (selectedTemplates.length > 1 ? selectedTemplates.length + ' Mockups' : 'Mockup')"></span>
+                        <span x-show="isGenerating">Generating <span x-text="progressText"></span>…</span>
+                    </button>
+                </div>
+
+                {{-- Right: results --}}
+                <div class="md:col-span-3 flex flex-col">
+                    <div class="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-4 min-h-[380px] max-h-[58vh] overflow-y-auto">
+                        <template x-if="!results.length">
+                            <div class="h-full flex items-center justify-center text-center text-gray-400 min-h-[340px]">
+                                <div>
+                                    <svg class="w-12 h-12 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                    <p class="text-sm font-bold">Generated mockups appear here</p>
+                                </div>
+                            </div>
+                        </template>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" x-show="results.length">
+                            <template x-for="(r, idx) in results" :key="idx">
+                                <div class="bg-white rounded-xl border p-3 relative" :class="r.discarded ? 'opacity-40 border-gray-200' : (r.status === 'error' ? 'border-red-200' : 'border-gray-200')">
+                                    <p class="text-[11px] font-black text-gray-500 truncate mb-2" x-text="r.templateName"></p>
+                                    <div class="aspect-square bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
+                                        <template x-if="r.status === 'generating'">
+                                            <svg class="animate-spin w-8 h-8 text-indigo-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                        </template>
+                                        <template x-if="r.status === 'done'">
+                                            <img :src="r.url" class="max-w-full max-h-full object-contain">
+                                        </template>
+                                        <template x-if="r.status === 'error'">
+                                            <p class="text-[11px] font-bold text-red-500 px-3 text-center" x-text="r.message"></p>
+                                        </template>
+                                    </div>
+                                    <div class="flex gap-1.5 mt-2" x-show="r.status === 'done'">
+                                        <a :href="r.url" target="_blank" class="flex-1 text-center bg-gray-100 text-gray-600 text-[11px] font-bold py-1.5 rounded-lg hover:bg-gray-200 transition">View</a>
+                                        <button type="button" @click="r.discarded = !r.discarded" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg transition" :class="r.discarded ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-red-50 text-red-500 hover:bg-red-100'" x-text="r.discarded ? 'Keep' : 'Discard'"></button>
+                                        <button type="button" @click="retry(idx)" class="flex-1 bg-indigo-50 text-indigo-600 text-[11px] font-bold py-1.5 rounded-lg hover:bg-indigo-100 transition">Retry</button>
+                                    </div>
+                                    <div class="mt-2" x-show="r.status === 'error'">
+                                        <button type="button" @click="retry(idx)" class="w-full bg-indigo-50 text-indigo-600 text-[11px] font-bold py-1.5 rounded-lg hover:bg-indigo-100 transition">Retry</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <p x-show="error" x-text="error" class="text-xs font-bold text-red-500 mt-2"></p>
+
+                    <div class="flex gap-2 mt-4" x-show="results.some(r => r.status === 'done' && !r.discarded)">
+                        <button type="button" @click="saveAll()" :disabled="isSavingAll" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black py-3 rounded-xl shadow-lg hover:shadow-xl transition active:scale-95 disabled:opacity-50">
+                            <span x-show="!isSavingAll" x-text="'Save ' + results.filter(r => r.status === 'done' && !r.discarded).length + ' to Library'"></span>
+                            <span x-show="isSavingAll">Saving…</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </x-modal>
 
-    {{-- Fabric.js & Mockup Studio Script --}}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    {{-- Manual template upload (admin fallback) --}}
+    @if(auth()->user()->role === 'admin')
+        <x-modal name="add-template-manual" :show="false" maxWidth="md">
+            <form method="POST" action="{{ route('mockup_templates.store') }}" enctype="multipart/form-data" class="p-6">
+                @csrf
+                <h3 class="text-xl font-black text-gray-900 mb-6">Upload Template Manually</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Template Name</label>
+                        <input type="text" name="name" required placeholder="e.g. White T-Shirt Front" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Product Type</label>
+                        <select name="product_type" required class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                            <option value="polo_tshirt">Polo T-Shirt</option>
+                            <option value="tshirt">T-Shirt</option>
+                            <option value="drawstring_pouch">Drawstring Pouch</option>
+                            <option value="carry_bag">Carry Bag</option>
+                            <option value="polymailer_bag">Polymailer Bag</option>
+                            <option value="cap">Cap</option>
+                            <option value="mug">Mug</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Template Image (PNG/JPG)</label>
+                        <input type="file" name="image" required accept="image/*" class="w-full text-sm font-medium file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700">
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-end gap-3">
+                    <button type="button" x-on:click="$dispatch('close')" class="px-6 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition">Cancel</button>
+                    <button type="submit" class="bg-gray-900 text-white font-black px-8 py-2.5 rounded-xl shadow-lg hover:bg-gray-800 transition active:scale-95">Upload</button>
+                </div>
+            </form>
+        </x-modal>
+    @endif
+
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('mockupLibraryStudio', () => ({
-                canvas: null,
-                selectedTemplateId: '',
-                selectedProductType: '',
-                mockupTitle: '',
-                isSaving: false,
-                uploadedDesigns: [],
-                selectedTags: [],
-                availableTags: ['T-Shirt', 'Hoodie', 'Pouch', 'Front', 'Back', 'Logo', 'Full Print', 'Custom'],
+
+            // ── Template Generator ─────────────────────────────
+            Alpine.data('templateGenerator', () => ({
+                form: {
+                    name: '',
+                    product_type: 'polo_tshirt',
+                    custom_product: '',
+                    size: 'square',
+                    theme: 'studio',
+                    color_scheme: '',
+                    placements: '',
+                    style_notes: '',
+                },
+                referenceFile: null,
+                referencePreview: null,
+                referencePath: null, // server-side path after first generation
+                result: { url: null, path: null },
+                isGenerating: false,
+                isSavingTpl: false,
+                error: '',
+
+                placementsByType: {
+                    polo_tshirt: [
+                        'left chest pocket logo + large back print, front & back views side by side',
+                        'left chest pocket logo only',
+                        'large back print only',
+                    ],
+                    tshirt: [
+                        'left chest pocket logo + large back print, front & back views side by side',
+                        'large front center print',
+                        'left chest pocket logo only',
+                    ],
+                    drawstring_pouch: ['front center of the pouch'],
+                    carry_bag: ['large front center of the bag'],
+                    polymailer_bag: ['front center of the mailer bag'],
+                    cap: ['front center panel of the cap'],
+                    mug: ['front center of the mug'],
+                    other: ['front center'],
+                },
+
+                get placementPresets() {
+                    return this.placementsByType[this.form.product_type] || this.placementsByType.other;
+                },
+
+                applyPlacementPreset() {
+                    this.form.placements = this.placementPresets[0] || '';
+                },
 
                 init() {
-                    window.addEventListener('open-modal', (e) => {
-                        if (e.detail === 'mockup-generator') {
-                            setTimeout(() => this.initCanvas(), 150);
-                        }
-                    });
+                    this.applyPlacementPreset();
                 },
 
-                initCanvas() {
-                    if (this.canvas) return;
-
-                    const wrapper = document.getElementById('library-canvas-wrapper');
-                    if (!wrapper) return;
-                    
-                    const width = wrapper.clientWidth - 40;
-                    const height = wrapper.clientHeight - 40;
-
-                    this.canvas = new fabric.Canvas('library-mockup-canvas', {
-                        width: Math.max(width, 400),
-                        height: Math.max(height, 400),
-                        preserveObjectStacking: true
-                    });
-                },
-
-                loadTemplate() {
-                    if (!this.selectedTemplateId || !this.canvas) return;
-
-                    const select = this.$el.querySelector('select[x-model="selectedTemplateId"]');
-                    const option = select.options[select.selectedIndex];
-                    const url = option.dataset.url;
-                    this.selectedProductType = option.dataset.type || '';
-
-                    this.canvas.clear();
-
-                    fabric.Image.fromURL(url, (img) => {
-                        const scale = Math.min(
-                            this.canvas.width / img.width,
-                            this.canvas.height / img.height
-                        );
-
-                        img.set({
-                            originX: 'center',
-                            originY: 'center',
-                            left: this.canvas.width / 2,
-                            top: this.canvas.height / 2,
-                            scaleX: scale * 0.9,
-                            scaleY: scale * 0.9,
-                            selectable: false,
-                            evented: false,
-                            crossOrigin: 'anonymous'
-                        });
-
-                        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas));
-                    }, { crossOrigin: 'anonymous' });
-                },
-
-                handleFileUpload(event) {
-                    const files = event.target.files;
-                    Array.from(files).forEach(file => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.uploadedDesigns.push({
-                                url: e.target.result,
-                                name: file.name
-                            });
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                    // Reset file input
+                handleReference(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    this.referenceFile = file;
+                    this.referencePath = null; // new file supersedes previous server copy
+                    const reader = new FileReader();
+                    reader.onload = (e) => this.referencePreview = e.target.result;
+                    reader.readAsDataURL(file);
                     event.target.value = '';
                 },
 
-                removeDesign(index) {
-                    this.uploadedDesigns.splice(index, 1);
-                },
+                generate() {
+                    this.error = '';
+                    this.isGenerating = true;
 
-                addDesignToCanvas(url) {
-                    if (!this.canvas || !this.selectedTemplateId) return;
-
-                    fabric.Image.fromURL(url, (img) => {
-                        const scale = Math.min(
-                            (this.canvas.width * 0.3) / img.width,
-                            (this.canvas.height * 0.3) / img.height
-                        );
-
-                        img.set({
-                            originX: 'center',
-                            originY: 'center',
-                            left: this.canvas.width / 2,
-                            top: this.canvas.height / 2,
-                            scaleX: scale,
-                            scaleY: scale,
-                            cornerColor: '#6366F1',
-                            cornerStrokeColor: '#312E81',
-                            borderColor: '#312E81',
-                            cornerSize: 12,
-                            transparentCorners: false,
-                            crossOrigin: 'anonymous'
-                        });
-
-                        this.canvas.add(img);
-                        this.canvas.setActiveObject(img);
-                        this.canvas.renderAll();
-                    }, { crossOrigin: 'anonymous' });
-                },
-
-                deleteSelected() {
-                    if (!this.canvas) return;
-                    const activeObjects = this.canvas.getActiveObjects();
-                    if (activeObjects.length) {
-                        this.canvas.discardActiveObject();
-                        activeObjects.forEach((obj) => this.canvas.remove(obj));
+                    const fd = new FormData();
+                    Object.entries(this.form).forEach(([k, v]) => fd.append(k, v ?? ''));
+                    if (this.referenceFile && !this.referencePath) {
+                        fd.append('reference_image', this.referenceFile);
+                    } else if (this.referencePath) {
+                        fd.append('reference_path', this.referencePath);
                     }
+
+                    fetch('{{ route('mockup_templates.generate') }}', {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+                        body: fd,
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.result = { url: data.url + '?t=' + Date.now(), path: data.path };
+                            if (data.reference_path) this.referencePath = data.reference_path;
+                        } else {
+                            this.error = data.message || Object.values(data.errors || {}).flat().join(' ') || 'Generation failed.';
+                        }
+                    })
+                    .catch(() => this.error = 'Network error — please try again.')
+                    .finally(() => this.isGenerating = false);
                 },
 
-                bringToFront() {
-                    if (!this.canvas) return;
-                    const obj = this.canvas.getActiveObject();
-                    if (obj) {
-                        obj.bringToFront();
-                        this.canvas.renderAll();
-                    }
-                },
+                save() {
+                    if (!this.result.path) return;
+                    if (!this.form.name.trim()) { this.error = 'Please give the template a name.'; return; }
+                    this.error = '';
+                    this.isSavingTpl = true;
 
-                sendToBack() {
-                    if (!this.canvas) return;
-                    const obj = this.canvas.getActiveObject();
-                    if (obj) {
-                        obj.sendToBack();
-                        this.canvas.renderAll();
-                    }
-                },
-
-                clearCanvas() {
-                    if (!this.canvas) return;
-                    this.canvas.clear();
-                    this.selectedTemplateId = '';
-                },
-
-                toggleTag(tag) {
-                    const idx = this.selectedTags.indexOf(tag);
-                    if (idx > -1) {
-                        this.selectedTags.splice(idx, 1);
-                    } else {
-                        this.selectedTags.push(tag);
-                    }
-                },
-
-                saveMockup() {
-                    if (!this.canvas || !this.selectedTemplateId) return;
-
-                    const title = this.mockupTitle.trim() || 'Untitled Mockup';
-
-                    // Deselect active objects
-                    this.canvas.discardActiveObject();
-                    this.canvas.renderAll();
-
-                    this.isSaving = true;
-
-                    const base64Image = this.canvas.toDataURL({
-                        format: 'png',
-                        quality: 1,
-                        multiplier: 2
-                    });
-
-                    fetch('{{ route("mockups.store") }}', {
+                    fetch('{{ route('mockup_templates.saveGenerated') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
                         },
                         body: JSON.stringify({
-                            image: base64Image,
-                            title: title,
-                            template_id: this.selectedTemplateId,
-                            tags: this.selectedTags
-                        })
+                            ...this.form,
+                            path: this.result.path,
+                            reference_path: this.referencePath,
+                        }),
                     })
-                    .then(response => response.json())
+                    .then(r => r.json())
                     .then(data => {
                         if (data.success) {
-                            window.location.reload();
+                            window.location = '{{ route('mockups.index') }}?tab=templates';
                         } else {
-                            alert(data.message || 'Failed to save mockup.');
+                            this.error = data.message || 'Failed to save template.';
+                            this.isSavingTpl = false;
                         }
                     })
-                    .catch(err => {
-                        console.error(err);
-                        alert('An error occurred while saving.');
-                    })
-                    .finally(() => {
-                        this.isSaving = false;
-                    });
-                }
+                    .catch(() => { this.error = 'Network error while saving.'; this.isSavingTpl = false; });
+                },
+            }));
+
+            // ── Mockup Generator ───────────────────────────────
+            Alpine.data('mockupGenerator', () => ({
+                title: '',
+                logoFile: null,
+                logoPreview: null,
+                logoPath: null, // server-side path after first upload
+                selectedTemplates: [],
+                orderId: '',
+                instructions: '',
+                results: [],
+                isGenerating: false,
+                isSavingAll: false,
+                progressText: '',
+                error: '',
+                templateNames: @json($templates->pluck('name', 'id')),
+
+                toggleTemplate(id) {
+                    const i = this.selectedTemplates.indexOf(id);
+                    if (i > -1) this.selectedTemplates.splice(i, 1);
+                    else this.selectedTemplates.push(id);
+                },
+
+                handleLogo(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    this.logoFile = file;
+                    this.logoPath = null; // new file supersedes previous server copy
+                    const reader = new FileReader();
+                    reader.onload = (e) => this.logoPreview = e.target.result;
+                    reader.readAsDataURL(file);
+                    event.target.value = '';
+                },
+
+                async generate() {
+                    this.error = '';
+                    this.isGenerating = true;
+                    this.results = this.selectedTemplates.map(id => ({
+                        templateId: id,
+                        templateName: this.templateNames[id] || ('Template #' + id),
+                        status: 'generating',
+                        url: null, path: null, message: '', discarded: false,
+                    }));
+
+                    for (let i = 0; i < this.results.length; i++) {
+                        this.progressText = (i + 1) + '/' + this.results.length;
+                        await this.generateOne(this.results[i]);
+                    }
+
+                    this.isGenerating = false;
+                    this.progressText = '';
+                },
+
+                async generateOne(r) {
+                    r.status = 'generating';
+                    const fd = new FormData();
+                    fd.append('template_id', r.templateId);
+                    fd.append('instructions', this.instructions ?? '');
+                    if (this.logoPath) {
+                        fd.append('logo_path', this.logoPath);
+                    } else if (this.logoFile) {
+                        fd.append('logo', this.logoFile);
+                    }
+
+                    try {
+                        const resp = await fetch('{{ route('mockups.generate') }}', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+                            body: fd,
+                        });
+                        const data = await resp.json();
+                        if (data.success) {
+                            r.status = 'done';
+                            r.url = data.url + '?t=' + Date.now();
+                            r.path = data.path;
+                            this.logoPath = data.logo_path; // reuse for subsequent templates / retries
+                        } else {
+                            r.status = 'error';
+                            r.message = data.message || Object.values(data.errors || {}).flat().join(' ') || 'Generation failed.';
+                        }
+                    } catch (e) {
+                        r.status = 'error';
+                        r.message = 'Network error — please retry.';
+                    }
+                },
+
+                async retry(idx) {
+                    if (this.isGenerating) return;
+                    this.isGenerating = true;
+                    await this.generateOne(this.results[idx]);
+                    this.isGenerating = false;
+                },
+
+                async saveAll() {
+                    const keepers = this.results.filter(r => r.status === 'done' && !r.discarded);
+                    if (!keepers.length) return;
+                    this.error = '';
+                    this.isSavingAll = true;
+
+                    const baseTitle = this.title.trim() || 'Untitled Mockup';
+
+                    for (const r of keepers) {
+                        const title = keepers.length > 1 ? baseTitle + ' — ' + r.templateName : baseTitle;
+                        try {
+                            const resp = await fetch('{{ route('mockups.saveGenerated') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    title: title,
+                                    path: r.path,
+                                    logo_path: this.logoPath,
+                                    template_id: r.templateId,
+                                    order_id: this.orderId || null,
+                                }),
+                            });
+                            const data = await resp.json();
+                            if (!data.success) {
+                                this.error = data.message || 'Failed to save "' + title + '".';
+                                this.isSavingAll = false;
+                                return;
+                            }
+                        } catch (e) {
+                            this.error = 'Network error while saving.';
+                            this.isSavingAll = false;
+                            return;
+                        }
+                    }
+
+                    window.location = '{{ route('mockups.index') }}';
+                },
             }));
         });
     </script>
