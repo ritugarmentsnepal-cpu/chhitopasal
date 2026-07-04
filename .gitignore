@@ -24,3 +24,12 @@ Thumbs.db
 test-settings.html
 test_print.html
 composer.phar
+
+# Local debug/scratch artifacts (keep project root clean)
+/test_*.php
+/get_models.php
+/read_logs.php
+/remove_dark*.php
+/models.json
+/all_models.txt
+/live_debug.json

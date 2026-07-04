@@ -275,20 +275,3 @@ Route::get('/debug-webhook', [\App\Http\Controllers\Api\FacebookWebhookControlle
 
 Route::get('/force-subscribe', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'forceSubscribe']);
 
-// Temporary route to run migrations
-Route::get('/run-migrations-secret', function () {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return response()->json([
-            'success' => true,
-            'message' => 'Migrations ran successfully.',
-            'output' => \Illuminate\Support\Facades\Artisan::output()
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage()
-        ], 500);
-    }
-});
-
