@@ -132,9 +132,9 @@ class MockupAiService
      * applied logo should cover.
      */
     public const LOGO_SIZES = [
-        'small'  => 'a chest/pocket mark — the logo width must span AT LEAST 25% of the product\'s visible width (clearly visible, not a tiny token)',
-        'medium' => 'a standard merchandise print — the logo width must span AT LEAST 55% of the product\'s visible width, prominent and clearly readable',
-        'large'  => 'a bold full-area statement print — the logo width must span AT LEAST 85% of the product\'s visible width, filling almost the entire print area edge to edge',
+        'small'  => 'a chest/pocket mark — the logo width must span AT LEAST 40% of the product\'s visible front width (clearly visible, not a tiny token)',
+        'medium' => 'a standard merchandise print — the logo width must span AT LEAST 70% of the product\'s visible front width, large and prominent',
+        'large'  => 'a giant full-panel print — the logo must fill the ENTIRE printable front panel of the product, spanning as close to 100% of the product\'s visible front width as possible (edge to edge, from near the top to near the bottom of the print area), as big as it can physically be while staying on the product surface',
     ];
 
     protected function buildMockupPrompt(MockupTemplate $template, ?string $instructions, string $logoSize = 'medium'): string
