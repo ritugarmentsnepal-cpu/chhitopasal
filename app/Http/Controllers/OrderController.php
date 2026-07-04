@@ -1766,7 +1766,8 @@ class OrderController extends Controller
     public function saveMockup(Request $request, Order $order)
     {
         $request->validate([
-            'image' => 'required|string', // base64 string
+            'image' => 'required|string|max:15000000', // base64 string, ~15MB cap
+            'template_id' => 'nullable|exists:mockup_templates,id',
         ]);
 
         $base64 = $request->input('image');
@@ -1790,9 +1791,11 @@ class OrderController extends Controller
 
             $order->update(['mockup_files' => $mockups]);
 
-            // Also create a library record so it appears in the Mockup Library
+            // Also create a library record so it appears in the Mockup Library.
+            // Persist the chosen template so the library's product-type filter works.
             \App\Models\Mockup::create([
                 'title' => 'Order #' . $order->id . ' Mockup ' . count($mockups),
+                'template_id' => $request->input('template_id'),
                 'image_path' => $path,
                 'order_id' => $order->id,
                 'created_by' => auth()->id(),

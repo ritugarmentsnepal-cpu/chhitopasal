@@ -38,7 +38,7 @@
                             }
                         @endphp
                         @foreach($templates as $template)
-                            <option value="{{ $template->id }}" data-url="{{ Storage::url($template->image_path) }}">
+                            <option value="{{ $template->id }}" data-url="{{ '/storage/' . $template->image_path }}">
                                 {{ $template->name }} ({{ ucfirst($template->product_type) }})
                             </option>
                         @endforeach
@@ -258,7 +258,8 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
-                        image: base64Image
+                        image: base64Image,
+                        template_id: this.selectedTemplateId || null
                     })
                 })
                 .then(response => response.json())
