@@ -82,6 +82,7 @@ class MockupLibraryController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             // Reuse an already-uploaded logo (regeneration / batch across templates)
             'logo_path' => 'nullable|string|max:255',
+            'logo_size' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::LOGO_SIZES)),
             'instructions' => 'nullable|string|max:1000',
         ]);
 
@@ -102,7 +103,12 @@ class MockupLibraryController extends Controller
         $template = MockupTemplate::findOrFail($request->input('template_id'));
 
         try {
-            $path = $ai->generateMockupImage($template, $logoPath, $request->input('instructions'));
+            $path = $ai->generateMockupImage(
+                $template,
+                $logoPath,
+                $request->input('instructions'),
+                $request->input('logo_size', 'medium')
+            );
         } catch (\RuntimeException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
         }

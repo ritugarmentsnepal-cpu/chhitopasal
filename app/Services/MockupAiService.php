@@ -75,9 +75,9 @@ class MockupAiService
      * @param string|null $instructions  optional extra instructions
      * @return string  storage path (public disk) of the generated mockup
      */
-    public function generateMockupImage(MockupTemplate $template, string $logoPath, ?string $instructions = null): string
+    public function generateMockupImage(MockupTemplate $template, string $logoPath, ?string $instructions = null, string $logoSize = 'medium'): string
     {
-        $prompt = $this->buildMockupPrompt($template, $instructions);
+        $prompt = $this->buildMockupPrompt($template, $instructions, $logoSize);
 
         $binary = $this->generateImage($prompt, [$template->image_path, $logoPath]);
 
@@ -115,6 +115,7 @@ class MockupAiService
             ? $options['placements']
             : 'the natural primary branding position for this product';
         $lines[] = "Branding placeholder: render a simple, flat, clearly visible placeholder logo that says exactly \"YOUR LOGO\" in plain dark text inside a thin rectangular outline, placed at: {$placements}.";
+        $lines[] = "Size each placeholder realistically for its placement — the full standard print-area size a professional printer would use (e.g. a chest/pocket mark stays small, but a front/back print placeholder should span roughly 40–60% of the product's width). Do not render tiny token placeholders on large print areas.";
         $lines[] = "The placeholder must look like a printed/embroidered brand mark on the product surface, following the fabric/material contours realistically. Do not add any other text, watermarks or brand names anywhere in the image.";
 
         if (!empty($options['style_notes'])) {
@@ -126,15 +127,29 @@ class MockupAiService
         return implode("\n", $lines);
     }
 
-    protected function buildMockupPrompt(MockupTemplate $template, ?string $instructions): string
+    /**
+     * Logo size presets: how much of the product's printable area the
+     * applied logo should cover.
+     */
+    public const LOGO_SIZES = [
+        'small'  => 'small and subtle, like an embroidered chest/pocket mark — roughly 10–15% of the product\'s visible width',
+        'medium' => 'a standard merchandise print — roughly 35–45% of the product\'s visible width, clearly readable at a glance',
+        'large'  => 'a bold statement print — roughly 60–70% of the product\'s visible width, dominating the print area',
+    ];
+
+    protected function buildMockupPrompt(MockupTemplate $template, ?string $instructions, string $logoSize = 'medium'): string
     {
+        $sizeRule = self::LOGO_SIZES[$logoSize] ?? self::LOGO_SIZES['medium'];
+
         $lines = [];
         $lines[] = "The first attached image is a product mockup template that contains one or more placeholder logos reading \"YOUR LOGO\".";
         $lines[] = "The second attached image is the customer's real logo/branding.";
         $lines[] = "Replace EVERY placeholder \"YOUR LOGO\" mark on the product with the customer's logo from the second image.";
-        $lines[] = "The logo must be applied realistically: follow the surface contours, fabric folds, lighting and perspective of the product, sized appropriately for each placement (small where the placeholder is small, large where it is large).";
+        $lines[] = "LOGO SIZE: apply the logo {$sizeRule}. Use the placeholder only to locate WHERE the branding goes — do NOT copy the placeholder's exact dimensions. If the placeholder is smaller or larger than this size rule, ignore its size and follow the size rule.";
+        $lines[] = "LOGO POSITION: center the logo on the product's natural print area at each placeholder location, visually balanced and straight (aligned with the product, not tilted), at the height a professional garment/merch printer would place it.";
+        $lines[] = "The logo must be applied realistically: follow the surface contours, fabric folds, lighting and perspective of the product, as a high-quality print or embroidery would look.";
         $lines[] = "CRITICAL: Everything else in the image must remain EXACTLY as it is — the product, its color, fabric, texture, the background, lighting and composition must not change in any way. Only the placeholder branding is replaced.";
-        $lines[] = "Preserve the customer logo's own colors and design faithfully; do not restyle, recolor or distort it beyond realistic surface application.";
+        $lines[] = "Preserve the customer logo's own colors, proportions and design faithfully; do not restyle, recolor, stretch or distort it beyond realistic surface application. Render it crisp and sharp.";
 
         if ($template->placements) {
             $lines[] = "For reference, the placeholder positions on this template are: {$template->placements}.";

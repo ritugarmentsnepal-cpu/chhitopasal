@@ -484,6 +484,18 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Logo Size on Product</label>
+                        <div class="flex gap-2">
+                            <template x-for="opt in [['small','Small'],['medium','Medium'],['large','Large']]" :key="opt[0]">
+                                <button type="button" @click="logoSize = opt[0]"
+                                        :class="logoSize === opt[0] ? 'bg-indigo-100 text-indigo-700 border-indigo-300' : 'bg-gray-50 text-gray-600 border-gray-200'"
+                                        class="flex-1 py-2 text-xs font-bold rounded-xl border transition hover:scale-105 active:scale-95" x-text="opt[1]"></button>
+                            </template>
+                        </div>
+                        <p class="text-[10px] font-medium text-gray-400 mt-1">Small = pocket/chest mark · Medium = standard print · Large = bold full print</p>
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Link to Order <span class="normal-case font-bold text-gray-300">(optional)</span></label>
                         <input type="number" x-model="orderId" min="1" placeholder="Order ID, e.g. 1234" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
                         <p class="text-[10px] font-medium text-gray-400 mt-1">Linked mockups appear on the order, and the logo lands in the Print Logos tab once the order is confirmed.</p>
@@ -730,6 +742,7 @@
                 logoPath: null, // server-side path after first upload
                 selectedTemplates: [],
                 orderId: '',
+                logoSize: 'medium',
                 instructions: '',
                 results: [],
                 isGenerating: false,
@@ -778,6 +791,7 @@
                     r.status = 'generating';
                     const fd = new FormData();
                     fd.append('template_id', r.templateId);
+                    fd.append('logo_size', this.logoSize);
                     fd.append('instructions', this.instructions ?? '');
                     if (this.logoPath) {
                         fd.append('logo_path', this.logoPath);
