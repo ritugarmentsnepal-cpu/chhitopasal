@@ -494,10 +494,16 @@
                         <textarea x-model="instructions" rows="2" placeholder="e.g. keep the logo small and subtle on the pocket" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium"></textarea>
                     </div>
 
-                    <button type="button" @click="generate()" :disabled="isGenerating || !selectedTemplates.length || (!logoFile && !logoPath)" class="w-full bg-gray-900 text-white font-black py-3 rounded-xl hover:bg-gray-800 transition active:scale-95 disabled:opacity-40">
+                    <button type="button" @click="generate()" :disabled="isGenerating || !selectedTemplates.length || (!logoFile && !logoPath)" class="w-full bg-gray-900 text-white font-black py-3 rounded-xl hover:bg-gray-800 transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
                         <span x-show="!isGenerating" x-text="'Generate ' + (selectedTemplates.length > 1 ? selectedTemplates.length + ' Mockups' : 'Mockup')"></span>
                         <span x-show="isGenerating">Generating <span x-text="progressText"></span>…</span>
                     </button>
+                    <p x-show="!isGenerating && (!selectedTemplates.length || (!logoFile && !logoPath))" class="text-[11px] font-bold text-amber-600 text-center">
+                        <span x-show="!logoFile && !logoPath">Upload the customer logo</span>
+                        <span x-show="(!logoFile && !logoPath) && !selectedTemplates.length"> and </span>
+                        <span x-show="!selectedTemplates.length">select at least one template</span>
+                        to generate.
+                    </p>
                 </div>
 
                 {{-- Right: results --}}
