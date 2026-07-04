@@ -48,6 +48,7 @@ class MockupTemplateController extends Controller
             'color_scheme' => 'nullable|string|max:500',
             'placements' => 'nullable|string|max:500',
             'style_notes' => 'nullable|string|max:1000',
+            'logo_coverage' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::PLACEHOLDER_COVERAGE)),
             'reference_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             // When regenerating, reuse the previously uploaded reference
             'reference_path' => 'nullable|string|max:255',
@@ -67,7 +68,7 @@ class MockupTemplateController extends Controller
         try {
             $path = $ai->generateTemplateImage($request->only([
                 'product_type', 'custom_product', 'size', 'theme',
-                'color_scheme', 'placements', 'style_notes',
+                'color_scheme', 'placements', 'style_notes', 'logo_coverage',
             ]), $referencePath);
         } catch (\RuntimeException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);

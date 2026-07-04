@@ -33,6 +33,18 @@ class MockupAiService
     ];
 
     /**
+     * How large the "YOUR LOGO" placeholder should be rendered on the
+     * template. Bigger placeholders make downstream mockups size the real
+     * logo up more reliably.
+     */
+    public const PLACEHOLDER_COVERAGE = [
+        'small'  => 'small — a chest/pocket-mark sized placeholder, roughly 30% of the product\'s visible front width',
+        'medium' => 'medium — a standard print, roughly 60% of the product\'s visible front width',
+        'large'  => 'large — a big print spanning roughly 85% of the product\'s visible front width',
+        'full'   => 'full-panel — the placeholder fills almost the ENTIRE printable front panel, edge to edge, as large as physically possible on the product surface',
+    ];
+
+    /**
      * Scene/theme presets selectable in the UI.
      */
     public const THEME_PRESETS = [
@@ -114,8 +126,9 @@ class MockupAiService
         $placements = !empty($options['placements'])
             ? $options['placements']
             : 'the natural primary branding position for this product';
+        $coverage = self::PLACEHOLDER_COVERAGE[$options['logo_coverage'] ?? 'large'] ?? self::PLACEHOLDER_COVERAGE['large'];
         $lines[] = "Branding placeholder: render a simple, flat, clearly visible placeholder logo that says exactly \"YOUR LOGO\" in plain dark text inside a thin rectangular outline, placed at: {$placements}.";
-        $lines[] = "Size each placeholder realistically for its placement — the full standard print-area size a professional printer would use (e.g. a chest/pocket mark stays small, but a front/back print placeholder should span roughly 40–60% of the product's width). Do not render tiny token placeholders on large print areas.";
+        $lines[] = "PLACEHOLDER SIZE: make the placeholder {$coverage}. Do NOT render a tiny token placeholder — it must be big and prominent so it clearly marks the full print area. Where multiple placements are described (e.g. small pocket + large back), size each one to its role, but never smaller than clearly visible.";
         $lines[] = "The placeholder must look like a printed/embroidered brand mark on the product surface, following the fabric/material contours realistically. Do not add any other text, watermarks or brand names anywhere in the image.";
 
         if (!empty($options['style_notes'])) {

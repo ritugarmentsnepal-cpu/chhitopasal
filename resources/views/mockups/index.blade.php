@@ -359,6 +359,18 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Placeholder Size</label>
+                        <div class="flex gap-1.5">
+                            <template x-for="opt in [['small','Small'],['medium','Medium'],['large','Large'],['full','Full']]" :key="opt[0]">
+                                <button type="button" @click="form.logo_coverage = opt[0]"
+                                        :class="form.logo_coverage === opt[0] ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-gray-50 text-gray-600 border-gray-200'"
+                                        class="flex-1 py-1.5 text-[11px] font-bold rounded-lg border transition active:scale-95" x-text="opt[1]"></button>
+                            </template>
+                        </div>
+                        <p class="text-[10px] font-medium text-gray-400 mt-1">How big the "YOUR LOGO" mark is drawn. Bigger placeholder → bigger logo on mockups.</p>
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Logo Placements</label>
                         <input type="text" x-model="form.placements" placeholder="e.g. left chest pocket + large back print" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
                         <div class="flex flex-wrap gap-1.5 mt-2">
@@ -620,6 +632,7 @@
                     theme: 'studio',
                     color_scheme: '',
                     placements: '',
+                    logo_coverage: 'large',
                     style_notes: '',
                 },
                 referenceFile: null,
