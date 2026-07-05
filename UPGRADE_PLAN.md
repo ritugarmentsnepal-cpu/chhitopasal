@@ -130,7 +130,7 @@ A "session" = one focused working block with review at the end. Every phase depl
   - [x] 1.2 Orders list rebuild (2026-07-05) — kept the exact current model per owner constraint. Page decomposed 2,306 → 493 lines: 6 modals + the 1,051-line manager script extracted to `orders/partials/list/*`; modals now load only on tabs that can use them (bulk/manual/edit → pending·confirmed, tracking → shipped, return → return_delivered, payment → all). Verified locally on every tab incl. custom print: renders clean, Alpine modals open, no console errors. *Deferred to Phase 3: moving the manager script into the Vite bundle; per-row custom-print modals.*
   - [x] ~~1.3 Custom Print production board (kanban)~~ — CANCELLED by owner: current list-based model is fine
   - [ ] 1.4 POS screen
-  - [ ] 1.5 Controller split + status events
+  - [x] 1.5 Controller split + status events (2026-07-05) — OrderController (1,837 lines / 32 methods) split into OrderController (core CRUD/detail/payments/returns), OrderBulkController, OrderShippingController, CustomPrintController, PosController; all routes rewired. New `OrderStatusChanged` + `ProductionStatusChanged` events dispatched from OrderService transitions — the hook points for Phase 4 automations. Verified locally: all routes resolve, bulk/damage/detail pages render, live status transition works through the event-dispatching path.
   - [ ] 1.6 Money-path tests
 - [ ] Phase 2 — Mockup Studio v2 + Custom-Print Pipeline
 - [ ] Phase 3 — Navigation & UI System

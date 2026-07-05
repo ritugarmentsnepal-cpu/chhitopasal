@@ -15,6 +15,10 @@ Route::post('/checkout', [\App\Http\Controllers\OrderController::class, 'storeWe
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderBulkController;
+use App\Http\Controllers\OrderShippingController;
+use App\Http\Controllers\CustomPrintController;
+use App\Http\Controllers\PosController;
 
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -26,21 +30,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['permission:orders'])->group(function () {
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-        Route::get('/orders/template', [OrderController::class, 'downloadTemplate'])->middleware('throttle:5,1')->name('orders.template');
-        Route::post('/orders/bulk-upload', [OrderController::class, 'bulkUpload'])->name('orders.bulkUpload');
-        Route::post('/orders/bulk-manual', [OrderController::class, 'bulkManualStore'])->name('orders.bulkManualStore');
-        Route::get('/orders/bulk-batches', [OrderController::class, 'bulkBatches'])->name('orders.bulkBatches');
-        Route::get('/orders/bulk-batches/{batchId}', [OrderController::class, 'bulkBatchShow'])->name('orders.bulkBatchShow');
-        Route::post('/orders/bulk-print', [OrderController::class, 'bulkPrint'])->name('orders.bulkPrint');
-        Route::post('/orders/bulk-delete', [OrderController::class, 'bulkDelete'])->name('orders.bulkDelete');
-        Route::post('/orders/bulk-ship', [OrderController::class, 'bulkShip'])->name('orders.bulkShip');
-        Route::get('/orders/bulk-shipments', [OrderController::class, 'bulkShipments'])->name('orders.bulkShipments');
-        Route::get('/orders/bulk-shipments/{batchId}/print', [OrderController::class, 'bulkShipmentPrint'])->name('orders.bulkShipmentPrint');
-        Route::post('/orders/bulk-status-update', [OrderController::class, 'bulkStatusUpdate'])->name('orders.bulkStatusUpdate');
+        Route::get('/orders/template', [OrderBulkController::class, 'downloadTemplate'])->middleware('throttle:5,1')->name('orders.template');
+        Route::post('/orders/bulk-upload', [OrderBulkController::class, 'bulkUpload'])->name('orders.bulkUpload');
+        Route::post('/orders/bulk-manual', [OrderBulkController::class, 'bulkManualStore'])->name('orders.bulkManualStore');
+        Route::get('/orders/bulk-batches', [OrderBulkController::class, 'bulkBatches'])->name('orders.bulkBatches');
+        Route::get('/orders/bulk-batches/{batchId}', [OrderBulkController::class, 'bulkBatchShow'])->name('orders.bulkBatchShow');
+        Route::post('/orders/bulk-print', [OrderBulkController::class, 'bulkPrint'])->name('orders.bulkPrint');
+        Route::post('/orders/bulk-delete', [OrderBulkController::class, 'bulkDelete'])->name('orders.bulkDelete');
+        Route::post('/orders/bulk-ship', [OrderBulkController::class, 'bulkShip'])->name('orders.bulkShip');
+        Route::get('/orders/bulk-shipments', [OrderBulkController::class, 'bulkShipments'])->name('orders.bulkShipments');
+        Route::get('/orders/bulk-shipments/{batchId}/print', [OrderBulkController::class, 'bulkShipmentPrint'])->name('orders.bulkShipmentPrint');
+        Route::post('/orders/bulk-status-update', [OrderBulkController::class, 'bulkStatusUpdate'])->name('orders.bulkStatusUpdate');
 
-        Route::post('/orders/{order}/ship', [OrderController::class, 'shipWithPathao'])->name('orders.ship');
-        Route::post('/orders/{order}/sync-pathao', [OrderController::class, 'syncPathaoStatus'])->middleware('throttle:10,1')->name('orders.syncPathaoStatus');
-        Route::post('/orders/master-sync-pathao', [OrderController::class, 'masterSyncPathao'])->name('orders.masterSyncPathao');
+        Route::post('/orders/{order}/ship', [OrderShippingController::class, 'shipWithPathao'])->name('orders.ship');
+        Route::post('/orders/{order}/sync-pathao', [OrderShippingController::class, 'syncPathaoStatus'])->middleware('throttle:10,1')->name('orders.syncPathaoStatus');
+        Route::post('/orders/master-sync-pathao', [OrderShippingController::class, 'masterSyncPathao'])->name('orders.masterSyncPathao');
         Route::get('orders/{order}/print-label', [OrderController::class, 'printLabel'])->name('orders.printLabel');
         Route::post('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
         Route::post('/orders/{order}/verify-return', [OrderController::class, 'verifyReturn'])->name('orders.verifyReturn');
@@ -48,14 +52,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/orders/{order}/full-update', [OrderController::class, 'fullUpdate'])->name('orders.fullUpdate');
         Route::post('/orders/{order}/payment', [OrderController::class, 'recordPayment'])->name('orders.payment');
         Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
-        Route::get('/orders/{order}/pathao-details', [OrderController::class, 'getPathaoDetails'])->middleware('throttle:10,1')->name('orders.pathaoDetails');
+        Route::get('/orders/{order}/pathao-details', [OrderShippingController::class, 'getPathaoDetails'])->middleware('throttle:10,1')->name('orders.pathaoDetails');
         Route::get('/orders/reports/damage', [OrderController::class, 'damageReport'])->name('orders.damageReport');
         
         // Custom Print Orders
-        Route::post('/orders/custom-print', [OrderController::class, 'storeCustomPrint'])->name('orders.storeCustomPrint');
-        Route::post('/orders/{order}/production-status', [OrderController::class, 'updateProductionStatus'])->name('orders.updateProductionStatus');
-        Route::post('/orders/{order}/custom-print-update', [OrderController::class, 'updateCustomPrint'])->name('orders.updateCustomPrint');
-        Route::post('/orders/{order}/save-mockup', [OrderController::class, 'saveMockup'])->name('orders.saveMockup');
+        Route::post('/orders/custom-print', [CustomPrintController::class, 'storeCustomPrint'])->name('orders.storeCustomPrint');
+        Route::post('/orders/{order}/production-status', [CustomPrintController::class, 'updateProductionStatus'])->name('orders.updateProductionStatus');
+        Route::post('/orders/{order}/custom-print-update', [CustomPrintController::class, 'updateCustomPrint'])->name('orders.updateCustomPrint');
+        Route::post('/orders/{order}/save-mockup', [CustomPrintController::class, 'saveMockup'])->name('orders.saveMockup');
         
         // Mockup Studio (AI generation + library)
         Route::get('/mockups', [\App\Http\Controllers\MockupLibraryController::class, 'index'])->name('mockups.index');
@@ -78,7 +82,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // POS — permission:pos
-    Route::post('/orders/pos', [OrderController::class, 'storePOS'])->middleware('permission:pos')->name('orders.pos');
+    Route::post('/orders/pos', [PosController::class, 'storePOS'])->middleware('permission:pos')->name('orders.pos');
 
     // Products — permission:products
     Route::middleware(['permission:products'])->group(function () {

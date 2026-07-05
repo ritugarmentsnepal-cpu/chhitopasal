@@ -73,6 +73,9 @@ class OrderService
 
         // BUG-FIX: Clear dashboard cache so orders move between columns immediately
         $this->clearDashboardCache();
+
+        // PHASE-1.5: notify automations (Phase 4 listeners hook in here)
+        \App\Events\OrderStatusChanged::dispatch($order, $oldStatus, $newStatus);
     }
 
     /**
@@ -124,6 +127,9 @@ class OrderService
 
         $order->update($updateData);
         $this->clearDashboardCache();
+
+        // PHASE-1.5: notify automations (Phase 4 listeners hook in here)
+        \App\Events\ProductionStatusChanged::dispatch($order, $currentStatus, $newProductionStatus);
     }
 
     /**
