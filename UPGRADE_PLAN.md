@@ -131,7 +131,7 @@ A "session" = one focused working block with review at the end. Every phase depl
   - [x] ~~1.3 Custom Print production board (kanban)~~ — CANCELLED by owner: current list-based model is fine
   - [ ] 1.4 POS screen
   - [x] 1.5 Controller split + status events (2026-07-05) — OrderController (1,837 lines / 32 methods) split into OrderController (core CRUD/detail/payments/returns), OrderBulkController, OrderShippingController, CustomPrintController, PosController; all routes rewired. New `OrderStatusChanged` + `ProductionStatusChanged` events dispatched from OrderService transitions — the hook points for Phase 4 automations. Verified locally: all routes resolve, bulk/damage/detail pages render, live status transition works through the event-dispatching path.
-  - [ ] 1.6 Money-path tests
+  - [x] 1.6 Money-path tests (2026-07-06) — 21 new feature tests (53 assertions) covering: status transitions (stock deduct/restore, shipped_at, invalid-transition guard, event dispatch), delivery revenue (Pathao Clearing receivable + idempotency), payments (full/partial/COD, account balances, permission guard), return verification (selective restock, payment reversal, over-qty guard, double-verify guard), Pathao webhook (secret enforcement, status mapping, rider comments). Tests run on MySQL `chhitopasal_test` (migrations use MySQL-only DDL). **Caught 2 real bugs**: recordPayment 500 when notes omitted (would have broken the new detail-page payment form in prod), and hasPermission crash for null-role users. Removed stale Breeze RegistrationTest (registration intentionally disabled). Full suite: 44 passed / 0 failed.
 - [ ] Phase 2 — Mockup Studio v2 + Custom-Print Pipeline
 - [ ] Phase 3 — Navigation & UI System
 - [ ] Phase 4 — Automations

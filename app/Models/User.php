@@ -117,8 +117,9 @@ class User extends Authenticatable
 
     /**
      * Get default permissions for a given role.
+     * Null-safe: users without a role fall back to the most restricted preset.
      */
-    public static function getDefaultPermissions(string $role): array
+    public static function getDefaultPermissions(?string $role): array
     {
         return self::ROLE_PRESETS[$role] ?? self::ROLE_PRESETS['operational_staff'];
     }

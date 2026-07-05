@@ -713,7 +713,7 @@ class OrderController extends Controller
                     'reference_type' => SystemAccounts::REF_ORDER,
                     'reference_id' => $order->id,
                     'date' => now(),
-                    'notes' => $validated['notes'] ?: 'Manual Payment for Order #' . $order->id
+                    'notes' => ($validated['notes'] ?? '') ?: 'Manual Payment for Order #' . $order->id
                 ]);
                 $account->increment('balance', $amountToPay);
                 $order->increment('paid_amount', $amountToPay);
