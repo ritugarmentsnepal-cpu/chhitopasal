@@ -127,7 +127,7 @@ A "session" = one focused working block with review at the end. Every phase depl
   - ⚠️ Manual follow-ups for the owner: **rotate the DB password + APP_KEY** on the server (old ones were in git history via `.env.save`), and set a **Webhook Secret** in Settings → Integrations (+ same value in Pathao merchant panel).
 - [ ] Phase 1 — Order System Recreation *(in progress)*
   - [x] 1.1 Order detail page (2026-07-05): `/orders/{id}` with items+totals, payment recording+transactions, status control, custom-print production stepper + design/mockup galleries, Pathao panel + rider comments, full activity timeline, WhatsApp link. Order # in the list links to it.
-  - [ ] 1.2 Orders list rebuild — **constraint (owner, 2026-07-05): keep the current model** (status tabs + table + dropdown actions); improve speed, weight, and maintainability only
+  - [x] 1.2 Orders list rebuild (2026-07-05) — kept the exact current model per owner constraint. Page decomposed 2,306 → 493 lines: 6 modals + the 1,051-line manager script extracted to `orders/partials/list/*`; modals now load only on tabs that can use them (bulk/manual/edit → pending·confirmed, tracking → shipped, return → return_delivered, payment → all). Verified locally on every tab incl. custom print: renders clean, Alpine modals open, no console errors. *Deferred to Phase 3: moving the manager script into the Vite bundle; per-row custom-print modals.*
   - [x] ~~1.3 Custom Print production board (kanban)~~ — CANCELLED by owner: current list-based model is fine
   - [ ] 1.4 POS screen
   - [ ] 1.5 Controller split + status events
