@@ -301,8 +301,8 @@
                         <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Generated Mockups</div>
                         <div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
                           @foreach($order->mockup_files as $mockup)
-                            <a href="{{ Storage::url($mockup) }}" target="_blank" class="shrink-0 w-16 h-16 rounded-lg border border-gray-200 overflow-hidden hover:border-indigo-500 transition block">
-                              <img src="{{ Storage::url($mockup) }}" class="w-full h-full object-cover">
+                            <a href="{{ '/storage/' . ($mockup) }}" target="_blank" class="shrink-0 w-16 h-16 rounded-lg border border-gray-200 overflow-hidden hover:border-indigo-500 transition block">
+                              <img src="{{ '/storage/' . ($mockup) }}" class="w-full h-full object-cover">
                             </a>
                           @endforeach
                         </div>

@@ -14,7 +14,7 @@
             @forelse($mockupTemplates as $template)
                 <div class="border border-gray-200 rounded-2xl p-4 bg-gray-50 flex flex-col group relative">
                     <div class="aspect-square bg-white border border-gray-100 rounded-xl overflow-hidden mb-3 flex items-center justify-center relative">
-                        <img src="{{ Storage::url($template->image_path) }}" alt="{{ $template->name }}" class="max-w-full max-h-full object-contain mix-blend-multiply">
+                        <img src="{{ '/storage/' . ($template->image_path) }}" alt="{{ $template->name }}" class="max-w-full max-h-full object-contain mix-blend-multiply">
                         <form action="{{ route('mockup_templates.destroy', $template) }}" method="POST" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
                             @csrf
                             @method('DELETE')

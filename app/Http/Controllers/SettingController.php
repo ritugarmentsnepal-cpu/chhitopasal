@@ -55,6 +55,7 @@ class SettingController extends Controller
             // Integrations (Pathao)
             'pathao_client_id', 'pathao_client_secret', 'pathao_username',
             'pathao_password', 'pathao_store_id', 'pathao_base_url',
+            'pathao_webhook_secret',
             // Integrations (OpenRouter AI)
             'openrouter_api_key', 'openrouter_model',
             // Facebook & AI Agent

@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Order;
+use App\Models\RiderComment;
+use App\Models\SupportTicket;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use App\Models\Order;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,8 +24,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // PERF: sidebar badge counts, one cached lookup instead of 3 raw
+        // queries on every page load.
         View::composer('layouts.navigation', function ($view) {
-            $view->with('pendingOrdersCount', Order::where('status', 'pending')->count());
+            $counts = Cache::remember('nav_badge_counts', 60, function () {
+                return [
+                    'pendingOrdersCount' => Order::where('status', 'pending')->count(),
+                    'openTicketsCount' => SupportTicket::where('status', 'open')->count(),
+                    'unreadCommentsCount' => RiderComment::where('status', 'unread')->count(),
+                ];
+            });
+
+            $view->with($counts);
         });
     }
 }

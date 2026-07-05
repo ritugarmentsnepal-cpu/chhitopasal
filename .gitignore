@@ -33,3 +33,4 @@ composer.phar
 /models.json
 /all_models.txt
 /live_debug.json
+.env.save

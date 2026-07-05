@@ -191,8 +191,10 @@ class FacebookWebhookController extends Controller
             return;
         }
 
-        // Dispatch the AI reply job to run immediately AFTER sending the 200 OK to Facebook.
-        ProcessAiReply::dispatchAfterResponse(
+        // OPS-01: push to the database queue (drained every minute by the
+        // scheduler-run worker). Replaces dispatchAfterResponse, which held a
+        // web worker hostage for the whole AI round-trip incl. typing sleeps.
+        ProcessAiReply::dispatch(
             $pageId,
             $userId,
             $messageText,

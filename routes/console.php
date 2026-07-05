@@ -29,3 +29,10 @@ Schedule::command('facebook:sync-conversations')->dailyAt('03:00')->withoutOverl
 // AI-02: Process automated follow-ups for AI Agent
 Schedule::command('ai:process-followups')->everyFifteenMinutes()->withoutOverlapping();
 
+// OPS-01: Queue worker without supervisor — drains the database queue every
+// minute and exits when empty. withoutOverlapping prevents parallel workers.
+// Replaces the old "start daemon from the browser" hack.
+Schedule::command('queue:work --stop-when-empty --tries=3 --max-time=50')
+    ->everyMinute()
+    ->withoutOverlapping();
+

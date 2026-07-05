@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Crypt;
 define('ENCRYPTED_SETTING_KEYS', [
     'pathao_client_secret',
     'pathao_password',
+    'pathao_webhook_secret',
+    'openrouter_api_key',
 ]);
 
 if (!function_exists('setting')) {

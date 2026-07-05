@@ -241,7 +241,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/ai-agent/knowledge/{id}', [\App\Http\Controllers\AiAgentController::class, 'deleteKnowledge'])->name('ai-agent.deleteKnowledge');
         Route::post('/ai-agent/knowledge/{id}/toggle', [\App\Http\Controllers\AiAgentController::class, 'toggleKnowledge'])->name('ai-agent.toggleKnowledge');
         Route::post('/ai-agent/sync', [\App\Http\Controllers\AiAgentController::class, 'syncConversations'])->name('ai-agent.sync');
-        Route::post('/ai-agent/start-daemon', [\App\Http\Controllers\AiAgentController::class, 'startDaemon'])->name('ai-agent.startDaemon');
         Route::get('/api/ai-agent/stats', [\App\Http\Controllers\AiAgentController::class, 'getTrainingStats'])->name('api.ai-agent.stats');
         Route::post('/api/ai-agent/test', [\App\Http\Controllers\AiAgentController::class, 'testAgent'])->name('api.ai-agent.test');
 
@@ -276,8 +275,9 @@ Route::post('/webhook/facebook', [\App\Http\Controllers\Api\FacebookWebhookContr
 // Pathao Webhook
 Route::post('/webhook/pathao', [\App\Http\Controllers\Api\PathaoWebhookController::class, 'handle'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
-// Live Server Debug Route
-Route::get('/debug-webhook', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'debugLiveServer']);
-
-Route::get('/force-subscribe', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'forceSubscribe']);
+// Webhook diagnostics — admin only (SEC: were public before)
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/debug-webhook', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'debugLiveServer']);
+    Route::get('/force-subscribe', [\App\Http\Controllers\Api\FacebookWebhookController::class, 'forceSubscribe']);
+});
 

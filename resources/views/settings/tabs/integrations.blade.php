@@ -34,6 +34,11 @@
           <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Store ID</label>
           <input name="pathao_store_id" type="text" value="{{ setting('pathao_store_id') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
         </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Webhook Secret</label>
+          <input name="pathao_webhook_secret" type="password" value="{{ setting('pathao_webhook_secret') }}" class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-gray-900 focus:ring focus:ring-gray-900/10 py-3 font-medium transition-colors" />
+          <p class="text-xs text-gray-500 mt-2">Set the same secret in Pathao's merchant webhook settings. Without it, anyone who knows the URL can update your order statuses.</p>
+        </div>
       </div>
 
       <div class="flex items-center justify-between pt-6 border-t border-gray-100">
@@ -150,20 +155,6 @@
       </div>
     </div>
   </form>
-
-  {{-- AI Real-Time Daemon Section --}}
-  <div class="bg-white rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mt-8">
-    <h3 class="text-xl font-black text-gray-900 mb-2">Real-Time AI Processing</h3>
-    <p class="text-gray-500 font-medium mb-6">If your AI model takes too long to reply and hits the server timeout, start the background daemon to process messages instantly without timing out.</p>
-    
-    <form method="POST" action="{{ route('ai-agent.startDaemon') }}">
-      @csrf
-      <button type="submit" class="bg-indigo-600 text-white font-black py-3 px-8 rounded-xl shadow-[0_8px_20px_rgb(79,70,229,0.3)] hover:bg-indigo-700 active:scale-95 transition-colors flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-        Start Background Queue Daemon
-      </button>
-    </form>
-  </div>
 
   {{-- Analytics Section --}}
   <form method="POST" action="{{ route('settings.store') }}" class="mt-8">

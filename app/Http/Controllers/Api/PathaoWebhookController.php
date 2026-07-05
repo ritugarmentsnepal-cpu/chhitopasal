@@ -19,34 +19,34 @@ class PathaoWebhookController extends Controller
 
     public function handle(Request $request)
     {
-        $configuredSecret = config('services.pathao.webhook_secret');
-        
+        // SEC: secret lives in Settings → Integrations (encrypted at rest),
+        // with .env as fallback. No hardcoded fallback secrets.
+        $configuredSecret = setting('pathao_webhook_secret') ?: config('services.pathao.webhook_secret');
+
         Log::info('Pathao Webhook Received', $request->all());
 
         // Handle Pathao's initial webhook test ping FIRST, before security checks
         if ($request->input('event') === 'webhook_integration') {
-            // If config is cached/empty, fallback to the requested header or env
-            $secretToReturn = $configuredSecret 
-                              ?: $request->header('X-Pathao-Merchant-Webhook-Integration-Secret') 
-                              ?: 'f3992ecc-59da-4cbe-a049-a13da2018d51';
+            $secretToReturn = $configuredSecret
+                              ?: $request->header('X-Pathao-Merchant-Webhook-Integration-Secret');
 
             return response()->json(['status' => 'success', 'message' => 'Integration verified'])
                              ->setStatusCode(202)
                              ->header('X-Pathao-Merchant-Webhook-Integration-Secret', $secretToReturn);
         }
-        
-        // Very basic security: if a secret is configured, ensure it matches either a header or a query param.
-        if ($configuredSecret) {
-            $providedSecret = $request->header('X-Webhook-Secret') 
-                           ?? $request->header('X-PATHAO-Signature') 
-                           ?? $request->header('X-Pathao-Merchant-Webhook-Integration-Secret')
-                           ?? $request->query('secret')
-                           ?? $request->input('secret');
 
-            if ($providedSecret !== $configuredSecret) {
+        // SEC: without a configured secret anyone can flip order statuses —
+        // warn loudly so it gets set. With one configured, enforce it.
+        if (!$configuredSecret) {
+            Log::warning('Pathao Webhook: no webhook secret configured — request accepted UNVERIFIED. Set one in Settings → Integrations.');
+        } else {
+            $providedSecret = $request->header('X-Webhook-Secret')
+                           ?? $request->header('X-PATHAO-Signature')
+                           ?? $request->header('X-Pathao-Merchant-Webhook-Integration-Secret');
+
+            if (!is_string($providedSecret) || !hash_equals($configuredSecret, $providedSecret)) {
                 Log::warning('Pathao Webhook Unauthorized access attempt', [
                     'ip' => $request->ip(),
-                    'provided_secret' => $providedSecret
                 ]);
                 return response()->json(['message' => 'Unauthorized'], 401);
             }

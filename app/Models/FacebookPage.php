@@ -14,6 +14,14 @@ class FacebookPage extends Model
         'picture_url',
     ];
 
+    /**
+     * SEC: page access tokens are encrypted at rest.
+     * Existing plaintext rows are converted by the 2026_07_05_120000 migration.
+     */
+    protected $casts = [
+        'access_token' => 'encrypted',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
