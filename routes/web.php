@@ -71,6 +71,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         // Sales List
         Route::get('/sales', [\App\Http\Controllers\SalesController::class, 'index'])->name('sales.index');
+
+        // PHASE-1.1: Order detail page — keep LAST in this group so specific
+        // /orders/* GET routes (template, bulk-*, reports) match first.
+        Route::get('/orders/{order}', [OrderController::class, 'show'])->whereNumber('order')->name('orders.show');
     });
 
     // POS — permission:pos

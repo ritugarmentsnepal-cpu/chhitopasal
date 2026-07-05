@@ -121,6 +121,33 @@ class OrderController extends Controller
         return view('orders.index', compact('orders', 'status', 'products', 'accounts', 'orderType'));
     }
 
+    /**
+     * PHASE-1.1: Dedicated order detail page — timeline, items, payments,
+     * shipping, custom-print pipeline. Replaces working out of list modals.
+     */
+    public function show(Order $order)
+    {
+        $order->load([
+            'orderItems.product',
+            'transactions.account',
+            'libraryMockups',
+        ]);
+
+        $timeline = $order->activityLogs()
+            ->with('user')
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        $riderComments = \App\Models\RiderComment::where('order_id', $order->id)
+            ->latest()
+            ->get();
+
+        $accounts = \App\Models\Account::orderBy('name')->get();
+
+        return view('orders.show', compact('order', 'timeline', 'riderComments', 'accounts'));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

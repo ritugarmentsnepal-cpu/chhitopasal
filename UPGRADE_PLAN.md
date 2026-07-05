@@ -125,7 +125,13 @@ A "session" = one focused working block with review at the end. Every phase depl
 ## Progress
 - [x] **Phase 0 — Stabilize & Secure** (2026-07-05): `.env.save` untracked; debug routes admin-gated; Pathao webhook secret via encrypted setting + `hash_equals`, hardcoded fallback removed, query-param secrets no longer accepted; `openrouter_api_key` + FB page tokens encrypted at rest (migration converts existing rows); scheduler-based queue worker replaces the browser-launched daemon; AI replies moved to the real queue; sidebar badge counts cached (60s); `Storage::url` swept to relative `/storage/` paths.
   - ⚠️ Manual follow-ups for the owner: **rotate the DB password + APP_KEY** on the server (old ones were in git history via `.env.save`), and set a **Webhook Secret** in Settings → Integrations (+ same value in Pathao merchant panel).
-- [ ] Phase 1 — Order System Recreation
+- [ ] Phase 1 — Order System Recreation *(in progress)*
+  - [x] 1.1 Order detail page (2026-07-05): `/orders/{id}` with items+totals, payment recording+transactions, status control, custom-print production stepper + design/mockup galleries, Pathao panel + rider comments, full activity timeline, WhatsApp link. Order # in the list links to it.
+  - [ ] 1.2 Orders list rebuild (lean + saved views)
+  - [ ] 1.3 Custom Print production board (kanban)
+  - [ ] 1.4 POS screen
+  - [ ] 1.5 Controller split + status events
+  - [ ] 1.6 Money-path tests
 - [ ] Phase 2 — Mockup Studio v2 + Custom-Print Pipeline
 - [ ] Phase 3 — Navigation & UI System
 - [ ] Phase 4 — Automations

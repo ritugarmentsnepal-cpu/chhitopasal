@@ -221,7 +221,7 @@
                         x-model="selectedOrders">
                   </td>
                   <td class="p-4 align-top">
-                    <div class="font-black text-gray-900">#{{ $order->id }}</div>
+                    <a href="{{ route('orders.show', $order) }}" class="font-black text-gray-900 hover:text-indigo-600 transition underline decoration-gray-200 hover:decoration-indigo-400 underline-offset-2">#{{ $order->id }}</a>
                     <div class="text-xs text-gray-500 font-medium">{{ $order->created_at->format('M d, g:i A') }}</div>
                     <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase {{ $order->source === 'web' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600' }}">
                       {{ $order->source }}
