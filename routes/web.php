@@ -68,6 +68,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/mockups/{mockup}', [\App\Http\Controllers\MockupLibraryController::class, 'destroy'])->name('mockups.destroy');
         Route::get('/mockups/{mockup}/download', [\App\Http\Controllers\MockupLibraryController::class, 'download'])->name('mockups.download');
         Route::get('/mockups/{mockup}/download-logo', [\App\Http\Controllers\MockupLibraryController::class, 'downloadLogo'])->name('mockups.downloadLogo');
+        Route::post('/mockups/{mockup}/share', [\App\Http\Controllers\MockupApprovalController::class, 'share'])->name('mockups.share');
 
         // Mockup Template AI generation (manual upload/delete stays admin-only below)
         Route::post('/mockup-templates/generate', [\App\Http\Controllers\MockupTemplateController::class, 'generate'])->middleware('throttle:10,1')->name('mockup_templates.generate');
@@ -282,6 +283,10 @@ Route::post('/webhook/facebook', [\App\Http\Controllers\Api\FacebookWebhookContr
 
 // Pathao Webhook
 Route::post('/webhook/pathao', [\App\Http\Controllers\Api\PathaoWebhookController::class, 'handle'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+// PHASE-2.3: public customer mockup approval (token is the credential)
+Route::get('/m/{token}', [\App\Http\Controllers\MockupApprovalController::class, 'show'])->name('mockups.approval.show');
+Route::post('/m/{token}', [\App\Http\Controllers\MockupApprovalController::class, 'respond'])->middleware('throttle:10,1')->name('mockups.approval.respond');
 
 // Webhook diagnostics — admin only (SEC: were public before)
 Route::middleware(['auth', 'admin'])->group(function () {

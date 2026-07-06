@@ -17,10 +17,15 @@ class Mockup extends Model
         'order_id',
         'created_by',
         'tags',
+        'share_token',
+        'approval_status',
+        'approval_feedback',
+        'approval_responded_at',
     ];
 
     protected $casts = [
         'tags' => 'array',
+        'approval_responded_at' => 'datetime',
     ];
 
     // ── Relationships ────────────────────────────────────

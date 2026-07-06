@@ -132,7 +132,12 @@ A "session" = one focused working block with review at the end. Every phase depl
   - [ ] 1.4 POS screen
   - [x] 1.5 Controller split + status events (2026-07-05) — OrderController (1,837 lines / 32 methods) split into OrderController (core CRUD/detail/payments/returns), OrderBulkController, OrderShippingController, CustomPrintController, PosController; all routes rewired. New `OrderStatusChanged` + `ProductionStatusChanged` events dispatched from OrderService transitions — the hook points for Phase 4 automations. Verified locally: all routes resolve, bulk/damage/detail pages render, live status transition works through the event-dispatching path.
   - [x] 1.6 Money-path tests (2026-07-06) — 21 new feature tests (53 assertions) covering: status transitions (stock deduct/restore, shipped_at, invalid-transition guard, event dispatch), delivery revenue (Pathao Clearing receivable + idempotency), payments (full/partial/COD, account balances, permission guard), return verification (selective restock, payment reversal, over-qty guard, double-verify guard), Pathao webhook (secret enforcement, status mapping, rider comments). Tests run on MySQL `chhitopasal_test` (migrations use MySQL-only DDL). **Caught 2 real bugs**: recordPayment 500 when notes omitted (would have broken the new detail-page payment form in prod), and hasPermission crash for null-role users. Removed stale Breeze RegistrationTest (registration intentionally disabled). Full suite: 44 passed / 0 failed.
-- [ ] Phase 2 — Mockup Studio v2 + Custom-Print Pipeline
+- [ ] Phase 2 — Mockup Studio v2 + Custom-Print Pipeline *(in progress)*
+  - [x] 2.3 Customer approval links (2026-07-06): public `/m/{token}` branded mobile-first approval page (Approve / Request Changes with feedback); WhatsApp share button on studio cards + order detail mockups (wa.me prefilled with customer phone + message); approval final once given; responses land on the order timeline; **approval auto-advances production to design_approved along valid transitions** (starts pipeline if unset). 8 feature tests; verified end-to-end in browser locally.
+  - [ ] 2.1 Customer Logo Library
+  - [ ] 2.2 Guided wizard (order → logo → templates → mockups)
+  - [ ] 2.4 Generation history + cost tracking
+  - [ ] 2.5 Retire order-side Fabric studio
 - [ ] Phase 3 — Navigation & UI System
 - [ ] Phase 4 — Automations
 - [ ] Phase 5 — Foundation & Ops
