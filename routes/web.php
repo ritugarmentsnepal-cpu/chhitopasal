@@ -26,6 +26,9 @@ Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'ind
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    // PHASE-3: global search (permission-aware inside the controller)
+    Route::get('/api/global-search', [\App\Http\Controllers\GlobalSearchController::class, 'search'])->middleware('throttle:60,1')->name('api.globalSearch');
+
     // Orders — permission:orders
     Route::middleware(['permission:orders'])->group(function () {
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');

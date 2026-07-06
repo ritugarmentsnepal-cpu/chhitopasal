@@ -138,6 +138,12 @@ A "session" = one focused working block with review at the end. Every phase depl
   - [x] 2.2 Guided wizard (2026-07-06) — order detail launches the studio pre-filled and auto-opened (`/mockups?order=N&open=generator`): order linked, title set, **customer's logo auto-selected from the library by phone match**; saving returns to the order. "⚡ Generate Mockup" button + empty-state CTA on the order's custom-print panel. 3 tests; full suite 60 passed / 0 failed.
   - [x] 2.4 Generation history + cost tracking (2026-07-07) — `ai_generations` records every attempt (model, file, user, est. cost); linked to its template/mockup on save; "AI This Month" stat card (count + est. $) in the studio; `mockups:prune-generations` deletes unconfirmed attempts after 30 days (scheduled daily).
   - [x] 2.5 Retire order-side Fabric studio (2026-07-07) — legacy canvas modal removed from the orders list; Mockup button now launches the AI wizard; `saveMockup` route + controller method deleted.
-- [ ] Phase 3 — Navigation & UI System
+- [ ] Phase 3 — Navigation & UI System *(in progress)*
+  - [x] 3.3 Global search (2026-07-07) — topbar search is now live: permission-aware `/api/global-search` (orders by id/name/phone/consignment, customers grouped by phone with order counts, products by name), debounced dropdown with keyboard navigation (↑↓/Enter/Esc), Ctrl+K **and** ⌘K, numeric queries allowed at 1 char for short order IDs. 5 tests; full suite 65 passed / 0 failed.
+  - [ ] 3.1 Shared Blade components
+  - [ ] 3.2 Sidebar restructure
+  - [ ] 3.4 Notification center
+  - [ ] 3.5 Mobile rebuild of top-3 pages
+  - [ ] 3.6 Split remaining monolith views
 - [ ] Phase 4 — Automations
 - [ ] Phase 5 — Foundation & Ops
