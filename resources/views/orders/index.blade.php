@@ -109,7 +109,7 @@
 
       <!-- Filter Bar -->
       @if($status !== 'shipped')
-      <form method="GET" action="{{ route('orders.index') }}" class="mb-6 flex gap-4 items-center bg-white p-3 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+      <form method="GET" action="{{ route('orders.index') }}" class="mb-6 flex flex-wrap gap-3 sm:gap-4 items-center bg-white p-3 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
         <input type="hidden" name="status" value="{{ $status }}">
         @if(request('pathao_filter'))
           <input type="hidden" name="pathao_filter" value="{{ request('pathao_filter') }}">
@@ -184,7 +184,44 @@
             @endif
           </div>
         </div>
-        <div class="overflow-x-auto">
+        {{-- PHASE-3.5: mobile card list — full actions live on the detail page --}}
+        <div class="md:hidden divide-y divide-gray-100">
+          @forelse($orders as $order)
+            <a href="{{ route('orders.show', $order) }}" class="block p-4 active:bg-gray-50 transition">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-black text-gray-900">#{{ $order->id }}</span>
+                    <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded {{ $order->source === 'web' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600' }}">{{ $order->source }}</span>
+                    @if($order->payment_status === 'paid')
+                      <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-green-50 text-green-600">Paid</span>
+                    @elseif($order->payment_status === 'partial')
+                      <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-orange-50 text-orange-600">Partial</span>
+                    @endif
+                  </div>
+                  <p class="font-bold text-sm text-gray-900 mt-1 truncate">{{ $order->customer_name }}</p>
+                  <p class="text-xs font-medium text-gray-500">{{ $order->customer_phone }} · {{ $order->created_at->format('M d') }}</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="font-black text-gray-900 text-sm">Rs.{{ number_format($order->total_amount) }}</p>
+                  @if($status === 'shipped' && $order->pathao_status)
+                    <p class="text-[10px] font-bold text-cyan-600 mt-0.5">{{ \Illuminate\Support\Str::limit($order->pathao_status, 18) }}</p>
+                  @endif
+                </div>
+              </div>
+              <p class="text-xs text-gray-400 font-medium mt-1.5 truncate">
+                @foreach($order->orderItems as $item){{ $loop->first ? '' : ', ' }}{{ $item->quantity }}× {{ $item->product->name ?? 'Deleted' }}@endforeach
+              </p>
+              @if($order->remarks)
+                <p class="text-[10px] font-bold text-amber-600 mt-1">📝 {{ \Illuminate\Support\Str::limit($order->remarks, 60) }}</p>
+              @endif
+            </a>
+          @empty
+            <p class="p-10 text-center text-gray-400 font-bold">No {{ $status }} orders found.</p>
+          @endforelse
+        </div>
+
+        <div class="overflow-x-auto hidden md:block">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="text-[10px] font-black text-gray-400 uppercase tracking-widest">

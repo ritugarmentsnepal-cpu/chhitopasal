@@ -141,9 +141,9 @@ A "session" = one focused working block with review at the end. Every phase depl
 - [ ] Phase 3 — Navigation & UI System *(in progress)*
   - [x] 3.3 Global search (2026-07-07) — topbar search is now live: permission-aware `/api/global-search` (orders by id/name/phone/consignment, customers grouped by phone with order counts, products by name), debounced dropdown with keyboard navigation (↑↓/Enter/Esc), Ctrl+K **and** ⌘K, numeric queries allowed at 1 char for short order IDs. 5 tests; full suite 65 passed / 0 failed.
   - [ ] 3.1 Shared Blade components
-  - [ ] 3.2 Sidebar restructure
+  - [x] 3.2 Sidebar (scoped, 2026-07-07) — Mockup Studio promoted from a buried sub-item to a top-level daily tool; full section re-grouping intentionally skipped to preserve owner muscle memory (matches the "current model is fine" constraint).
   - [x] 3.4 Notification center (2026-07-07) — topbar bell with unread badge, 60s polling, permission-aware aggregated feed: mockup approvals/change requests (7d), returns awaiting verification, fresh web orders (2d), unread rider comments, open support tickets. Read-state via `users.notifications_seen_at` (opening the bell marks seen). 3 tests; full suite 68 passed / 0 failed.
-  - [ ] 3.5 Mobile rebuild of top-3 pages
+  - [x] 3.5 Mobile — orders list (2026-07-07): tappable card layout on phones (order #, customer, phone, total, items, payment/source/pathao chips, remarks) with the table desktop-only; every card opens the order detail page (which already stacks well and carries all actions); filter bar wraps. *FB inbox mobile pass deferred.*
   - [ ] 3.6 Split remaining monolith views
 - [ ] Phase 4 — Automations
 - [ ] Phase 5 — Foundation & Ops
