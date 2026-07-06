@@ -70,6 +70,11 @@ class MockupLibraryController extends Controller
         // PHASE-2.1: Customer Logo Library (powers the Logos tab + generator picker)
         $customerLogos = \App\Models\CustomerLogo::withCount('mockups')->latest()->get();
 
+        // PHASE-2.4: AI usage this month
+        $aiThisMonth = \App\Models\AiGeneration::where('created_at', '>=', now()->startOfMonth())
+            ->selectRaw('COUNT(*) as generations, COALESCE(SUM(cost_estimate), 0) as cost')
+            ->first();
+
         // PHASE-2.2: guided wizard — arriving from an order pre-fills the
         // generator and pre-selects the customer's logo (matched by phone).
         $wizard = null;
@@ -90,7 +95,7 @@ class MockupLibraryController extends Controller
             }
         }
 
-        return view('mockups.index', compact('mockups', 'templates', 'productTypes', 'readyLogos', 'waitingLogos', 'customerLogos', 'wizard'));
+        return view('mockups.index', compact('mockups', 'templates', 'productTypes', 'readyLogos', 'waitingLogos', 'customerLogos', 'wizard', 'aiThisMonth'));
     }
 
     /**
@@ -202,6 +207,9 @@ class MockupLibraryController extends Controller
             'created_by' => auth()->id(),
             'tags' => $request->input('tags', []),
         ]);
+
+        // PHASE-2.4: mark the generation attempt as confirmed
+        \App\Models\AiGeneration::where('image_path', $path)->update(['mockup_id' => $mockup->id]);
 
         // Keep the order's own mockup list in sync so it shows on the order
         if ($mockup->order_id && $mockup->order) {

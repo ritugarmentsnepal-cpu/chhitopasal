@@ -75,6 +75,8 @@ class MockupAiService
         $path = 'mockup_templates/ai_' . uniqid() . '.png';
         Storage::disk('public')->put($path, $binary);
 
+        $this->recordGeneration('template', $path);
+
         return $path;
     }
 
@@ -96,7 +98,28 @@ class MockupAiService
         $path = 'mockups/ai_' . uniqid() . '.png';
         Storage::disk('public')->put($path, $binary);
 
+        $this->recordGeneration('mockup', $path);
+
         return $path;
+    }
+
+    /**
+     * PHASE-2.4: record every generation attempt for history/cost tracking.
+     * Linked to its template/mockup once the user saves it.
+     */
+    protected function recordGeneration(string $type, string $path): void
+    {
+        try {
+            \App\Models\AiGeneration::create([
+                'type' => $type,
+                'model' => setting('mockup_ai_model', self::DEFAULT_MODEL),
+                'image_path' => $path,
+                'user_id' => auth()->id(),
+                'cost_estimate' => (float) setting('mockup_ai_cost_per_image', 0.04),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('MockupAI: failed to record generation', ['error' => $e->getMessage()]);
+        }
     }
 
     // ── Prompt builders ──────────────────────────────────────────

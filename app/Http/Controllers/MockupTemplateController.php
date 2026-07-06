@@ -129,6 +129,9 @@ class MockupTemplateController extends Controller
             'is_ai_generated' => true,
         ]);
 
+        // PHASE-2.4: mark the generation attempt as confirmed
+        \App\Models\AiGeneration::where('image_path', $path)->update(['template_id' => $template->id]);
+
         return response()->json(['success' => true, 'template' => $template]);
     }
 

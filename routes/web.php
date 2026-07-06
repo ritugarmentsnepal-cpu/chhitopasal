@@ -59,7 +59,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/custom-print', [CustomPrintController::class, 'storeCustomPrint'])->name('orders.storeCustomPrint');
         Route::post('/orders/{order}/production-status', [CustomPrintController::class, 'updateProductionStatus'])->name('orders.updateProductionStatus');
         Route::post('/orders/{order}/custom-print-update', [CustomPrintController::class, 'updateCustomPrint'])->name('orders.updateCustomPrint');
-        Route::post('/orders/{order}/save-mockup', [CustomPrintController::class, 'saveMockup'])->name('orders.saveMockup');
         
         // Mockup Studio (AI generation + library)
         Route::get('/mockups', [\App\Http\Controllers\MockupLibraryController::class, 'index'])->name('mockups.index');

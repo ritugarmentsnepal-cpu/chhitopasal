@@ -21,10 +21,15 @@
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" x-data="{ tab: '{{ request('tab', 'mockups') }}' }">
 
         {{-- Stats Bar --}}
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Mockups</div>
                 <div class="text-2xl font-black text-gray-900 mt-1">{{ $mockups->total() }}</div>
+            </div>
+            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm" title="AI generations this month (estimated cost)">
+                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">AI This Month</div>
+                <div class="text-2xl font-black text-indigo-600 mt-1">{{ $aiThisMonth->generations }}</div>
+                <div class="text-[10px] font-bold text-gray-400">≈ ${{ number_format($aiThisMonth->cost, 2) }}</div>
             </div>
             <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Templates</div>

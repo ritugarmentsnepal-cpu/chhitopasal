@@ -319,17 +319,17 @@
                       @if(in_array($status, ['pending', 'confirmed', 'design', 'production', 'ready_to_ship']))
                         @if($orderType === 'custom_print')
                           @include('orders.partials.custom_print_edit_modal')
-                          @include('orders.partials.mockup_studio_modal')
-                          
+
                           <div class="flex gap-2 w-full">
                             <button x-on:click.prevent="$dispatch('open-modal', 'custom-print-edit-modal-{{ $order->id }}')" class="flex-1 text-center px-3 py-2 bg-gray-50 text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors text-xs flex items-center justify-center gap-1">
                               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                               {{ in_array($status, ['pending', 'design']) ? 'Review' : 'Edit' }}
                             </button>
-                            <button x-on:click.prevent="$dispatch('open-modal', 'mockup-studio-{{ $order->id }}')" class="flex-1 text-center px-3 py-2 bg-indigo-50 text-indigo-700 font-bold rounded-xl border border-indigo-200 hover:bg-indigo-100 transition-colors text-xs flex items-center justify-center gap-1">
-                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            {{-- PHASE-2.5: AI wizard replaced the old canvas studio --}}
+                            <a href="{{ route('mockups.index', ['order' => $order->id, 'open' => 'generator']) }}" class="flex-1 text-center px-3 py-2 bg-indigo-50 text-indigo-700 font-bold rounded-xl border border-indigo-200 hover:bg-indigo-100 transition-colors text-xs flex items-center justify-center gap-1">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                               Mockup
-                            </button>
+                            </a>
                           </div>
                         @else
                           <button @click="openEditModal({{ $order }})" class="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-200 active:scale-95 transition-all w-full justify-center">
