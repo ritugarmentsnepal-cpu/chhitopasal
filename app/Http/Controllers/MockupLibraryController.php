@@ -70,7 +70,27 @@ class MockupLibraryController extends Controller
         // PHASE-2.1: Customer Logo Library (powers the Logos tab + generator picker)
         $customerLogos = \App\Models\CustomerLogo::withCount('mockups')->latest()->get();
 
-        return view('mockups.index', compact('mockups', 'templates', 'productTypes', 'readyLogos', 'waitingLogos', 'customerLogos'));
+        // PHASE-2.2: guided wizard — arriving from an order pre-fills the
+        // generator and pre-selects the customer's logo (matched by phone).
+        $wizard = null;
+        if ($request->filled('order')) {
+            $order = Order::find((int) $request->get('order'));
+            if ($order) {
+                $matchedLogo = $order->customer_phone
+                    ? \App\Models\CustomerLogo::where('customer_phone', $order->customer_phone)->latest()->first()
+                    : null;
+
+                $wizard = [
+                    'orderId' => $order->id,
+                    'customer' => $order->customer_name,
+                    'title' => $order->customer_name . ' — Order #' . $order->id,
+                    'logoId' => $matchedLogo?->id,
+                    'returnTo' => route('orders.show', $order),
+                ];
+            }
+        }
+
+        return view('mockups.index', compact('mockups', 'templates', 'productTypes', 'readyLogos', 'waitingLogos', 'customerLogos', 'wizard'));
     }
 
     /**

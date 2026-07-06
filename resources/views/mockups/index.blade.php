@@ -550,6 +550,17 @@
                 </button>
             </div>
 
+            <template x-if="wizard">
+                <div class="mb-4 bg-indigo-50 border border-indigo-100 rounded-2xl px-4 py-3 flex items-center gap-3">
+                    <svg class="w-5 h-5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    <p class="text-sm font-bold text-indigo-800">
+                        Creating mockups for <span x-text="'Order #' + wizard.orderId"></span> — <span x-text="wizard.customer"></span>.
+                        <span x-show="wizard.logoId" class="text-indigo-500 font-medium">Their logo is already selected from the library.</span>
+                        <span class="text-indigo-400 font-medium">You'll return to the order after saving.</span>
+                    </p>
+                </div>
+            </template>
+
             <div class="grid md:grid-cols-5 gap-6">
                 {{-- Left: setup --}}
                 <div class="md:col-span-2 space-y-4 max-h-[65vh] overflow-y-auto pr-1">
@@ -908,6 +919,19 @@
                 progressText: '',
                 error: '',
                 templateNames: @json($templates->pluck('name', 'id')),
+                wizard: @json($wizard),
+
+                init() {
+                    if (this.wizard) {
+                        this.orderId = this.wizard.orderId;
+                        this.title = this.wizard.title;
+                        if (this.wizard.logoId && this.libraryLogos.some(l => l.id === this.wizard.logoId)) {
+                            this.selectedLogoId = this.wizard.logoId;
+                            this.logoMode = 'library';
+                        }
+                        this.$nextTick(() => window.dispatchEvent(new CustomEvent('open-modal', { detail: 'mockup-generator' })));
+                    }
+                },
 
                 get filteredLogos() {
                     const q = this.logoFilter.toLowerCase();
@@ -1044,7 +1068,8 @@
                         }
                     }
 
-                    window.location = '{{ route('mockups.index') }}';
+                    // Wizard flow returns to the order; normal flow reloads the library
+                    window.location = (this.wizard && this.wizard.returnTo) ? this.wizard.returnTo : '{{ route('mockups.index') }}';
                 },
             }));
         });

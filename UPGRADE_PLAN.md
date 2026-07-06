@@ -135,7 +135,7 @@ A "session" = one focused working block with review at the end. Every phase depl
 - [ ] Phase 2 — Mockup Studio v2 + Custom-Print Pipeline *(in progress)*
   - [x] 2.3 Customer approval links (2026-07-06): public `/m/{token}` branded mobile-first approval page (Approve / Request Changes with feedback); WhatsApp share button on studio cards + order detail mockups (wa.me prefilled with customer phone + message); approval final once given; responses land on the order timeline; **approval auto-advances production to design_approved along valid transitions** (starts pipeline if unset). 8 feature tests; verified end-to-end in browser locally.
   - [x] 2.1 Customer Logo Library (2026-07-06) — `customer_logos` table (name, customer name/phone, file, creator) with existing per-mockup logos backfilled; new Logo Library tab (search, add, inline edit, safe delete); generator gets Upload / From Library toggle with searchable picker; every uploaded logo auto-saved to library; order-linked saves auto-enrich the logo with the customer's identity. 5 feature tests incl. generation through a faked OpenRouter; full suite 57 passed / 0 failed.
-  - [ ] 2.2 Guided wizard (order → logo → templates → mockups)
+  - [x] 2.2 Guided wizard (2026-07-06) — order detail launches the studio pre-filled and auto-opened (`/mockups?order=N&open=generator`): order linked, title set, **customer's logo auto-selected from the library by phone match**; saving returns to the order. "⚡ Generate Mockup" button + empty-state CTA on the order's custom-print panel. 3 tests; full suite 60 passed / 0 failed.
   - [ ] 2.4 Generation history + cost tracking
   - [ ] 2.5 Retire order-side Fabric studio
 - [ ] Phase 3 — Navigation & UI System

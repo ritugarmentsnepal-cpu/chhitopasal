@@ -169,7 +169,7 @@
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
                                         <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Mockups</h4>
-                                        <a href="{{ route('mockups.index') }}" class="text-[10px] font-black text-indigo-500 hover:text-indigo-700 transition">Open Studio →</a>
+                                        <a href="{{ route('mockups.index', ['order' => $order->id, 'open' => 'generator']) }}" class="text-[10px] font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 px-2.5 py-1 rounded-lg hover:from-indigo-500 hover:to-purple-500 transition shadow-sm">⚡ Generate Mockup</a>
                                     </div>
                                     <div class="grid grid-cols-3 gap-2">
                                         @forelse($order->libraryMockups as $mockup)
@@ -188,7 +188,9 @@
                                                 </button>
                                             </div>
                                         @empty
-                                            <p class="col-span-3 text-xs font-bold text-gray-300 py-4 text-center bg-gray-50 rounded-xl">No mockups yet</p>
+                                            <a href="{{ route('mockups.index', ['order' => $order->id, 'open' => 'generator']) }}" class="col-span-3 text-xs font-bold text-indigo-500 py-4 text-center bg-indigo-50/50 border border-dashed border-indigo-200 rounded-xl hover:bg-indigo-50 transition block">
+                                                No mockups yet — Generate one now →
+                                            </a>
                                         @endforelse
                                     </div>
                                 </div>
