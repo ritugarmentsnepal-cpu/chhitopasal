@@ -50,6 +50,7 @@
                     <span class="ml-1 bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{{ $readyLogos->count() }}</span>
                 @endif
             </button>
+            <button @click="tab = 'logolib'" :class="tab === 'logolib' ? 'bg-gray-900 text-white shadow' : 'text-gray-500 hover:bg-gray-50'" class="flex-1 py-2.5 rounded-xl font-black text-sm transition">Logo Library</button>
         </div>
 
         {{-- ═══════════════ TAB: MOCKUPS ═══════════════ --}}
@@ -296,7 +297,96 @@
                 </div>
             @endif
         </div>
+
+        {{-- ═══════════════ TAB: LOGO LIBRARY ═══════════════ --}}
+        <div x-show="tab === 'logolib'" x-cloak class="space-y-6" x-data="{ logoSearch: '' }">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-wrap items-center gap-3">
+                <div class="relative flex-1 min-w-[200px]">
+                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" x-model="logoSearch" placeholder="Search by logo name, customer or phone..." class="w-full pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                </div>
+                <button x-data x-on:click="$dispatch('open-modal', 'add-logo-modal')" class="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-800 transition active:scale-95 shrink-0">
+                    + Add Logo
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                @forelse($customerLogos as $logo)
+                    <div x-show="logoSearch === '' || {{ json_encode(strtolower($logo->name . ' ' . $logo->customer_name . ' ' . $logo->customer_phone)) }}.includes(logoSearch.toLowerCase())"
+                         x-data="{ editing: false }" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:border-indigo-200 hover:shadow-md transition">
+                        <div class="aspect-square bg-gray-50 flex items-center justify-center p-3 relative">
+                            <img src="{{ '/storage/' . $logo->file_path }}" alt="{{ $logo->name }}" loading="lazy" class="max-w-full max-h-full object-contain">
+                            <div class="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                                <button @click="editing = !editing" class="bg-white/90 text-gray-700 p-1.5 rounded-lg shadow-sm hover:bg-white transition" title="Edit details">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <form action="{{ route('customer_logos.destroy', $logo) }}" method="POST" onsubmit="return confirm('Remove this logo from the library?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="bg-red-500/90 text-white p-1.5 rounded-lg shadow-sm hover:bg-red-600 transition" title="Delete">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="p-2.5 border-t border-gray-50" x-show="!editing">
+                            <p class="font-bold text-xs text-gray-900 truncate">{{ $logo->name }}</p>
+                            <p class="text-[10px] font-medium text-gray-400 truncate">
+                                {{ $logo->customer_name ?: 'No customer' }}{{ $logo->customer_phone ? ' · ' . $logo->customer_phone : '' }}
+                            </p>
+                            <p class="text-[10px] font-bold text-indigo-400 mt-0.5">{{ $logo->mockups_count }} mockup{{ $logo->mockups_count !== 1 ? 's' : '' }}</p>
+                        </div>
+                        <form action="{{ route('customer_logos.update', $logo) }}" method="POST" class="p-2.5 border-t border-gray-50 space-y-1.5" x-show="editing" x-cloak>
+                            @csrf @method('PUT')
+                            <input type="text" name="name" value="{{ $logo->name }}" required placeholder="Logo name" class="w-full rounded-lg border-gray-200 bg-gray-50 text-xs font-medium py-1.5 px-2">
+                            <input type="text" name="customer_name" value="{{ $logo->customer_name }}" placeholder="Customer name" class="w-full rounded-lg border-gray-200 bg-gray-50 text-xs font-medium py-1.5 px-2">
+                            <input type="text" name="customer_phone" value="{{ $logo->customer_phone }}" placeholder="Customer phone" class="w-full rounded-lg border-gray-200 bg-gray-50 text-xs font-medium py-1.5 px-2">
+                            <div class="flex gap-1.5">
+                                <button type="submit" class="flex-1 bg-gray-900 text-white text-[10px] font-black py-1.5 rounded-lg hover:bg-gray-800 transition">Save</button>
+                                <button type="button" @click="editing = false" class="flex-1 bg-gray-100 text-gray-500 text-[10px] font-black py-1.5 rounded-lg hover:bg-gray-200 transition">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                @empty
+                    <div class="col-span-full bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+                        <h3 class="text-lg font-black text-gray-900">No logos yet</h3>
+                        <p class="text-sm font-medium text-gray-500 mt-1">Logos are added automatically when you generate mockups, or add one manually.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
     </div>
+
+    {{-- Add Logo Modal --}}
+    <x-modal name="add-logo-modal" :show="false" maxWidth="md">
+        <form method="POST" action="{{ route('customer_logos.store') }}" enctype="multipart/form-data" class="p-6">
+            @csrf
+            <h3 class="text-xl font-black text-gray-900 mb-6">Add Logo to Library</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Logo Name</label>
+                    <input type="text" name="name" required placeholder="e.g. AAVA Jewellers" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Customer Name</label>
+                        <input type="text" name="customer_name" placeholder="Optional" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Customer Phone</label>
+                        <input type="text" name="customer_phone" placeholder="Optional" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Logo File (PNG best)</label>
+                    <input type="file" name="logo" required accept="image/png,image/jpeg,image/webp" class="w-full text-sm font-medium file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700">
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button type="button" x-on:click="$dispatch('close')" class="px-6 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition">Cancel</button>
+                <button type="submit" class="bg-gray-900 text-white font-black px-8 py-2.5 rounded-xl shadow-lg hover:bg-gray-800 transition active:scale-95">Add Logo</button>
+            </div>
+        </form>
+    </x-modal>
 
     {{-- ═══════════════════════════════════════════════════════ --}}
     {{-- MODAL: AI TEMPLATE GENERATOR                             --}}
@@ -469,16 +559,46 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Customer Logo</label>
-                        <label class="block w-full cursor-pointer">
-                            <div class="border-2 border-dashed border-gray-200 rounded-xl p-3 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition flex items-center justify-center gap-3 min-h-[64px]">
-                                <template x-if="logoPreview">
-                                    <img :src="logoPreview" class="h-14 rounded-lg object-contain">
-                                </template>
-                                <span class="text-xs font-bold text-gray-500" x-text="logoPreview ? 'Change logo' : 'Click to upload the customer logo (PNG best)'"></span>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider">Customer Logo</label>
+                            <div class="flex gap-1 bg-gray-100 rounded-lg p-0.5">
+                                <button type="button" @click="logoMode = 'upload'" :class="logoMode === 'upload' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'" class="px-2.5 py-1 text-[10px] font-black rounded-md transition">Upload</button>
+                                <button type="button" @click="logoMode = 'library'" :class="logoMode === 'library' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'" class="px-2.5 py-1 text-[10px] font-black rounded-md transition">From Library</button>
                             </div>
-                            <input type="file" accept="image/png,image/jpeg,image/webp" @change="handleLogo($event)" class="hidden">
-                        </label>
+                        </div>
+
+                        <div x-show="logoMode === 'upload'">
+                            <label class="block w-full cursor-pointer">
+                                <div class="border-2 border-dashed border-gray-200 rounded-xl p-3 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition flex items-center justify-center gap-3 min-h-[64px]">
+                                    <template x-if="logoPreview">
+                                        <img :src="logoPreview" class="h-14 rounded-lg object-contain">
+                                    </template>
+                                    <span class="text-xs font-bold text-gray-500" x-text="logoPreview ? 'Change logo' : 'Click to upload the customer logo (PNG best)'"></span>
+                                </div>
+                                <input type="file" accept="image/png,image/jpeg,image/webp" @change="handleLogo($event)" class="hidden">
+                            </label>
+                            <p class="text-[10px] font-medium text-gray-400 mt-1">Uploaded logos are saved to the Logo Library automatically.</p>
+                        </div>
+
+                        <div x-show="logoMode === 'library'" x-cloak>
+                            <input type="text" x-model="logoFilter" placeholder="Search logos by name, customer, phone..." class="w-full rounded-xl border-gray-200 bg-gray-50 text-xs font-medium py-2 mb-2">
+                            <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1">
+                                <template x-for="logo in filteredLogos" :key="logo.id">
+                                    <div @click="pickLogo(logo)"
+                                         :class="selectedLogoId === logo.id ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-200 hover:border-gray-300'"
+                                         class="border-2 rounded-xl p-1 cursor-pointer transition bg-white relative" :title="logo.name + (logo.customer ? ' — ' + logo.customer : '')">
+                                        <div class="aspect-square bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
+                                            <img :src="logo.url" loading="lazy" class="max-w-full max-h-full object-contain">
+                                        </div>
+                                        <p class="text-[9px] font-bold text-gray-600 truncate mt-0.5" x-text="logo.name"></p>
+                                        <div x-show="selectedLogoId === logo.id" class="absolute top-0.5 right-0.5 bg-indigo-500 text-white rounded-full p-0.5">
+                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                        </div>
+                                    </div>
+                                </template>
+                                <p x-show="!filteredLogos.length" class="col-span-4 text-[11px] font-bold text-gray-300 py-4 text-center">No logos found</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
@@ -528,13 +648,13 @@
                         <textarea x-model="instructions" rows="2" placeholder="e.g. keep the logo small and subtle on the pocket" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium"></textarea>
                     </div>
 
-                    <button type="button" @click="generate()" :disabled="isGenerating || !selectedTemplates.length || (!logoFile && !logoPath)" class="w-full bg-gray-900 text-white font-black py-3 rounded-xl hover:bg-gray-800 transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <button type="button" @click="generate()" :disabled="isGenerating || !selectedTemplates.length || (!logoFile && !logoPath && !selectedLogoId)" class="w-full bg-gray-900 text-white font-black py-3 rounded-xl hover:bg-gray-800 transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
                         <span x-show="!isGenerating" x-text="'Generate ' + (selectedTemplates.length > 1 ? selectedTemplates.length + ' Mockups' : 'Mockup')"></span>
                         <span x-show="isGenerating">Generating <span x-text="progressText"></span>…</span>
                     </button>
-                    <p x-show="!isGenerating && (!selectedTemplates.length || (!logoFile && !logoPath))" class="text-[11px] font-bold text-amber-600 text-center">
-                        <span x-show="!logoFile && !logoPath">Upload the customer logo</span>
-                        <span x-show="(!logoFile && !logoPath) && !selectedTemplates.length"> and </span>
+                    <p x-show="!isGenerating && (!selectedTemplates.length || (!logoFile && !logoPath && !selectedLogoId))" class="text-[11px] font-bold text-amber-600 text-center">
+                        <span x-show="!logoFile && !logoPath && !selectedLogoId">Upload or pick a customer logo</span>
+                        <span x-show="(!logoFile && !logoPath && !selectedLogoId) && !selectedTemplates.length"> and </span>
                         <span x-show="!selectedTemplates.length">select at least one template</span>
                         to generate.
                     </p>
@@ -629,6 +749,16 @@
         </x-modal>
     @endif
 
+    @php
+        // Blade's @json directive can't parse complex inline closures —
+        // precompute the logo picker payload here.
+        $logoPickerData = $customerLogos->map(fn ($l) => [
+            'id' => $l->id,
+            'name' => $l->name,
+            'customer' => trim(($l->customer_name ?? '') . ' ' . ($l->customer_phone ?? '')),
+            'url' => '/storage/' . $l->file_path,
+        ])->values();
+    @endphp
     <script>
         document.addEventListener('alpine:init', () => {
 
@@ -763,6 +893,11 @@
                 logoFile: null,
                 logoPreview: null,
                 logoPath: null, // server-side path after first upload
+                logoMode: 'upload',
+                logoFilter: '',
+                selectedLogoId: null,
+                customerLogoId: null, // library record id (returned by generate)
+                libraryLogos: @json($logoPickerData),
                 selectedTemplates: [],
                 orderId: '',
                 logoSize: 'medium',
@@ -773,6 +908,20 @@
                 progressText: '',
                 error: '',
                 templateNames: @json($templates->pluck('name', 'id')),
+
+                get filteredLogos() {
+                    const q = this.logoFilter.toLowerCase();
+                    if (!q) return this.libraryLogos;
+                    return this.libraryLogos.filter(l => (l.name + ' ' + l.customer).toLowerCase().includes(q));
+                },
+
+                pickLogo(logo) {
+                    this.selectedLogoId = this.selectedLogoId === logo.id ? null : logo.id;
+                    // library pick supersedes any uploaded file
+                    this.logoFile = null;
+                    this.logoPreview = null;
+                    this.logoPath = null;
+                },
 
                 toggleTemplate(id) {
                     const i = this.selectedTemplates.indexOf(id);
@@ -785,6 +934,7 @@
                     if (!file) return;
                     this.logoFile = file;
                     this.logoPath = null; // new file supersedes previous server copy
+                    this.selectedLogoId = null; // upload supersedes library pick
                     const reader = new FileReader();
                     reader.onload = (e) => this.logoPreview = e.target.result;
                     reader.readAsDataURL(file);
@@ -816,7 +966,9 @@
                     fd.append('template_id', r.templateId);
                     fd.append('logo_size', this.logoSize);
                     fd.append('instructions', this.instructions ?? '');
-                    if (this.logoPath) {
+                    if (this.selectedLogoId) {
+                        fd.append('customer_logo_id', this.selectedLogoId);
+                    } else if (this.logoPath) {
                         fd.append('logo_path', this.logoPath);
                     } else if (this.logoFile) {
                         fd.append('logo', this.logoFile);
@@ -834,6 +986,7 @@
                             r.url = data.url + '?t=' + Date.now();
                             r.path = data.path;
                             this.logoPath = data.logo_path; // reuse for subsequent templates / retries
+                            this.customerLogoId = data.customer_logo_id;
                         } else {
                             r.status = 'error';
                             r.message = data.message || Object.values(data.errors || {}).flat().join(' ') || 'Generation failed.';
@@ -873,6 +1026,7 @@
                                     title: title,
                                     path: r.path,
                                     logo_path: this.logoPath,
+                                    customer_logo_id: this.customerLogoId,
                                     template_id: r.templateId,
                                     order_id: this.orderId || null,
                                 }),

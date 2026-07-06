@@ -67,7 +67,10 @@ class MockupLibraryController extends Controller
         $readyLogos = $printLogos->filter(fn ($m) => $m->order && in_array($m->order->status, self::CONFIRMED_STATUSES))->values();
         $waitingLogos = $printLogos->filter(fn ($m) => !$m->order || !in_array($m->order->status, self::CONFIRMED_STATUSES))->values();
 
-        return view('mockups.index', compact('mockups', 'templates', 'productTypes', 'readyLogos', 'waitingLogos'));
+        // PHASE-2.1: Customer Logo Library (powers the Logos tab + generator picker)
+        $customerLogos = \App\Models\CustomerLogo::withCount('mockups')->latest()->get();
+
+        return view('mockups.index', compact('mockups', 'templates', 'productTypes', 'readyLogos', 'waitingLogos', 'customerLogos'));
     }
 
     /**
@@ -80,6 +83,8 @@ class MockupLibraryController extends Controller
         $request->validate([
             'template_id' => 'required|exists:mockup_templates,id',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+            // PHASE-2.1: pick an existing logo from the library
+            'customer_logo_id' => 'nullable|exists:customer_logos,id',
             // Reuse an already-uploaded logo (regeneration / batch across templates)
             'logo_path' => 'nullable|string|max:255',
             'logo_size' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::LOGO_SIZES)),
@@ -87,17 +92,33 @@ class MockupLibraryController extends Controller
         ]);
 
         $logoPath = null;
-        if ($request->hasFile('logo')) {
+        $customerLogoId = null;
+
+        if ($request->filled('customer_logo_id')) {
+            $customerLogo = \App\Models\CustomerLogo::find($request->input('customer_logo_id'));
+            if ($customerLogo && Storage::disk('public')->exists($customerLogo->file_path)) {
+                $logoPath = $customerLogo->file_path;
+                $customerLogoId = $customerLogo->id;
+            }
+        } elseif ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('mockup_logos', 'public');
+            // Every uploaded logo becomes a library record so it's reusable
+            $customerLogo = \App\Models\CustomerLogo::create([
+                'name' => pathinfo($request->file('logo')->getClientOriginalName(), PATHINFO_FILENAME) ?: 'Untitled logo',
+                'file_path' => $logoPath,
+                'created_by' => auth()->id(),
+            ]);
+            $customerLogoId = $customerLogo->id;
         } elseif ($request->filled('logo_path')) {
             $candidate = $request->input('logo_path');
             if (Str::startsWith($candidate, 'mockup_logos/') && Storage::disk('public')->exists($candidate)) {
                 $logoPath = $candidate;
+                $customerLogoId = \App\Models\CustomerLogo::where('file_path', $candidate)->value('id');
             }
         }
 
         if (!$logoPath) {
-            return response()->json(['success' => false, 'message' => 'Please upload the customer logo.'], 422);
+            return response()->json(['success' => false, 'message' => 'Please upload a logo or pick one from the library.'], 422);
         }
 
         $template = MockupTemplate::findOrFail($request->input('template_id'));
@@ -118,6 +139,7 @@ class MockupLibraryController extends Controller
             'path' => $path,
             'url' => '/storage/' . $path,
             'logo_path' => $logoPath,
+            'customer_logo_id' => $customerLogoId,
             'template_id' => $template->id,
         ]);
     }
@@ -132,6 +154,7 @@ class MockupLibraryController extends Controller
             'title' => 'required|string|max:255',
             'path' => 'required|string|max:255',
             'logo_path' => 'required|string|max:255',
+            'customer_logo_id' => 'nullable|exists:customer_logos,id',
             'template_id' => 'nullable|exists:mockup_templates,id',
             'order_id' => 'nullable|integer|exists:orders,id',
             'tags' => 'nullable|array',
@@ -154,6 +177,7 @@ class MockupLibraryController extends Controller
             'template_id' => $request->input('template_id'),
             'image_path' => $path,
             'logo_path' => $logoPath,
+            'customer_logo_id' => $request->input('customer_logo_id'),
             'order_id' => $request->input('order_id'),
             'created_by' => auth()->id(),
             'tags' => $request->input('tags', []),
@@ -164,6 +188,21 @@ class MockupLibraryController extends Controller
             $files = $mockup->order->mockup_files ?? [];
             $files[] = $path;
             $mockup->order->update(['mockup_files' => $files]);
+
+            // PHASE-2.1: enrich the library logo with the order's customer
+            // identity when it doesn't have one yet
+            if ($mockup->customer_logo_id) {
+                $logo = \App\Models\CustomerLogo::find($mockup->customer_logo_id);
+                if ($logo && !$logo->customer_phone) {
+                    $logo->update([
+                        'customer_name' => $logo->customer_name ?: $mockup->order->customer_name,
+                        'customer_phone' => $mockup->order->customer_phone,
+                        'name' => $logo->name === 'Untitled logo' || str_starts_with($logo->name, 'Logo —')
+                            ? $mockup->order->customer_name . ' logo'
+                            : $logo->name,
+                    ]);
+                }
+            }
         }
 
         return response()->json(['success' => true, 'mockup' => $mockup]);

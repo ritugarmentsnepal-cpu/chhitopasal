@@ -70,6 +70,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/mockups/{mockup}/download-logo', [\App\Http\Controllers\MockupLibraryController::class, 'downloadLogo'])->name('mockups.downloadLogo');
         Route::post('/mockups/{mockup}/share', [\App\Http\Controllers\MockupApprovalController::class, 'share'])->name('mockups.share');
 
+        // PHASE-2.1: Customer Logo Library
+        Route::post('/customer-logos', [\App\Http\Controllers\CustomerLogoController::class, 'store'])->name('customer_logos.store');
+        Route::put('/customer-logos/{logo}', [\App\Http\Controllers\CustomerLogoController::class, 'update'])->name('customer_logos.update');
+        Route::delete('/customer-logos/{logo}', [\App\Http\Controllers\CustomerLogoController::class, 'destroy'])->name('customer_logos.destroy');
+
         // Mockup Template AI generation (manual upload/delete stays admin-only below)
         Route::post('/mockup-templates/generate', [\App\Http\Controllers\MockupTemplateController::class, 'generate'])->middleware('throttle:10,1')->name('mockup_templates.generate');
         Route::post('/mockup-templates/save-generated', [\App\Http\Controllers\MockupTemplateController::class, 'saveGenerated'])->name('mockup_templates.saveGenerated');

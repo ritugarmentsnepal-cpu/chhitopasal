@@ -14,6 +14,7 @@ class Mockup extends Model
         'template_id',
         'image_path',
         'logo_path',
+        'customer_logo_id',
         'order_id',
         'created_by',
         'tags',
@@ -33,6 +34,11 @@ class Mockup extends Model
     public function template()
     {
         return $this->belongsTo(MockupTemplate::class, 'template_id');
+    }
+
+    public function customerLogo()
+    {
+        return $this->belongsTo(CustomerLogo::class);
     }
 
     public function order()
