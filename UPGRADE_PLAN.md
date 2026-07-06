@@ -142,7 +142,7 @@ A "session" = one focused working block with review at the end. Every phase depl
   - [x] 3.3 Global search (2026-07-07) — topbar search is now live: permission-aware `/api/global-search` (orders by id/name/phone/consignment, customers grouped by phone with order counts, products by name), debounced dropdown with keyboard navigation (↑↓/Enter/Esc), Ctrl+K **and** ⌘K, numeric queries allowed at 1 char for short order IDs. 5 tests; full suite 65 passed / 0 failed.
   - [ ] 3.1 Shared Blade components
   - [ ] 3.2 Sidebar restructure
-  - [ ] 3.4 Notification center
+  - [x] 3.4 Notification center (2026-07-07) — topbar bell with unread badge, 60s polling, permission-aware aggregated feed: mockup approvals/change requests (7d), returns awaiting verification, fresh web orders (2d), unread rider comments, open support tickets. Read-state via `users.notifications_seen_at` (opening the bell marks seen). 3 tests; full suite 68 passed / 0 failed.
   - [ ] 3.5 Mobile rebuild of top-3 pages
   - [ ] 3.6 Split remaining monolith views
 - [ ] Phase 4 — Automations

@@ -29,6 +29,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // PHASE-3: global search (permission-aware inside the controller)
     Route::get('/api/global-search', [\App\Http\Controllers\GlobalSearchController::class, 'search'])->middleware('throttle:60,1')->name('api.globalSearch');
 
+    // PHASE-3.4: notification center
+    Route::get('/api/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->middleware('throttle:60,1')->name('api.notifications');
+    Route::post('/api/notifications/seen', [\App\Http\Controllers\NotificationController::class, 'markSeen'])->name('api.notifications.seen');
+
     // Orders — permission:orders
     Route::middleware(['permission:orders'])->group(function () {
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');

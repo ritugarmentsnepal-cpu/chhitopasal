@@ -59,6 +59,36 @@
 
  <!-- Right side: Actions -->
  <div class="flex items-center gap-2">
+
+  <!-- Notification Bell (PHASE-3.4) -->
+  <div x-data="notificationBell()" x-init="load(); setInterval(() => load(), 60000)" class="relative" @click.outside="open = false">
+   <button @click="toggle()" class="relative text-gray-400 hover:text-primary p-2 rounded-xl hover:bg-primary/5 transition-all" title="Notifications">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+    <span x-show="unread > 0" x-cloak class="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-black min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center shadow" x-text="unread > 9 ? '9+' : unread"></span>
+   </button>
+
+   <div x-show="open" x-cloak x-transition.opacity class="absolute right-0 top-full mt-2 w-96 max-w-[90vw] bg-white rounded-2xl border border-gray-100 shadow-2xl overflow-hidden z-50">
+    <div class="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
+     <h4 class="font-black text-sm text-gray-900">Notifications</h4>
+     <span class="text-[10px] font-bold text-gray-400" x-show="items.length" x-text="items.length + ' recent'"></span>
+    </div>
+    <div class="max-h-[60vh] overflow-y-auto divide-y divide-gray-50">
+     <template x-if="!items.length">
+      <p class="px-4 py-8 text-center text-sm font-bold text-gray-300">All caught up 🎉</p>
+     </template>
+     <template x-for="(item, i) in items" :key="i">
+      <a :href="item.url" class="block px-4 py-3 hover:bg-gray-50 transition" :class="item.unread ? 'bg-indigo-50/40' : ''">
+       <div class="flex items-start justify-between gap-2">
+        <p class="text-sm font-bold text-gray-900" x-text="item.title"></p>
+        <span class="text-[10px] font-bold text-gray-300 shrink-0" x-text="item.time_human"></span>
+       </div>
+       <p class="text-xs font-medium text-gray-400 mt-0.5" x-text="item.sub"></p>
+      </a>
+     </template>
+    </div>
+   </div>
+  </div>
+
   <!-- View Storefront -->
   <a href="{{ route('home') }}" target="_blank" class="hidden md:flex text-sm font-bold text-gray-500 hover:text-primary transition-all items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-primary/5">
    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
@@ -144,6 +174,38 @@
             go() {
                 const item = this.flat[this.active];
                 if (item) window.location = item.url;
+            },
+        }));
+
+        // PHASE-3.4: notification bell
+        Alpine.data('notificationBell', () => ({
+            items: [],
+            unread: 0,
+            open: false,
+
+            async load() {
+                try {
+                    const resp = await fetch('{{ route('api.notifications') }}', { headers: { Accept: 'application/json' } });
+                    const data = await resp.json();
+                    this.items = data.items || [];
+                    this.unread = data.unread || 0;
+                } catch (e) { /* topbar must never break the page */ }
+            },
+
+            async toggle() {
+                this.open = !this.open;
+                if (this.open && this.unread > 0) {
+                    this.unread = 0;
+                    try {
+                        await fetch('{{ route('api.notifications.seen') }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json',
+                            },
+                        });
+                    } catch (e) { /* ignore */ }
+                }
             },
         }));
     });
