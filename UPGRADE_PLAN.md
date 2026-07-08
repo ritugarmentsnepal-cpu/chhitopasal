@@ -151,4 +151,8 @@ A "session" = one focused working block with review at the end. Every phase depl
   - [x] 4.1 Confirmed order → logo in print queue — shipped in Phase 2 (Print Logos tab is status-driven).
   - [x] ~~4.3 Shipped → FB tracking message~~ — NOT FEASIBLE: web/manual orders have no Facebook thread linkage to message into. Revisit only if order↔FB-thread mapping is ever built.
   - [ ] 4.5/4.7 Automation visibility/log — partially covered by order timelines; dedicated log deferred.
-- [ ] Phase 5 — Foundation & Ops
+- [ ] Phase 5 — Foundation & Ops *(in progress)*
+  - [x] 5.2 Nightly DB backups (2026-07-08) — `backup:db` streams mysqldump to gzip in `storage/app/backups` (git-ignored), guards against empty dumps, 14-day rotation, scheduled daily 02:30; failures logged loudly. Verified locally with a real restorable dump. **Note: backups live on the same disk — offsite copy (rclone/CloudPanel remote backup) still recommended.**
+  - [x] 5.1 Test suite — 70 tests / 188 assertions guarding money paths, approvals, search, notifications (built through Phases 1–4)
+  - [x] 5.5 Seeder + factories — shipped with Phase 1
+  - [ ] 5.3 Deploy failure alerting · 5.4 Error visibility page
