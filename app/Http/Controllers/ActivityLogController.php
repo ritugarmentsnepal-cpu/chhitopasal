@@ -54,9 +54,14 @@ class ActivityLogController extends Controller
             $query->where('model_type', $modelClass);
         }
 
-        // Filter by user
+        // Filter by user — PHASE-4.5: "system" shows automated actions
+        // (webhooks, customer approvals, scheduled jobs run with no user)
         if ($userId = $request->query('user_id')) {
-            $query->where('user_id', $userId);
+            if ($userId === 'system') {
+                $query->whereNull('user_id');
+            } else {
+                $query->where('user_id', $userId);
+            }
         }
 
         // Filter by date range

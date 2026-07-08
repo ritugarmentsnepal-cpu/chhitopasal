@@ -1,14 +1,4 @@
 @php
-    $statusColors = [
-        'pending' => 'bg-amber-100 text-amber-700',
-        'confirmed' => 'bg-blue-100 text-blue-700',
-        'shipped' => 'bg-indigo-100 text-indigo-700',
-        'delivered' => 'bg-emerald-100 text-emerald-700',
-        'failed' => 'bg-red-100 text-red-700',
-        'rejected' => 'bg-red-100 text-red-700',
-        'return_delivered' => 'bg-orange-100 text-orange-700',
-    ];
-    $statusColor = $statusColors[$order->status] ?? 'bg-gray-100 text-gray-700';
     $due = max(0, (float) $order->total_amount + (float) $order->delivery_charge - (float) $order->paid_amount);
 @endphp
 <x-app-layout>
@@ -21,7 +11,7 @@
                 <div>
                     <div class="flex items-center gap-3">
                         <h2 class="text-2xl font-black text-gray-900 tracking-tight">Order #{{ $order->id }}</h2>
-                        <span class="text-xs font-black uppercase px-3 py-1 rounded-full {{ $statusColor }}">{{ str_replace('_', ' ', $order->status) }}</span>
+                        <x-status-badge :status="$order->status" />
                         @if($order->isCustomPrint())
                             <span class="text-xs font-black uppercase px-3 py-1 rounded-full bg-purple-100 text-purple-700">Custom Print</span>
                         @endif

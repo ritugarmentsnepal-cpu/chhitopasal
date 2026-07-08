@@ -35,6 +35,9 @@ Schedule::command('mockups:prune-generations --days=30')->daily();
 // PHASE-5: nightly database backup (storage/app/backups, 14-day rotation)
 Schedule::command('backup:db')->dailyAt('02:30');
 
+// PHASE-5.3: flag stuck auto-deploys (needs two consecutive stale checks)
+Schedule::command('ops:check-deploy')->everyThirtyMinutes();
+
 // OPS-01: Queue worker without supervisor — drains the database queue every
 // minute and exits when empty. withoutOverlapping prevents parallel workers.
 // Replaces the old "start daemon from the browser" hack.

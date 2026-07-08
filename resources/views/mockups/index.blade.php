@@ -20,29 +20,13 @@
 
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" x-data="{ tab: '{{ request('tab', 'mockups') }}' }">
 
-        {{-- Stats Bar --}}
+        {{-- Stats Bar (PHASE-3.1: shared x-stat-card) --}}
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Mockups</div>
-                <div class="text-2xl font-black text-gray-900 mt-1">{{ $mockups->total() }}</div>
-            </div>
-            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm" title="AI generations this month (estimated cost)">
-                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">AI This Month</div>
-                <div class="text-2xl font-black text-indigo-600 mt-1">{{ $aiThisMonth->generations }}</div>
-                <div class="text-[10px] font-bold text-gray-400">≈ ${{ number_format($aiThisMonth->cost, 2) }}</div>
-            </div>
-            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Templates</div>
-                <div class="text-2xl font-black text-amber-600 mt-1">{{ $templates->count() }}</div>
-            </div>
-            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Logos Ready to Print</div>
-                <div class="text-2xl font-black text-emerald-600 mt-1">{{ $readyLogos->count() }}</div>
-            </div>
-            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Awaiting Confirmation</div>
-                <div class="text-2xl font-black text-gray-500 mt-1">{{ $waitingLogos->count() }}</div>
-            </div>
+            <x-stat-card label="Mockups" :value="$mockups->total()" />
+            <x-stat-card label="AI This Month" :value="$aiThisMonth->generations" color="text-indigo-600" :sub="'≈ $' . number_format($aiThisMonth->cost, 2)" title="AI generations this month (estimated cost)" />
+            <x-stat-card label="Templates" :value="$templates->count()" color="text-amber-600" />
+            <x-stat-card label="Logos Ready to Print" :value="$readyLogos->count()" color="text-emerald-600" />
+            <x-stat-card label="Awaiting Confirmation" :value="$waitingLogos->count()" color="text-gray-500" />
         </div>
 
         {{-- Tabs --}}

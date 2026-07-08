@@ -140,19 +140,25 @@ A "session" = one focused working block with review at the end. Every phase depl
   - [x] 2.5 Retire order-side Fabric studio (2026-07-07) — legacy canvas modal removed from the orders list; Mockup button now launches the AI wizard; `saveMockup` route + controller method deleted.
 - [ ] Phase 3 — Navigation & UI System *(in progress)*
   - [x] 3.3 Global search (2026-07-07) — topbar search is now live: permission-aware `/api/global-search` (orders by id/name/phone/consignment, customers grouped by phone with order counts, products by name), debounced dropdown with keyboard navigation (↑↓/Enter/Esc), Ctrl+K **and** ⌘K, numeric queries allowed at 1 char for short order IDs. 5 tests; full suite 65 passed / 0 failed.
-  - [ ] 3.1 Shared Blade components
+  - [x] 3.1 Shared Blade components (2026-07-08) — `x-stat-card` and `x-status-badge` (single source of truth for order-status colors) created and applied as the reference pattern (mockups stats bar, order detail header); adopt in other views as they're touched.
   - [x] 3.2 Sidebar (scoped, 2026-07-07) — Mockup Studio promoted from a buried sub-item to a top-level daily tool; full section re-grouping intentionally skipped to preserve owner muscle memory (matches the "current model is fine" constraint).
   - [x] 3.4 Notification center (2026-07-07) — topbar bell with unread badge, 60s polling, permission-aware aggregated feed: mockup approvals/change requests (7d), returns awaiting verification, fresh web orders (2d), unread rider comments, open support tickets. Read-state via `users.notifications_seen_at` (opening the bell marks seen). 3 tests; full suite 68 passed / 0 failed.
   - [x] 3.5 Mobile — orders list (2026-07-07): tappable card layout on phones (order #, customer, phone, total, items, payment/source/pathao chips, remarks) with the table desktop-only; every card opens the order detail page (which already stacks well and carries all actions); filter bar wraps. *FB inbox mobile pass deferred.*
-  - [ ] 3.6 Split remaining monolith views
+  - [x] 3.6 Split remaining monolith views (2026-07-08) — byte-identical extractions: activity-log 573→53 (3 tab partials), ai-agent 491→77 (5 tab partials), products 617→305 (form modal + scripts), pathao 524→374 (settlement modal + scripts). All 8 affected pages verified rendering; every compiled view PHP-linted.
 - [ ] Phase 4 — Automations *(in progress)*
   - [x] 4.4/4.6 Business Pulse + alerts (2026-07-08) — dashboard digest card (yesterday's new orders + delivered revenue, COD in transit with due total, stuck >48h, low stock) with one-tap **WhatsApp share** of the digest text; notification bell now also flags stuck orders (>48h in pending/confirmed, timed from the moment they became stuck) and low-stock products (threshold setting). 2 new tests; full suite 70 passed / 0 failed.
   - [x] 4.2 Mockup approved → production advances — shipped in Phase 2.3.
   - [x] 4.1 Confirmed order → logo in print queue — shipped in Phase 2 (Print Logos tab is status-driven).
   - [x] ~~4.3 Shipped → FB tracking message~~ — NOT FEASIBLE: web/manual orders have no Facebook thread linkage to message into. Revisit only if order↔FB-thread mapping is ever built.
-  - [ ] 4.5/4.7 Automation visibility/log — partially covered by order timelines; dedicated log deferred.
+  - [x] 4.5/4.7 Automation log (2026-07-08) — Activity Log user filter gained "🤖 System / Automated" (entries with no user: webhooks, customer approvals, scheduled jobs), alongside per-order timelines.
 - [ ] Phase 5 — Foundation & Ops *(in progress)*
   - [x] 5.2 Nightly DB backups (2026-07-08) — `backup:db` streams mysqldump to gzip in `storage/app/backups` (git-ignored), guards against empty dumps, 14-day rotation, scheduled daily 02:30; failures logged loudly. Verified locally with a real restorable dump. **Note: backups live on the same disk — offsite copy (rclone/CloudPanel remote backup) still recommended.**
   - [x] 5.1 Test suite — 70 tests / 188 assertions guarding money paths, approvals, search, notifications (built through Phases 1–4)
   - [x] 5.5 Seeder + factories — shipped with Phase 1
-  - [ ] 5.3 Deploy failure alerting · 5.4 Error visibility page
+  - [x] 5.3 Deploy staleness alerting (2026-07-08) — `ops:check-deploy` every 30 min compares HEAD vs origin/main (two consecutive stale checks required to avoid false alarms during pushes); stuck deploys appear as 🚨 in the admin's notification bell + laravel.log. Would have caught the July 6 stall.
+  - [x] 5.4 Error visibility — already existed: Activity Log → System Logs tab parses laravel.log with level filtering. Verified working.
+
+---
+
+## ✅ PLAN COMPLETE (2026-07-08)
+All phases delivered (with owner-approved scope cuts: kanban board, POS screen, full sidebar re-grouping, FB-inbox mobile pass, shipped→FB auto-message). Remaining optional ideas live in the phase notes above. 70 tests / 188 assertions guard the system.

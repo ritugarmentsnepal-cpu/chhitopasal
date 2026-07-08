@@ -20,6 +20,20 @@ class NotificationController extends Controller
         $user = $request->user();
         $items = collect();
 
+        // PHASE-5.3: stuck auto-deploy warning (admins only)
+        if ($user->role === 'admin') {
+            $deploy = \Illuminate\Support\Facades\Cache::get('deploy_status');
+            if ($deploy && ($deploy['stale'] ?? false)) {
+                $items->push([
+                    'type' => 'deploy',
+                    'title' => '🚨 Auto-deploy is stuck',
+                    'sub' => "Server on {$deploy['head']}, GitHub on {$deploy['remote']} — check deploy.log on the server",
+                    'url' => route('activity-log.index', ['tab' => 'system']),
+                    'time' => \Illuminate\Support\Carbon::parse($deploy['checked_at']),
+                ]);
+            }
+        }
+
         if ($user->hasPermission('orders')) {
             // Customer responses to mockup approval links (last 7 days)
             Mockup::whereNotNull('approval_responded_at')
