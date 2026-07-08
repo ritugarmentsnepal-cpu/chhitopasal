@@ -46,6 +46,17 @@ class NotificationCenterTest extends TestCase
         $this->assertGreaterThan(0, $response->json('unread'));
     }
 
+    public function test_feed_flags_stuck_orders_and_low_stock(): void
+    {
+        Order::factory()->create(['status' => 'pending', 'created_at' => now()->subDays(3)]);
+        \App\Models\Product::factory()->create(['name' => 'Nearly Gone', 'stock' => 2]);
+
+        $types = collect($this->actingAs($this->admin())->getJson('/api/notifications')->json('items'))->pluck('type');
+
+        $this->assertTrue($types->contains('stuck'));
+        $this->assertTrue($types->contains('stock'));
+    }
+
     public function test_mark_seen_clears_unread_count(): void
     {
         $admin = $this->admin();

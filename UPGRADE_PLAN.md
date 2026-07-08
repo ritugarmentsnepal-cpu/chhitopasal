@@ -145,5 +145,10 @@ A "session" = one focused working block with review at the end. Every phase depl
   - [x] 3.4 Notification center (2026-07-07) — topbar bell with unread badge, 60s polling, permission-aware aggregated feed: mockup approvals/change requests (7d), returns awaiting verification, fresh web orders (2d), unread rider comments, open support tickets. Read-state via `users.notifications_seen_at` (opening the bell marks seen). 3 tests; full suite 68 passed / 0 failed.
   - [x] 3.5 Mobile — orders list (2026-07-07): tappable card layout on phones (order #, customer, phone, total, items, payment/source/pathao chips, remarks) with the table desktop-only; every card opens the order detail page (which already stacks well and carries all actions); filter bar wraps. *FB inbox mobile pass deferred.*
   - [ ] 3.6 Split remaining monolith views
-- [ ] Phase 4 — Automations
+- [ ] Phase 4 — Automations *(in progress)*
+  - [x] 4.4/4.6 Business Pulse + alerts (2026-07-08) — dashboard digest card (yesterday's new orders + delivered revenue, COD in transit with due total, stuck >48h, low stock) with one-tap **WhatsApp share** of the digest text; notification bell now also flags stuck orders (>48h in pending/confirmed, timed from the moment they became stuck) and low-stock products (threshold setting). 2 new tests; full suite 70 passed / 0 failed.
+  - [x] 4.2 Mockup approved → production advances — shipped in Phase 2.3.
+  - [x] 4.1 Confirmed order → logo in print queue — shipped in Phase 2 (Print Logos tab is status-driven).
+  - [x] ~~4.3 Shipped → FB tracking message~~ — NOT FEASIBLE: web/manual orders have no Facebook thread linkage to message into. Revisit only if order↔FB-thread mapping is ever built.
+  - [ ] 4.5/4.7 Automation visibility/log — partially covered by order timelines; dedicated log deferred.
 - [ ] Phase 5 — Foundation & Ops

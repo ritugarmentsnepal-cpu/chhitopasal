@@ -73,6 +73,42 @@ class NotificationController extends Controller
                 });
         }
 
+        if ($user->hasPermission('orders')) {
+            // PHASE-4: orders sitting in pending/confirmed for over 48h
+            Order::whereIn('status', ['pending', 'confirmed'])
+                ->where('created_at', '<', now()->subHours(48))
+                ->orderBy('created_at')
+                ->limit(4)
+                ->get()
+                ->each(function ($o) use ($items) {
+                    $items->push([
+                        'type' => 'stuck',
+                        'title' => "⏰ Order #{$o->id} stuck in " . ucfirst($o->status),
+                        'sub' => $o->customer_name . ' · since ' . $o->created_at->diffForHumans(),
+                        'url' => route('orders.show', $o->id),
+                        'time' => $o->created_at->copy()->addHours(48), // "became stuck" moment
+                    ]);
+                });
+        }
+
+        if ($user->hasPermission('products')) {
+            // PHASE-4: low stock alerts
+            $threshold = (int) setting('low_stock_threshold', 10);
+            \App\Models\Product::where('stock', '<', $threshold)
+                ->orderBy('stock')
+                ->limit(4)
+                ->get()
+                ->each(function ($p) use ($items, $threshold) {
+                    $items->push([
+                        'type' => 'stock',
+                        'title' => "📉 Low stock: {$p->name}",
+                        'sub' => "{$p->stock} left (threshold {$threshold})",
+                        'url' => route('products.index'),
+                        'time' => $p->updated_at,
+                    ]);
+                });
+        }
+
         // Rider comments are visible to all authenticated staff
         RiderComment::where('status', 'unread')
             ->latest()
