@@ -45,14 +45,65 @@ class MockupAiService
     ];
 
     /**
-     * Scene/theme presets selectable in the UI.
+     * Scene/background presets selectable in the UI.
+     * (Legacy keys 'flat_lay' and 'hanging' moved to PRESENTATION_PRESETS but
+     * remain here so old saved settings keep working.)
      */
     public const THEME_PRESETS = [
-        'studio'    => 'clean professional studio product photography on a seamless neutral backdrop with soft, even lighting',
-        'lifestyle' => 'natural lifestyle setting with soft daylight and a tastefully blurred real-world background',
-        'flat_lay'  => 'top-down flat lay on a clean styled surface with minimal props and soft shadows',
-        'hanging'   => 'product displayed hanging (on a hanger or hook) against a clean wall with natural shadows',
-        'outdoor'   => 'bright outdoor daylight scene with a softly blurred natural background',
+        'studio'    => 'a clean professional photo studio with a seamless neutral backdrop',
+        'gradient'  => 'a smooth soft-colour gradient studio backdrop (subtle, modern e-commerce style)',
+        'marble'    => 'an elegant white marble surface and softly blurred bright interior behind it',
+        'wood'      => 'a warm natural wooden table surface with a softly blurred cosy background',
+        'concrete'  => 'a modern textured concrete/stone surface with a minimalist urban feel',
+        'linen'     => 'a soft draped linen fabric backdrop with gentle natural folds',
+        'podium'    => 'a minimal display podium/pedestal hero scene, premium e-commerce style',
+        'lifestyle' => 'a natural lifestyle interior with soft daylight and a tastefully blurred real-world background',
+        'outdoor'   => 'a bright outdoor daylight scene with a softly blurred natural background',
+        // legacy values from older templates
+        'flat_lay'  => 'a clean styled flat-lay surface with minimal props',
+        'hanging'   => 'a clean wall with natural shadows',
+    ];
+
+    /**
+     * How the product is physically displayed in the scene.
+     */
+    public const PRESENTATION_PRESETS = [
+        'product_only' => 'the product presented on its own, neatly styled and standing/laid naturally',
+        'ghost'        => 'the product shown with an invisible ghost-mannequin effect so it holds a filled 3D shape with no person or mannequin visible',
+        'model'        => 'the product worn/held by a real person whose face is cropped out of frame or turned away (no identifiable face anywhere in the image)',
+        'hanging'      => 'the product displayed hanging on a wooden hanger or hook',
+        'flat_lay'     => 'the product arranged top-down as a styled flat lay',
+        'folded'       => 'the product neatly folded and stacked, boutique retail style',
+    ];
+
+    /**
+     * Camera angle presets.
+     */
+    public const ANGLE_PRESETS = [
+        'front'         => 'straight-on eye-level front view, perfectly centered',
+        'three_quarter' => 'a three-quarter angle view that adds depth and dimension',
+        'high'          => 'a slightly elevated ~30° downward angle',
+        'low'           => 'a low hero angle looking slightly up at the product for a premium feel',
+        'closeup'       => 'a closer crop that fills the frame with the product, keeping the whole print area fully visible',
+    ];
+
+    /**
+     * Lighting presets.
+     */
+    public const LIGHTING_PRESETS = [
+        'soft'     => 'soft, even, shadowless studio lighting',
+        'warm'     => 'warm golden-toned lighting with gentle soft shadows',
+        'dramatic' => 'directional lighting with deeper, dramatic shadows for a premium editorial look',
+        'daylight' => 'bright natural window daylight with crisp soft shadows',
+    ];
+
+    /**
+     * How many views of the product appear in the image.
+     */
+    public const VIEW_PRESETS = [
+        'single'     => 'show the product once, as a single hero view',
+        'front_back' => 'show the SAME product twice, side by side in the same scene — front view on the left and back view on the right',
+        'grid'       => 'show the SAME product three times in one clean lineup — front view, back view and a three-quarter angle view',
     ];
 
     /**
@@ -132,15 +183,25 @@ class MockupAiService
 
         $theme = self::THEME_PRESETS[$options['theme'] ?? 'studio'] ?? self::THEME_PRESETS['studio'];
         $size = self::SIZE_PRESETS[$options['size'] ?? 'square'] ?? self::SIZE_PRESETS['square'];
+        $presentation = self::PRESENTATION_PRESETS[$options['presentation'] ?? 'product_only'] ?? self::PRESENTATION_PRESETS['product_only'];
+        $angle = self::ANGLE_PRESETS[$options['angle'] ?? 'front'] ?? self::ANGLE_PRESETS['front'];
+        $lighting = self::LIGHTING_PRESETS[$options['lighting'] ?? 'soft'] ?? self::LIGHTING_PRESETS['soft'];
+        $views = self::VIEW_PRESETS[$options['views'] ?? 'single'] ?? self::VIEW_PRESETS['single'];
 
         $lines = [];
         $lines[] = "Create {$size} professional e-commerce mockup image of a {$product}.";
-        $lines[] = "Scene: {$theme}.";
 
         if ($hasReference) {
-            $lines[] = "I have attached a reference photo of the EXACT product. Reproduce this exact product faithfully in the mockup scene.";
-            $lines[] = "CRITICAL: The product itself must remain completely natural and true to the reference — do NOT change its color, design, fabric, texture, stitching, shape, material or any physical detail. You may only rotate it, zoom in/out, reposition it, improve photo quality/sharpness/lighting, and place it in the described scene.";
+            $lines[] = "I have attached a reference photo of the EXACT physical product. Extract the product from that photo and RE-STAGE it in the brand-new scene described below. Do NOT reuse or copy the reference photo's background, framing, lighting or composition — build a completely new professional shot around the same product.";
+            $lines[] = "PRODUCT FIDELITY (critical): the product itself must stay 100% true to the reference — identical colour, design, fabric, weave, texture, stitching, seams, shape, proportions, hardware and material. Do NOT redesign, recolor, simplify or \"improve\" the product in any way. Only the scene, camera angle, lighting and presentation may change.";
         }
+
+        $lines[] = "Scene / backdrop: {$theme}.";
+        $lines[] = "Presentation: {$presentation}.";
+        $lines[] = "Camera: {$angle}.";
+        $lines[] = "Lighting: {$lighting}.";
+        $lines[] = "Views: {$views}.";
+        $lines[] = "If the presentation implies a specific camera position (e.g. a flat lay is shot top-down), the presentation takes priority over the camera angle.";
 
         if (!empty($options['color_scheme'])) {
             $lines[] = "Color & mood of the scene: {$options['color_scheme']}.";

@@ -45,6 +45,10 @@ class MockupTemplateController extends Controller
             'custom_product' => 'nullable|string|max:255',
             'size' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::SIZE_PRESETS)),
             'theme' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::THEME_PRESETS)),
+            'presentation' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::PRESENTATION_PRESETS)),
+            'angle' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::ANGLE_PRESETS)),
+            'lighting' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::LIGHTING_PRESETS)),
+            'views' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::VIEW_PRESETS)),
             'color_scheme' => 'nullable|string|max:500',
             'placements' => 'nullable|string|max:500',
             'style_notes' => 'nullable|string|max:1000',
@@ -68,6 +72,7 @@ class MockupTemplateController extends Controller
         try {
             $path = $ai->generateTemplateImage($request->only([
                 'product_type', 'custom_product', 'size', 'theme',
+                'presentation', 'angle', 'lighting', 'views',
                 'color_scheme', 'placements', 'style_notes', 'logo_coverage',
             ]), $referencePath);
         } catch (\RuntimeException $e) {
@@ -94,6 +99,10 @@ class MockupTemplateController extends Controller
             'custom_product' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
             'theme' => 'nullable|string|max:50',
+            'presentation' => 'nullable|string|max:50',
+            'angle' => 'nullable|string|max:50',
+            'lighting' => 'nullable|string|max:50',
+            'views' => 'nullable|string|max:50',
             'color_scheme' => 'nullable|string|max:500',
             'placements' => 'nullable|string|max:500',
             'style_notes' => 'nullable|string|max:1000',
@@ -124,6 +133,7 @@ class MockupTemplateController extends Controller
             'color_scheme' => $request->input('color_scheme'),
             'placements' => $request->input('placements'),
             'style_notes' => $request->input('style_notes'),
+            'options' => array_filter($request->only(['presentation', 'angle', 'lighting', 'views'])),
             'image_path' => $path,
             'source_image_path' => $referencePath,
             'is_ai_generated' => true,

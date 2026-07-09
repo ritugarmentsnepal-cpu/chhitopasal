@@ -17,6 +17,7 @@ class MockupTemplate extends Model
         'color_scheme',
         'placements',
         'style_notes',
+        'options',
         'image_path',
         'source_image_path',
         'is_ai_generated',
@@ -24,6 +25,7 @@ class MockupTemplate extends Model
 
     protected $casts = [
         'is_ai_generated' => 'boolean',
+        'options' => 'array',
     ];
 
     public function mockups()

@@ -431,15 +431,66 @@
                         <input type="text" x-model="form.custom_product" placeholder="e.g. canvas tote bag" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
                     </div>
 
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Scene / Backdrop</label>
+                            <select x-model="form.theme" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                                <option value="studio">Studio (clean backdrop)</option>
+                                <option value="gradient">Soft Gradient</option>
+                                <option value="marble">Marble Surface</option>
+                                <option value="wood">Wooden Table</option>
+                                <option value="concrete">Concrete / Stone</option>
+                                <option value="linen">Linen Fabric</option>
+                                <option value="podium">Display Podium</option>
+                                <option value="lifestyle">Lifestyle Interior</option>
+                                <option value="outdoor">Outdoor</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Presentation</label>
+                            <select x-model="form.presentation" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                                <option value="product_only">Product Only</option>
+                                <option value="ghost">Ghost Mannequin</option>
+                                <option value="model">On Model (faceless)</option>
+                                <option value="hanging">On Hanger</option>
+                                <option value="flat_lay">Flat Lay (top-down)</option>
+                                <option value="folded">Folded Stack</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Camera Angle</label>
+                            <select x-model="form.angle" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                                <option value="front">Front (straight-on)</option>
+                                <option value="three_quarter">3/4 Angle</option>
+                                <option value="high">Slightly Elevated</option>
+                                <option value="low">Low Hero Angle</option>
+                                <option value="closeup">Close-up</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Lighting</label>
+                            <select x-model="form.lighting" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                                <option value="soft">Soft Studio</option>
+                                <option value="warm">Warm Golden</option>
+                                <option value="dramatic">Dramatic</option>
+                                <option value="daylight">Natural Daylight</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Scene Theme</label>
-                        <select x-model="form.theme" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
-                            <option value="studio">Studio (clean backdrop)</option>
-                            <option value="lifestyle">Lifestyle</option>
-                            <option value="flat_lay">Flat Lay</option>
-                            <option value="hanging">Hanging</option>
-                            <option value="outdoor">Outdoor</option>
-                        </select>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Views in Image</label>
+                        <div class="flex gap-1.5">
+                            <template x-for="opt in [['single','Single'],['front_back','Front + Back'],['grid','3-View Lineup']]" :key="opt[0]">
+                                <button type="button" @click="form.views = opt[0]"
+                                        :class="form.views === opt[0] ? 'bg-indigo-100 text-indigo-700 border-indigo-300' : 'bg-gray-50 text-gray-600 border-gray-200'"
+                                        class="flex-1 py-1.5 text-[11px] font-bold rounded-lg border transition active:scale-95" x-text="opt[1]"></button>
+                            </template>
+                        </div>
+                        <p class="text-[10px] font-medium text-gray-400 mt-1">Show the product once, front &amp; back side by side, or a 3-view lineup.</p>
                     </div>
 
                     <div>
@@ -476,7 +527,7 @@
 
                     <div>
                         <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Product Reference Photo <span class="normal-case font-bold text-emerald-500">(recommended)</span></label>
-                        <p class="text-[11px] font-medium text-gray-400 mb-2">The AI keeps your product exactly as-is — colour, fabric &amp; texture untouched. It only adjusts angle, zoom and photo quality.</p>
+                        <p class="text-[11px] font-medium text-gray-400 mb-2">The AI re-stages your product into the scene you configured above — new backdrop, angle &amp; lighting — while keeping the product itself exactly as-is (colour, fabric &amp; texture untouched).</p>
                         <label class="block w-full cursor-pointer">
                             <div class="border-2 border-dashed border-gray-200 rounded-xl p-3 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition flex items-center justify-center gap-3 min-h-[64px]">
                                 <template x-if="referencePreview">
@@ -770,6 +821,10 @@
                     custom_product: '',
                     size: 'square',
                     theme: 'studio',
+                    presentation: 'product_only',
+                    angle: 'front',
+                    lighting: 'soft',
+                    views: 'single',
                     color_scheme: '',
                     placements: '',
                     logo_coverage: 'large',
