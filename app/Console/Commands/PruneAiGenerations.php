@@ -25,9 +25,10 @@ class PruneAiGenerations extends Command
 
         $deleted = 0;
         foreach ($stale as $generation) {
-            // Never delete a file that a saved template/mockup happens to use
+            // Never delete a file that a saved template/mockup/background uses
             $inUse = \App\Models\Mockup::where('image_path', $generation->image_path)->exists()
-                || \App\Models\MockupTemplate::where('image_path', $generation->image_path)->exists();
+                || \App\Models\MockupTemplate::where('image_path', $generation->image_path)->exists()
+                || \App\Models\MockupBackground::where('image_path', $generation->image_path)->exists();
 
             if (!$inUse && Storage::disk('public')->exists($generation->image_path)) {
                 Storage::disk('public')->delete($generation->image_path);

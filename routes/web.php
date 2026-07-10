@@ -84,7 +84,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Mockup Template AI generation (manual upload/delete stays admin-only below)
         Route::post('/mockup-templates/generate', [\App\Http\Controllers\MockupTemplateController::class, 'generate'])->middleware('throttle:10,1')->name('mockup_templates.generate');
         Route::post('/mockup-templates/save-generated', [\App\Http\Controllers\MockupTemplateController::class, 'saveGenerated'])->name('mockup_templates.saveGenerated');
-        
+
+        // Reusable AI background scenes for template generation
+        Route::post('/mockup-backgrounds/generate', [\App\Http\Controllers\MockupBackgroundController::class, 'generate'])->middleware('throttle:10,1')->name('mockup_backgrounds.generate');
+        Route::delete('/mockup-backgrounds/{background}', [\App\Http\Controllers\MockupBackgroundController::class, 'destroy'])->name('mockup_backgrounds.destroy');
+
         // Sales List
         Route::get('/sales', [\App\Http\Controllers\SalesController::class, 'index'])->name('sales.index');
 

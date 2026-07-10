@@ -385,7 +385,7 @@
             <div class="flex items-center justify-between mb-5">
                 <div>
                     <h3 class="text-xl font-black text-gray-900">Generate Mockup Template</h3>
-                    <p class="text-sm font-medium text-gray-500">The AI creates a clean product scene with a "YOUR LOGO" placeholder. <span class="text-amber-600 font-bold">~$0.04 per generation.</span></p>
+                    <p class="text-sm font-medium text-gray-500">Pick or generate a background, add your product photo. <span class="text-amber-600 font-bold">~$0.04 per image.</span></p>
                 </div>
                 <button type="button" x-on:click="$dispatch('close')" class="text-gray-400 hover:text-gray-600 transition p-1">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -393,14 +393,13 @@
             </div>
 
             <div class="grid md:grid-cols-2 gap-6">
-                {{-- Left: form --}}
+                {{-- Left: setup --}}
                 <div class="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Template Name</label>
-                        <input type="text" x-model="form.name" placeholder="e.g. White Polo - Studio Front & Back" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
-                    </div>
-
                     <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Template Name</label>
+                            <input type="text" x-model="form.name" placeholder="e.g. White Polo" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                        </div>
                         <div>
                             <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Product</label>
                             <select x-model="form.product_type" @change="applyPlacementPreset()" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
@@ -414,92 +413,97 @@
                                 <option value="other">Other…</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Size / Ratio</label>
-                            <select x-model="form.size" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
-                                <option value="square">Square (1:1)</option>
-                                <option value="portrait">Portrait (3:4)</option>
-                                <option value="landscape">Landscape (4:3)</option>
-                                <option value="wide">Wide (16:9)</option>
-                                <option value="story">Story (9:16)</option>
-                            </select>
-                        </div>
                     </div>
 
                     <div x-show="form.product_type === 'other'">
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Custom Product</label>
-                        <input type="text" x-model="form.custom_product" placeholder="e.g. canvas tote bag" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
+                        <input type="text" x-model="form.custom_product" placeholder="Custom product, e.g. canvas tote bag" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Scene / Backdrop</label>
-                            <select x-model="form.theme" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
-                                <option value="studio">Studio (clean backdrop)</option>
-                                <option value="gradient">Soft Gradient</option>
-                                <option value="marble">Marble Surface</option>
-                                <option value="wood">Wooden Table</option>
-                                <option value="concrete">Concrete / Stone</option>
-                                <option value="linen">Linen Fabric</option>
-                                <option value="podium">Display Podium</option>
-                                <option value="lifestyle">Lifestyle Interior</option>
-                                <option value="outdoor">Outdoor</option>
-                            </select>
+                    {{-- Step 1: background --}}
+                    <div class="border border-indigo-100 bg-indigo-50/40 rounded-2xl p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-black text-gray-500 uppercase tracking-wider">1 · Background</label>
+                            <div class="flex gap-1 bg-white border border-gray-100 rounded-lg p-0.5">
+                                <button type="button" @click="bgMode = 'library'" :class="bgMode === 'library' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400'" class="px-2.5 py-1 text-[10px] font-black rounded-md transition">Library</button>
+                                <button type="button" @click="bgMode = 'new'" :class="bgMode === 'new' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400'" class="px-2.5 py-1 text-[10px] font-black rounded-md transition">+ New</button>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Presentation</label>
-                            <select x-model="form.presentation" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
-                                <option value="product_only">Product Only</option>
-                                <option value="ghost">Ghost Mannequin</option>
-                                <option value="model">On Model (faceless)</option>
-                                <option value="hanging">On Hanger</option>
-                                <option value="flat_lay">Flat Lay (top-down)</option>
-                                <option value="folded">Folded Stack</option>
-                            </select>
+
+                        <div x-show="bgMode === 'library'">
+                            <div class="grid grid-cols-3 gap-2 max-h-44 overflow-y-auto p-1" x-show="backgrounds.length">
+                                <template x-for="bg in backgrounds" :key="bg.id">
+                                    <div @click="toggleBackground(bg.id)"
+                                         :class="selectedBgIds.includes(bg.id) ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-200 hover:border-gray-300'"
+                                         class="border-2 rounded-xl p-1 cursor-pointer transition bg-white relative group">
+                                        <div class="aspect-square bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
+                                            <img :src="bg.url" loading="lazy" class="w-full h-full object-cover">
+                                        </div>
+                                        <p class="text-[9px] font-bold text-gray-600 truncate mt-0.5" x-text="bg.name"></p>
+                                        <div x-show="selectedBgIds.includes(bg.id)" class="absolute top-1 right-1 bg-indigo-500 text-white rounded-full p-0.5">
+                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                        </div>
+                                        <button type="button" @click.stop="deleteBackground(bg)" class="absolute top-1 left-1 bg-red-500 text-white rounded-full w-4 h-4 leading-none text-[10px] font-black opacity-0 group-hover:opacity-100 transition">×</button>
+                                    </div>
+                                </template>
+                            </div>
+                            <p x-show="!backgrounds.length" class="text-[11px] font-bold text-gray-400 py-3 text-center">No saved backgrounds — <button type="button" @click="bgMode = 'new'" class="text-indigo-600 underline">generate one</button>, or leave empty to let the AI invent the scene.</p>
+                            <p x-show="backgrounds.length" class="text-[10px] font-medium text-gray-400 mt-1">Select several for bulk generation — one template per background.</p>
+                        </div>
+
+                        <div x-show="bgMode === 'new'" x-cloak class="space-y-2">
+                            <div class="grid grid-cols-2 gap-2">
+                                <select x-model="form.theme" class="w-full rounded-xl border-gray-200 bg-white text-xs font-medium py-2">
+                                    <option value="studio">Studio (clean)</option>
+                                    <option value="gradient">Soft Gradient</option>
+                                    <option value="marble">Marble Surface</option>
+                                    <option value="wood">Wooden Table</option>
+                                    <option value="concrete">Concrete / Stone</option>
+                                    <option value="linen">Linen Fabric</option>
+                                    <option value="podium">Display Podium</option>
+                                    <option value="lifestyle">Lifestyle Interior</option>
+                                    <option value="outdoor">Outdoor</option>
+                                </select>
+                                <select x-model="form.lighting" class="w-full rounded-xl border-gray-200 bg-white text-xs font-medium py-2">
+                                    <option value="soft">Soft Studio Light</option>
+                                    <option value="warm">Warm Golden Light</option>
+                                    <option value="dramatic">Dramatic Light</option>
+                                    <option value="daylight">Natural Daylight</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select x-model="form.size" class="w-full rounded-xl border-gray-200 bg-white text-xs font-medium py-2">
+                                    <option value="square">Square (1:1)</option>
+                                    <option value="portrait">Portrait (3:4)</option>
+                                    <option value="landscape">Landscape (4:3)</option>
+                                    <option value="wide">Wide (16:9)</option>
+                                    <option value="story">Story (9:16)</option>
+                                </select>
+                                <input type="text" x-model="form.color_scheme" placeholder="Colours / mood (optional)" class="w-full rounded-xl border-gray-200 bg-white text-xs font-medium py-2">
+                            </div>
+                            <button type="button" @click="generateBackground()" :disabled="isGeneratingBg" class="w-full bg-indigo-600 text-white text-xs font-black py-2 rounded-xl hover:bg-indigo-700 transition active:scale-95 disabled:opacity-50">
+                                <span x-show="!isGeneratingBg">Generate Background</span>
+                                <span x-show="isGeneratingBg">Generating background…</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Camera Angle</label>
-                            <select x-model="form.angle" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
-                                <option value="front">Front (straight-on)</option>
-                                <option value="three_quarter">3/4 Angle</option>
-                                <option value="high">Slightly Elevated</option>
-                                <option value="low">Low Hero Angle</option>
-                                <option value="closeup">Close-up</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Lighting</label>
-                            <select x-model="form.lighting" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
-                                <option value="soft">Soft Studio</option>
-                                <option value="warm">Warm Golden</option>
-                                <option value="dramatic">Dramatic</option>
-                                <option value="daylight">Natural Daylight</option>
-                            </select>
-                        </div>
-                    </div>
-
+                    {{-- Step 2: product photo --}}
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Views in Image</label>
-                        <div class="flex gap-1.5">
-                            <template x-for="opt in [['single','Single'],['front_back','Front + Back'],['grid','3-View Lineup']]" :key="opt[0]">
-                                <button type="button" @click="form.views = opt[0]"
-                                        :class="form.views === opt[0] ? 'bg-indigo-100 text-indigo-700 border-indigo-300' : 'bg-gray-50 text-gray-600 border-gray-200'"
-                                        class="flex-1 py-1.5 text-[11px] font-bold rounded-lg border transition active:scale-95" x-text="opt[1]"></button>
-                            </template>
-                        </div>
-                        <p class="text-[10px] font-medium text-gray-400 mt-1">Show the product once, front &amp; back side by side, or a 3-view lineup.</p>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">2 · Product Photo <span class="normal-case font-bold text-emerald-500">(recommended)</span></label>
+                        <label class="block w-full cursor-pointer">
+                            <div class="border-2 border-dashed border-gray-200 rounded-xl p-3 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition flex items-center justify-center gap-3 min-h-[56px]">
+                                <template x-if="referencePreview">
+                                    <img :src="referencePreview" class="h-12 rounded-lg object-contain">
+                                </template>
+                                <span class="text-xs font-bold text-gray-500" x-text="referencePreview ? 'Change photo' : 'Upload your product photo — it stays exactly as-is'"></span>
+                            </div>
+                            <input type="file" accept="image/png,image/jpeg,image/webp" @change="handleReference($event)" class="hidden">
+                        </label>
                     </div>
 
+                    {{-- Step 3: branding placeholder --}}
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Colours & Mood <span class="normal-case font-bold text-gray-300">(optional)</span></label>
-                        <input type="text" x-model="form.color_scheme" placeholder="e.g. white product, soft beige backdrop, warm light" class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium py-2.5">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Placeholder Size</label>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">3 · Placeholder Size</label>
                         <div class="flex gap-1.5">
                             <template x-for="opt in [['small','Small'],['medium','Medium'],['large','Large'],['full','Full']]" :key="opt[0]">
                                 <button type="button" @click="form.logo_coverage = opt[0]"
@@ -507,7 +511,6 @@
                                         class="flex-1 py-1.5 text-[11px] font-bold rounded-lg border transition active:scale-95" x-text="opt[1]"></button>
                             </template>
                         </div>
-                        <p class="text-[10px] font-medium text-gray-400 mt-1">How big the "YOUR LOGO" mark is drawn. Bigger placeholder → bigger logo on mockups.</p>
                     </div>
 
                     <div>
@@ -520,53 +523,96 @@
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Extra Style Notes <span class="normal-case font-bold text-gray-300">(optional)</span></label>
-                        <textarea x-model="form.style_notes" rows="2" placeholder="Anything else — angle, props, folds..." class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm font-medium"></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Product Reference Photo <span class="normal-case font-bold text-emerald-500">(recommended)</span></label>
-                        <p class="text-[11px] font-medium text-gray-400 mb-2">The AI re-stages your product into the scene you configured above — new backdrop, angle &amp; lighting — while keeping the product itself exactly as-is (colour, fabric &amp; texture untouched).</p>
-                        <label class="block w-full cursor-pointer">
-                            <div class="border-2 border-dashed border-gray-200 rounded-xl p-3 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition flex items-center justify-center gap-3 min-h-[64px]">
-                                <template x-if="referencePreview">
-                                    <img :src="referencePreview" class="h-14 rounded-lg object-contain">
-                                </template>
-                                <span class="text-xs font-bold text-gray-500" x-text="referencePreview ? 'Change photo' : 'Click to upload your product photo'"></span>
+                    {{-- Advanced (collapsed) --}}
+                    <details class="rounded-2xl border border-gray-100 p-3">
+                        <summary class="text-xs font-black text-gray-400 uppercase tracking-wider cursor-pointer select-none">More Options</summary>
+                        <div class="space-y-3 mt-3">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Presentation</label>
+                                    <select x-model="form.presentation" class="w-full rounded-xl border-gray-200 bg-gray-50 text-xs font-medium py-2">
+                                        <option value="product_only">Product Only</option>
+                                        <option value="ghost">Ghost Mannequin</option>
+                                        <option value="model">On Model (faceless)</option>
+                                        <option value="hanging">On Hanger</option>
+                                        <option value="flat_lay">Flat Lay (top-down)</option>
+                                        <option value="folded">Folded Stack</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Camera Angle</label>
+                                    <select x-model="form.angle" class="w-full rounded-xl border-gray-200 bg-gray-50 text-xs font-medium py-2">
+                                        <option value="front">Front (straight-on)</option>
+                                        <option value="three_quarter">3/4 Angle</option>
+                                        <option value="high">Slightly Elevated</option>
+                                        <option value="low">Low Hero Angle</option>
+                                        <option value="closeup">Close-up</option>
+                                    </select>
+                                </div>
                             </div>
-                            <input type="file" accept="image/png,image/jpeg,image/webp" @change="handleReference($event)" class="hidden">
-                        </label>
-                    </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Views in Image</label>
+                                <div class="flex gap-1.5">
+                                    <template x-for="opt in [['single','Single'],['front_back','Front + Back'],['grid','3-View Lineup']]" :key="opt[0]">
+                                        <button type="button" @click="form.views = opt[0]"
+                                                :class="form.views === opt[0] ? 'bg-indigo-100 text-indigo-700 border-indigo-300' : 'bg-gray-50 text-gray-600 border-gray-200'"
+                                                class="flex-1 py-1.5 text-[11px] font-bold rounded-lg border transition active:scale-95" x-text="opt[1]"></button>
+                                    </template>
+                                </div>
+                            </div>
+                            <textarea x-model="form.style_notes" rows="2" placeholder="Extra style notes (optional)" class="w-full rounded-xl border-gray-200 bg-gray-50 text-xs font-medium"></textarea>
+                        </div>
+                    </details>
                 </div>
 
-                {{-- Right: preview / result --}}
+                {{-- Right: results --}}
                 <div class="flex flex-col">
-                    <div class="flex-1 bg-gray-50 border border-gray-200 rounded-2xl flex items-center justify-center p-4 min-h-[320px] relative overflow-hidden">
-                        <template x-if="isGenerating">
-                            <div class="text-center">
-                                <svg class="animate-spin w-10 h-10 text-indigo-500 mx-auto mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                                <p class="font-black text-gray-600">Generating template…</p>
-                                <p class="text-xs font-medium text-gray-400 mt-1">Usually takes 10–20 seconds</p>
+                    <div class="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-3 min-h-[320px] max-h-[58vh] overflow-y-auto">
+                        <template x-if="!results.length">
+                            <div class="h-full flex items-center justify-center text-center text-gray-400 min-h-[300px]">
+                                <div>
+                                    <svg class="w-12 h-12 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    <p class="text-sm font-bold">Generated templates appear here</p>
+                                </div>
                             </div>
                         </template>
-                        <template x-if="!isGenerating && result.url">
-                            <img :src="result.url" class="max-w-full max-h-[52vh] object-contain rounded-xl shadow-lg">
-                        </template>
-                        <template x-if="!isGenerating && !result.url">
-                            <div class="text-center text-gray-400">
-                                <svg class="w-12 h-12 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                <p class="text-sm font-bold">Preview appears here</p>
-                            </div>
-                        </template>
+                        <div class="grid gap-3" :class="results.length > 1 ? 'grid-cols-2' : 'grid-cols-1'" x-show="results.length">
+                            <template x-for="(r, idx) in results" :key="idx">
+                                <div class="bg-white rounded-xl border p-2.5 relative" :class="r.discarded ? 'opacity-40 border-gray-200' : (r.status === 'error' ? 'border-red-200' : 'border-gray-200')">
+                                    <p class="text-[10px] font-black text-gray-500 truncate mb-1.5" x-text="r.bgName"></p>
+                                    <div class="aspect-square bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
+                                        <template x-if="r.status === 'generating'">
+                                            <svg class="animate-spin w-8 h-8 text-indigo-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                        </template>
+                                        <template x-if="r.status === 'done'">
+                                            <img :src="r.url" class="max-w-full max-h-full object-contain">
+                                        </template>
+                                        <template x-if="r.status === 'error'">
+                                            <p class="text-[11px] font-bold text-red-500 px-3 text-center" x-text="r.message"></p>
+                                        </template>
+                                    </div>
+                                    <div class="flex gap-1.5 mt-2" x-show="r.status === 'done'">
+                                        <a :href="r.url" target="_blank" class="flex-1 text-center bg-gray-100 text-gray-600 text-[11px] font-bold py-1.5 rounded-lg hover:bg-gray-200 transition">View</a>
+                                        <button type="button" @click="r.discarded = !r.discarded" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg transition" :class="r.discarded ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-red-50 text-red-500 hover:bg-red-100'" x-text="r.discarded ? 'Keep' : 'Discard'"></button>
+                                        <button type="button" @click="retry(idx)" class="flex-1 bg-indigo-50 text-indigo-600 text-[11px] font-bold py-1.5 rounded-lg hover:bg-indigo-100 transition">Retry</button>
+                                    </div>
+                                    <div class="mt-2" x-show="r.status === 'error'">
+                                        <button type="button" @click="retry(idx)" class="w-full bg-indigo-50 text-indigo-600 text-[11px] font-bold py-1.5 rounded-lg hover:bg-indigo-100 transition">Retry</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
 
                     <p x-show="error" x-text="error" class="text-xs font-bold text-red-500 mt-2"></p>
 
                     <div class="flex gap-2 mt-4">
-                        <button type="button" @click="generate()" :disabled="isGenerating" class="flex-1 bg-gray-900 text-white font-black py-2.5 rounded-xl hover:bg-gray-800 transition active:scale-95 disabled:opacity-50" x-text="result.url ? 'Regenerate (same settings)' : 'Generate Template'"></button>
-                        <button type="button" @click="save()" x-show="result.url" :disabled="isGenerating || isSavingTpl" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black py-2.5 rounded-xl shadow-lg hover:shadow-xl transition active:scale-95 disabled:opacity-50">
-                            <span x-show="!isSavingTpl">Save to Library</span>
+                        <button type="button" @click="generate()" :disabled="isGenerating" class="flex-1 bg-gray-900 text-white font-black py-2.5 rounded-xl hover:bg-gray-800 transition active:scale-95 disabled:opacity-50">
+                            <span x-show="!isGenerating" x-text="'Generate ' + (selectedBgIds.length > 1 ? selectedBgIds.length + ' Templates' : 'Template')"></span>
+                            <span x-show="isGenerating">Generating <span x-text="progressText"></span>…</span>
+                        </button>
+                        <button type="button" @click="saveAll()" x-show="results.some(r => r.status === 'done' && !r.discarded)" :disabled="isGenerating || isSavingTpl" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black py-2.5 rounded-xl shadow-lg hover:shadow-xl transition active:scale-95 disabled:opacity-50">
+                            <span x-show="!isSavingTpl" x-text="'Save ' + results.filter(r => r.status === 'done' && !r.discarded).length + ' to Library'"></span>
                             <span x-show="isSavingTpl">Saving…</span>
                         </button>
                     </div>
@@ -809,6 +855,12 @@
             'customer' => trim(($l->customer_name ?? '') . ' ' . ($l->customer_phone ?? '')),
             'url' => '/storage/' . $l->file_path,
         ])->values();
+
+        $backgroundPickerData = $backgrounds->map(fn ($b) => [
+            'id' => $b->id,
+            'name' => $b->name,
+            'url' => '/storage/' . $b->image_path,
+        ])->values();
     @endphp
     <script>
         document.addEventListener('alpine:init', () => {
@@ -830,12 +882,17 @@
                     logo_coverage: 'large',
                     style_notes: '',
                 },
+                backgrounds: @json($backgroundPickerData),
+                selectedBgIds: [],
+                bgMode: 'library',
+                isGeneratingBg: false,
                 referenceFile: null,
                 referencePreview: null,
                 referencePath: null, // server-side path after first generation
-                result: { url: null, path: null },
+                results: [],
                 isGenerating: false,
                 isSavingTpl: false,
+                progressText: '',
                 error: '',
 
                 placementsByType: {
@@ -867,6 +924,66 @@
 
                 init() {
                     this.applyPlacementPreset();
+                    if (!this.backgrounds.length) this.bgMode = 'new';
+                },
+
+                toggleBackground(id) {
+                    const i = this.selectedBgIds.indexOf(id);
+                    if (i > -1) this.selectedBgIds.splice(i, 1);
+                    else this.selectedBgIds.push(id);
+                },
+
+                bgName(id) {
+                    const bg = this.backgrounds.find(b => b.id === id);
+                    return bg ? bg.name : 'AI scene';
+                },
+
+                generateBackground() {
+                    this.error = '';
+                    this.isGeneratingBg = true;
+
+                    fetch('{{ route('mockup_backgrounds.generate') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            theme: this.form.theme,
+                            lighting: this.form.lighting,
+                            color_scheme: this.form.color_scheme,
+                            size: this.form.size,
+                        }),
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.backgrounds.unshift(data.background);
+                            this.selectedBgIds.push(data.background.id);
+                            this.bgMode = 'library';
+                        } else {
+                            this.error = data.message || 'Background generation failed.';
+                        }
+                    })
+                    .catch(() => this.error = 'Network error — please try again.')
+                    .finally(() => this.isGeneratingBg = false);
+                },
+
+                deleteBackground(bg) {
+                    if (!confirm('Delete this background?')) return;
+                    fetch('{{ url('/mockup-backgrounds') }}/' + bg.id, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.backgrounds = this.backgrounds.filter(b => b.id !== bg.id);
+                            this.selectedBgIds = this.selectedBgIds.filter(id => id !== bg.id);
+                        }
+                    })
+                    .catch(() => {});
                 },
 
                 handleReference(event) {
@@ -880,65 +997,111 @@
                     event.target.value = '';
                 },
 
-                generate() {
+                async generate() {
                     this.error = '';
                     this.isGenerating = true;
 
+                    // One template per selected background; none selected =
+                    // single template with an AI-invented scene.
+                    const jobs = this.selectedBgIds.length ? this.selectedBgIds : [null];
+                    this.results = jobs.map(id => ({
+                        bgId: id,
+                        bgName: id ? this.bgName(id) : 'AI-invented scene',
+                        status: 'generating',
+                        url: null, path: null, message: '', discarded: false,
+                    }));
+
+                    for (let i = 0; i < this.results.length; i++) {
+                        this.progressText = (i + 1) + '/' + this.results.length;
+                        await this.generateOne(this.results[i]);
+                    }
+
+                    this.isGenerating = false;
+                    this.progressText = '';
+                },
+
+                async generateOne(r) {
+                    r.status = 'generating';
                     const fd = new FormData();
                     Object.entries(this.form).forEach(([k, v]) => fd.append(k, v ?? ''));
+                    if (r.bgId) fd.append('background_id', r.bgId);
                     if (this.referenceFile && !this.referencePath) {
                         fd.append('reference_image', this.referenceFile);
                     } else if (this.referencePath) {
                         fd.append('reference_path', this.referencePath);
                     }
 
-                    fetch('{{ route('mockup_templates.generate') }}', {
-                        method: 'POST',
-                        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
-                        body: fd,
-                    })
-                    .then(r => r.json())
-                    .then(data => {
+                    try {
+                        const resp = await fetch('{{ route('mockup_templates.generate') }}', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+                            body: fd,
+                        });
+                        const data = await resp.json();
                         if (data.success) {
-                            this.result = { url: data.url + '?t=' + Date.now(), path: data.path };
+                            r.status = 'done';
+                            r.url = data.url + '?t=' + Date.now();
+                            r.path = data.path;
+                            // reuse the uploaded reference for the rest of the batch
                             if (data.reference_path) this.referencePath = data.reference_path;
                         } else {
-                            this.error = data.message || Object.values(data.errors || {}).flat().join(' ') || 'Generation failed.';
+                            r.status = 'error';
+                            r.message = data.message || Object.values(data.errors || {}).flat().join(' ') || 'Generation failed.';
                         }
-                    })
-                    .catch(() => this.error = 'Network error — please try again.')
-                    .finally(() => this.isGenerating = false);
+                    } catch (e) {
+                        r.status = 'error';
+                        r.message = 'Network error — please retry.';
+                    }
                 },
 
-                save() {
-                    if (!this.result.path) return;
+                async retry(idx) {
+                    if (this.isGenerating) return;
+                    this.isGenerating = true;
+                    await this.generateOne(this.results[idx]);
+                    this.isGenerating = false;
+                },
+
+                async saveAll() {
+                    const keepers = this.results.filter(r => r.status === 'done' && !r.discarded);
+                    if (!keepers.length) return;
                     if (!this.form.name.trim()) { this.error = 'Please give the template a name.'; return; }
                     this.error = '';
                     this.isSavingTpl = true;
 
-                    fetch('{{ route('mockup_templates.saveGenerated') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            ...this.form,
-                            path: this.result.path,
-                            reference_path: this.referencePath,
-                        }),
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location = '{{ route('mockups.index') }}?tab=templates';
-                        } else {
-                            this.error = data.message || 'Failed to save template.';
-                            this.isSavingTpl = false;
+                    const baseName = this.form.name.trim();
+                    let failed = 0;
+
+                    for (const r of keepers) {
+                        const name = keepers.length > 1 ? baseName + ' — ' + r.bgName : baseName;
+                        try {
+                            const resp = await fetch('{{ route('mockup_templates.saveGenerated') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    ...this.form,
+                                    name: name,
+                                    path: r.path,
+                                    background_id: r.bgId,
+                                    reference_path: this.referencePath,
+                                }),
+                            });
+                            const data = await resp.json();
+                            if (!data.success) failed++;
+                        } catch (e) {
+                            failed++;
                         }
-                    })
-                    .catch(() => { this.error = 'Network error while saving.'; this.isSavingTpl = false; });
+                    }
+
+                    if (failed) {
+                        this.error = failed + ' template(s) failed to save — the rest were saved.';
+                        this.isSavingTpl = false;
+                    } else {
+                        window.location = '{{ route('mockups.index') }}?tab=templates';
+                    }
                 },
             }));
 

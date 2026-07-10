@@ -18,6 +18,7 @@ class MockupTemplate extends Model
         'placements',
         'style_notes',
         'options',
+        'background_id',
         'image_path',
         'source_image_path',
         'is_ai_generated',
@@ -31,5 +32,10 @@ class MockupTemplate extends Model
     public function mockups()
     {
         return $this->hasMany(Mockup::class, 'template_id');
+    }
+
+    public function background()
+    {
+        return $this->belongsTo(MockupBackground::class, 'background_id');
     }
 }

@@ -107,19 +107,54 @@ class MockupAiService
     ];
 
     /**
+     * Generate an empty, reusable background scene (no product in it).
+     *
+     * @param array $options  theme, lighting, color_scheme, size
+     * @return string  storage path (public disk) of the generated background
+     */
+    public function generateBackgroundImage(array $options): string
+    {
+        $theme = self::THEME_PRESETS[$options['theme'] ?? 'studio'] ?? self::THEME_PRESETS['studio'];
+        $lighting = self::LIGHTING_PRESETS[$options['lighting'] ?? 'soft'] ?? self::LIGHTING_PRESETS['soft'];
+        $size = self::SIZE_PRESETS[$options['size'] ?? 'square'] ?? self::SIZE_PRESETS['square'];
+
+        $lines = [];
+        $lines[] = "Create {$size} professional product-photography background scene: {$theme}.";
+        $lines[] = "Lighting: {$lighting}.";
+        if (!empty($options['color_scheme'])) {
+            $lines[] = "Colors & mood: {$options['color_scheme']}.";
+        }
+        $lines[] = "The scene must be completely EMPTY — no products, no people, no hands, no text, no logos. Leave clear, uncluttered open space in the center where a product will later be placed.";
+        $lines[] = "Photorealistic, high resolution, ready to use as a reusable e-commerce backdrop.";
+
+        $binary = $this->generateImage(implode("\n", $lines));
+
+        $path = 'mockup_backgrounds/ai_' . uniqid() . '.png';
+        Storage::disk('public')->put($path, $binary);
+
+        $this->recordGeneration('background', $path);
+
+        return $path;
+    }
+
+    /**
      * Generate a mockup template image.
      *
      * @param array $options  product_type, custom_product, size, theme,
      *                        color_scheme, placements, style_notes
      * @param string|null $referenceImagePath  path on the public disk of the
      *                                         uploaded product reference photo
+     * @param string|null $backgroundImagePath  path on the public disk of a
+     *                                          pre-generated background scene
      * @return string  storage path (public disk) of the generated template
      */
-    public function generateTemplateImage(array $options, ?string $referenceImagePath = null): string
+    public function generateTemplateImage(array $options, ?string $referenceImagePath = null, ?string $backgroundImagePath = null): string
     {
-        $prompt = $this->buildTemplatePrompt($options, (bool) $referenceImagePath);
+        $prompt = $this->buildTemplatePrompt($options, (bool) $referenceImagePath, (bool) $backgroundImagePath);
 
-        $inputImages = $referenceImagePath ? [$referenceImagePath] : [];
+        // Order matters — the prompt refers to the background as the first
+        // attached image and the product reference as the next one.
+        $inputImages = array_values(array_filter([$backgroundImagePath, $referenceImagePath]));
 
         $binary = $this->generateImage($prompt, $inputImages);
 
@@ -175,7 +210,7 @@ class MockupAiService
 
     // ── Prompt builders ──────────────────────────────────────────
 
-    protected function buildTemplatePrompt(array $options, bool $hasReference): string
+    protected function buildTemplatePrompt(array $options, bool $hasReference, bool $hasBackground = false): string
     {
         $product = $options['product_type'] === 'other' && !empty($options['custom_product'])
             ? $options['custom_product']
@@ -191,15 +226,22 @@ class MockupAiService
         $lines = [];
         $lines[] = "Create {$size} professional e-commerce mockup image of a {$product}.";
 
+        if ($hasBackground) {
+            $lines[] = "The FIRST attached image is the EXACT background scene to use. The final image's background must be pixel-faithful to it — same setting, colors, surfaces and lighting mood. Do NOT redesign, restyle or replace this background; only place the product into it naturally with correct perspective, contact shadows and reflections.";
+        }
+
         if ($hasReference) {
-            $lines[] = "I have attached a reference photo of the EXACT physical product. Extract the product from that photo and RE-STAGE it in the brand-new scene described below. Do NOT reuse or copy the reference photo's background, framing, lighting or composition — build a completely new professional shot around the same product.";
+            $refLabel = $hasBackground ? 'The SECOND attached image' : 'The attached image';
+            $lines[] = "{$refLabel} is a reference photo of the EXACT physical product. Extract the product from that photo and RE-STAGE it " . ($hasBackground ? 'inside the background scene from the first image' : 'in the brand-new scene described below') . ". Do NOT reuse or copy the reference photo's background, framing, lighting or composition.";
             $lines[] = "PRODUCT FIDELITY (critical): the product itself must stay 100% true to the reference — identical colour, design, fabric, weave, texture, stitching, seams, shape, proportions, hardware and material. Do NOT redesign, recolor, simplify or \"improve\" the product in any way. Only the scene, camera angle, lighting and presentation may change.";
         }
 
-        $lines[] = "Scene / backdrop: {$theme}.";
+        if (!$hasBackground) {
+            $lines[] = "Scene / backdrop: {$theme}.";
+            $lines[] = "Lighting: {$lighting}.";
+        }
         $lines[] = "Presentation: {$presentation}.";
         $lines[] = "Camera: {$angle}.";
-        $lines[] = "Lighting: {$lighting}.";
         $lines[] = "Views: {$views}.";
         $lines[] = "If the presentation implies a specific camera position (e.g. a flat lay is shot top-down), the presentation takes priority over the camera angle.";
 

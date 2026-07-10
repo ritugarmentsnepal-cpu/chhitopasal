@@ -49,6 +49,7 @@ class MockupTemplateController extends Controller
             'angle' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::ANGLE_PRESETS)),
             'lighting' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::LIGHTING_PRESETS)),
             'views' => 'nullable|string|in:' . implode(',', array_keys(MockupAiService::VIEW_PRESETS)),
+            'background_id' => 'nullable|integer|exists:mockup_backgrounds,id',
             'color_scheme' => 'nullable|string|max:500',
             'placements' => 'nullable|string|max:500',
             'style_notes' => 'nullable|string|max:1000',
@@ -69,12 +70,24 @@ class MockupTemplateController extends Controller
             }
         }
 
+        // Pre-generated background scene from the library
+        $background = $request->filled('background_id')
+            ? \App\Models\MockupBackground::find($request->input('background_id'))
+            : null;
+
+        $options = $request->only([
+            'product_type', 'custom_product', 'size', 'theme',
+            'presentation', 'angle', 'lighting', 'views',
+            'color_scheme', 'placements', 'style_notes', 'logo_coverage',
+        ]);
+
+        // The template inherits the background's aspect ratio
+        if ($background && $background->size) {
+            $options['size'] = $background->size;
+        }
+
         try {
-            $path = $ai->generateTemplateImage($request->only([
-                'product_type', 'custom_product', 'size', 'theme',
-                'presentation', 'angle', 'lighting', 'views',
-                'color_scheme', 'placements', 'style_notes', 'logo_coverage',
-            ]), $referencePath);
+            $path = $ai->generateTemplateImage($options, $referencePath, $background?->image_path);
         } catch (\RuntimeException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
         }
@@ -84,6 +97,7 @@ class MockupTemplateController extends Controller
             'path' => $path,
             'url' => '/storage/' . $path,
             'reference_path' => $referencePath,
+            'background_id' => $background?->id,
         ]);
     }
 
@@ -103,6 +117,7 @@ class MockupTemplateController extends Controller
             'angle' => 'nullable|string|max:50',
             'lighting' => 'nullable|string|max:50',
             'views' => 'nullable|string|max:50',
+            'background_id' => 'nullable|integer|exists:mockup_backgrounds,id',
             'color_scheme' => 'nullable|string|max:500',
             'placements' => 'nullable|string|max:500',
             'style_notes' => 'nullable|string|max:1000',
@@ -125,11 +140,18 @@ class MockupTemplateController extends Controller
             ? Str::slug($request->input('custom_product'), '_')
             : $request->input('product_type');
 
+        // When staged on a library background, the template carries that
+        // background's scene settings for provenance.
+        $background = $request->filled('background_id')
+            ? \App\Models\MockupBackground::find($request->input('background_id'))
+            : null;
+
         $template = MockupTemplate::create([
             'name' => $request->input('name'),
             'product_type' => $productType,
-            'size' => $request->input('size'),
-            'theme' => $request->input('theme'),
+            'size' => $background?->size ?: $request->input('size'),
+            'theme' => $background?->theme ?: $request->input('theme'),
+            'background_id' => $background?->id,
             'color_scheme' => $request->input('color_scheme'),
             'placements' => $request->input('placements'),
             'style_notes' => $request->input('style_notes'),

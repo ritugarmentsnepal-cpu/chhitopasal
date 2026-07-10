@@ -49,6 +49,9 @@ class MockupLibraryController extends Controller
 
         $templates = MockupTemplate::latest()->get();
 
+        // Reusable AI background scenes for the template generator
+        $backgrounds = \App\Models\MockupBackground::latest()->get();
+
         // Product types present in the template library (drives the filter dropdown)
         $productTypes = MockupTemplate::query()
             ->select('product_type')
@@ -95,7 +98,7 @@ class MockupLibraryController extends Controller
             }
         }
 
-        return view('mockups.index', compact('mockups', 'templates', 'productTypes', 'readyLogos', 'waitingLogos', 'customerLogos', 'wizard', 'aiThisMonth'));
+        return view('mockups.index', compact('mockups', 'templates', 'backgrounds', 'productTypes', 'readyLogos', 'waitingLogos', 'customerLogos', 'wizard', 'aiThisMonth'));
     }
 
     /**
